@@ -64,7 +64,7 @@ n1x-site-2026-11-26/
 ├─ tools/
 │  ├─ check_links.py          # 本地链接与锚点全量校验
 │  ├─ qa.py                   # Playwright 三视口验收
-│  ├─ offline_pack.py         # 生成离线 ZIP（排除 .git / tools）
+│  ├─ offline_pack.py         # 生成离线 ZIP（排除 .git / tools / .github）
 │  └─ build_spec.py           # 参数报告外壳（已加防覆盖保护）
 ├─ .github/workflows/pages.yml # Actions 白名单发布（不含 tools/）
 ├─ .gitignore

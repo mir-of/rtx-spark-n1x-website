@@ -10,7 +10,7 @@ import zipfile
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 OUT = ROOT.parent / "N1X-RTX-Spark-评测网站-离线版-2026-11-26.zip"
 TOP = "N1X-RTX-Spark-评测网站"
-SKIP_DIRS = {"tools", "__pycache__", ".git"}
+SKIP_DIRS = {"tools", "__pycache__", ".git", ".github"}
 
 README = """N1X RTX Spark 全景评测 · 离线版
 ==============================
