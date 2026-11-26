@@ -67,7 +67,7 @@ n1x-site-2026-11-26/
 ├─ tools/
 │  ├─ check_links.py          # 本地链接与锚点全量校验
 │  ├─ qa.py                   # Playwright 三视口验收
-│  ├─ offline_pack.py         # 生成离线 ZIP（排除 .git / tools / .github）
+│  ├─ offline_pack.py         # 生成离线 ZIP（白名单：10 页 + assets/ + NOTICE）
 │  └─ build_spec.py           # 参数报告外壳（已加防覆盖保护）
 ├─ .github/workflows/pages.yml # Actions 白名单发布（不含 tools/）
 ├─ .gitignore
@@ -98,7 +98,7 @@ python -m http.server 8000 --bind 127.0.0.1
 
 ### GitHub Pages（推荐：Actions 白名单）
 
-仓库提供 `.github/workflows/pages.yml`：推送 `main` 后只发布 10 个 HTML、`assets/`、`_headers` 和 `.nojekyll`；`tools/`、`README.md`、`.github/` 留在仓库但不出现在网站 URL 下。先确认该文件已提交到 `main`。
+仓库提供 `.github/workflows/pages.yml`：推送 `main` 后只发布 10 个 HTML、`assets/`、`_headers` 和 `.nojekyll`；`tools/`、`README.md`、`.github/` 留在仓库但不出现在网站 URL 下。先确认该文件已提交到 `main`（当前它仍是未跟踪文件；提交需要 token 具备 `workflow` 权限）。
 
 ```text
 Settings → Pages → Build and deployment
@@ -123,11 +123,11 @@ Settings → Pages → Build and deployment
 
 改为 public 前建议确认三件事：
 
-1. **原始日志已移除**：`assets/logs/`（101 个文件）已从当前树和远端历史移除；含主机名、Windows 用户目录路径和 GPU UUID 的文件只保留在仓库外的本地备份中。
+1. **原始日志已移除**：`assets/logs/`（101 个文件）已从当前树和远端**可达历史**移除（历史已重写为不含日志的干净提交）；GitHub 端可能仍缓存不可达对象，若需彻底清理请联系 GitHub Support。含主机名、Windows 用户目录路径和 GPU UUID 的文件只保留在仓库外的本地备份中。
 2. **公开基本不可撤回**：页面与文件可被搜索引擎收录、被 fork 或缓存；即使之后删库或改回 private，副本仍可能留在他人手里。
 3. **用途限制**：GitHub Pages 不允许用于纯商业交易类站点；个人评测、技术分享没问题。
 
-操作：Settings → General → 最下方 Danger Zone → Change visibility → Make public；再到 Settings → Pages 选 **Source: GitHub Actions**（仓库自带 `.github/workflows/pages.yml`），约 1 分钟后 `https://mir-of.github.io/rtx-spark-n1x-website/` 生效。之后每次 `git push` 自动重新发布。
+操作：Settings → General → 最下方 Danger Zone → Change visibility → Make public；再到 Settings → Pages 选 **Source: GitHub Actions**（先提交 `.github/workflows/pages.yml`，见上），约 1 分钟后 `https://mir-of.github.io/rtx-spark-n1x-website/` 生效。之后每次 `git push` 自动重新发布。
 
 ### Cloudflare Pages / Netlify / Vercel
 
@@ -166,7 +166,7 @@ server {
 python tools/offline_pack.py
 ```
 
-会在站点上一级生成 `N1X-RTX-Spark-评测网站-离线版-<日期>.zip`，包含除 `tools/` 外的全部文件，并注入 `使用说明.txt`。解压后双击 `index.html` 即可。
+会在站点上一级生成 `N1X-RTX-Spark-评测网站-离线版-<日期>.zip`。打包采用显式白名单：只含 10 个根目录 HTML、`assets/` 整目录和 `NOTICE`，并注入 `使用说明.txt`；`README.md`、`_headers`、`.gitignore`、`.nojekyll`、`tools/`、`.github/`、任何 `*.zip` 与 `assets/logs/` 都不会进入压缩包。解压后双击 `index.html` 即可。
 
 ## 维护
 

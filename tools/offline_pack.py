@@ -1,8 +1,12 @@
 """Build a shareable offline ZIP of the site.
 
 Usage: py314\\python.exe -I tools\\offline_pack.py
-The archive contains a single top-level folder, excludes tools/ and .git, and adds a
-short README (使用说明.txt) that is not part of the served site.
+
+Packaging is allowlist-only: the ten root HTML pages, the whole assets/ tree and
+NOTICE. Nothing else is packed -- README.md, _headers, .gitignore, .nojekyll,
+tools/ (.github/ included), any *.zip and assets/logs/ are never included, even
+if they reappear in the working tree. A short 使用说明.txt is injected at the
+archive root and is not part of the served site.
 """
 import pathlib
 import zipfile
@@ -10,7 +14,28 @@ import zipfile
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 OUT = ROOT.parent / "N1X-RTX-Spark-评测网站-离线版-2026-11-26.zip"
 TOP = "N1X-RTX-Spark-评测网站"
-SKIP_DIRS = {"tools", "__pycache__", ".git", ".github"}
+
+# Root pages, in reading order. Keep in sync with README.md.
+PAGES = (
+    "index.html",
+    "spec.html",
+    "memory.html",
+    "memory-story.html",
+    "benchmark.html",
+    "nvidia-app.html",
+    "qwen.html",
+    "h3.html",
+    "evidence.html",
+    "verdict.html",
+)
+
+# Non-page root files that are deliberately part of the offline package.
+EXTRA_FILES = ("NOTICE",)
+
+# assets/ is walked as a whole; these paths are skipped defensively so that a
+# future purge/QA artifact can never slip back into a distributable archive.
+SKIP_ASSET_DIRS = ("assets/logs",)
+SKIP_DIR_NAMES = {".git", ".github", "__pycache__", "tmp", "qa", "perf-tmp"}
 
 README = """N1X RTX Spark 全景评测 · 离线版
 ==============================
@@ -34,7 +59,8 @@ README = """N1X RTX Spark 全景评测 · 离线版
 说明
   · 全站为静态文件，样式、图片、脚本都已随包携带，断网可完整阅读。
   · 文中指向 nvidia.com / asus.com / geekbench.com 等外部链接需要联网。
-  · assets/downloads/ 内含 4 份 PDF 报告；assets/spec/ 为官方规格页归档。
+  · assets/downloads/ 内含 4 份 PDF 报告；assets/spec/ 为官方规格页归档
+    （归档页已用 CSP 禁用脚本，不执行第三方脚本、不写 Cookie）。
   · 为保证体积，原始 mp4 录屏未打包（网站正文也未引用）。
   · 若浏览器限制本地文件，可在本目录执行
         python -m http.server 8000
@@ -42,15 +68,38 @@ README = """N1X RTX Spark 全景评测 · 离线版
 """
 
 
-def main():
+def collect_files():
+    """Return (path, archive-relative-name) pairs from the allowlist."""
     files = []
-    for path in sorted(ROOT.rglob("*")):
+
+    for name in PAGES + EXTRA_FILES:
+        path = ROOT / name
+        if not path.is_file():
+            raise SystemExit(f"allowlisted file is missing: {path}")
+        files.append((path, name))
+
+    assets = ROOT / "assets"
+    if not assets.is_dir():
+        raise SystemExit(f"allowlisted directory is missing: {assets}")
+
+    for path in sorted(assets.rglob("*")):
+        if not path.is_file():
+            continue
         rel = path.relative_to(ROOT)
-        if path.is_dir():
+        rel_posix = rel.as_posix()
+        if any(rel_posix == d or rel_posix.startswith(d + "/") for d in SKIP_ASSET_DIRS):
             continue
-        if rel.parts[0] in SKIP_DIRS:
+        if any(part in SKIP_DIR_NAMES for part in rel.parts):
             continue
-        files.append((path, rel.as_posix()))
+        if path.suffix.lower() == ".zip":
+            continue
+        files.append((path, rel_posix))
+
+    return files
+
+
+def main():
+    files = collect_files()
 
     with zipfile.ZipFile(OUT, "w", zipfile.ZIP_DEFLATED, compresslevel=9) as zf:
         for path, rel in files:
