@@ -30,7 +30,7 @@ jobs:
       - name: Assemble site files
         run: |
           mkdir -p _site
-          cp -r *.html assets _headers .nojekyll _site/
+          cp -r *.html assets _headers .nojekyll LICENSE LICENSE-CONTENT NOTICE _site/
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3

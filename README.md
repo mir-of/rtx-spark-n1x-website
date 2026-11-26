@@ -100,7 +100,7 @@ python -m http.server 8000 --bind 127.0.0.1
 
 ### GitHub Pages（推荐：Actions 白名单）
 
-仓库提供 `.github/workflows/pages.yml`：推送 `main` 后只发布 10 个 HTML、`assets/`、`_headers` 和 `.nojekyll`；`tools/`、`README.md`、`.github/` 留在仓库但不出现在网站 URL 下。先确认该文件已提交到 `main`。
+仓库提供 `.github/workflows/pages.yml`：推送 `main` 后只发布 10 个 HTML、`assets/`、`_headers`、`.nojekyll` 和三个许可文件；`tools/`、`README.md`、`.github/` 留在仓库但不出现在网站 URL 下。先确认该文件已提交到 `main`。
 
 ```text
 Settings → Pages → Build and deployment

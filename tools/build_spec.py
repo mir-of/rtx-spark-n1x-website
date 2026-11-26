@@ -16,6 +16,12 @@ if DST.exists() and "--force" not in sys.argv:
 
 html = SRC.read_text(encoding="utf-8")
 
+# Surface the content/code licences in the generated footer.
+LICENSE_LINE = ('  <p class="small">除第三方素材外，文字、表格与图表以 '
+                '<a href="LICENSE-CONTENT">CC BY 4.0</a> 授权，代码以 '
+                '<a href="LICENSE">MIT</a> 授权；第三方素材见 <a href="NOTICE">NOTICE</a>。</p>\n')
+html = html.replace("</footer>", LICENSE_LINE + "</footer>", 1)
+
 # Raw log downloads are not published; drop those rows and leave a note.
 def strip_log_rows(doc):
     marker = "<h3>原始文件</h3>"
