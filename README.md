@@ -1,6 +1,6 @@
 # N1X RTX Spark 全景评测站
 
-ASUS ProArt GR1X（NVIDIA RTX Spark N1X）的静态评测站：9 份报告 + 1 个总览页，纯 HTML / CSS / JS，无外部字体、CDN 或追踪脚本，支持 `file://` 直接打开和离线打包。
+ASUS ProArt GR1X（NVIDIA RTX Spark N1X）的静态评测站：9 份报告 + 1 个总览页，纯 HTML / CSS / JS；10 个手写页面无外部字体、CDN 或追踪脚本，官方规格归档页已禁用脚本，支持 `file://` 直接打开和离线打包。
 
 ![网站首页：RTX Spark N1X 全景评测总览](assets/img/readme/home.webp)
 
@@ -26,13 +26,16 @@ ASUS ProArt GR1X（NVIDIA RTX Spark N1X）的静态评测站：9 份报告 + 1 �
 - 主色 `#76b900`，深色底 `#08110a`，纸白 `#f3f6ef`
 - `assets/site.css`：全站设计系统；`assets/site.js`：移动导航、TOC 高亮、阅读进度、图片灯箱
 - `assets/frame.css`：只用于 `spec.html`，给原始参数报告套站点头部与返回条
-- 图片统一 WebP（UI 截图 q85、图表 q82），保持原分辨率；PNG 源保留在 git 历史中
+- 图片统一 WebP（UI 截图 q85、图表 q82），保持原分辨率；PNG 源不随仓库发布
 - `<img>` 均带 `width` / `height` 预留版面，首屏外 `loading="lazy"`，打印前由脚本转 eager
 - 双列缩略图用 `srcset` 提供 2× 版本（1058px），灯箱通过 `data-full` 仍打开原图
 - `spec.html` 不内嵌 base64，5 张截图外链到 `assets/img/spec/`，与证据页共享缓存
 - 首访字节：10 页合计约 0.8 MB（优化前 15.1 MB）；`h3` 单页约 137 KB（原 7.15 MB）
 - `_headers`：Cloudflare Pages / Netlify 的缓存策略（HTML no-cache、assets 30 天），GitHub Pages 忽略
 - 灯箱在桌面与移动端均可拖动查看
+- 10 个手写页内置最小 CSP：`script-src 'self'`，禁止外部连接、框架、表单与对象
+- `assets/spec/*.html` 归档页内置 `script-src 'none'`：不执行 NVIDIA / 供应商脚本、不写 Cookie，样式从简
+- 原始日志（101 个文件）与含本机标识的 JSON 不随仓库发布
 
 ## 目录结构
 
@@ -68,6 +71,7 @@ n1x-site-2026-11-26/
 │  └─ build_spec.py           # 参数报告外壳（已加防覆盖保护）
 ├─ .github/workflows/pages.yml # Actions 白名单发布（不含 tools/）
 ├─ .gitignore
+├─ NOTICE                     # 版权与第三方素材说明
 ├─ _headers                   # 静态托管缓存头（Cloudflare / Netlify）
 ├─ .nojekyll                  # Pages 不走 Jekyll
 └─ README.md
@@ -94,7 +98,7 @@ python -m http.server 8000 --bind 127.0.0.1
 
 ### GitHub Pages（推荐：Actions 白名单）
 
-仓库自带 `.github/workflows/pages.yml`：推送 `main` 后只发布 10 个 HTML、`assets/`、`_headers` 和 `.nojekyll`；`tools/`、`README.md`、`.github/` 留在仓库但不出现在网站 URL 下。
+仓库提供 `.github/workflows/pages.yml`：推送 `main` 后只发布 10 个 HTML、`assets/`、`_headers` 和 `.nojekyll`；`tools/`、`README.md`、`.github/` 留在仓库但不出现在网站 URL 下。先确认该文件已提交到 `main`。
 
 ```text
 Settings → Pages → Build and deployment
@@ -111,7 +115,7 @@ Settings → Pages → Build and deployment
 
 | 项目 | GitHub 限制 | 本站现状 |
 | --- | --- | --- |
-| 仓库可见性 | 公开仓库：源码、截图、PDF 全部可被查看与克隆 | 96 个文件 / 9.6 MB，无密钥、无 token、无原始日志 |
+| 仓库可见性 | 公开仓库：源码、截图、PDF 全部可被查看与克隆 | 99 个文件 / 9.6 MB，无密钥、无 token、无原始日志 |
 | 发布站点体积 | ≤ 1 GB | 9.6 MB，约占上限 1% |
 | 月流量 | 100 GB 软限制 | 纯静态页 + 本地图片，个人分享远达不到 |
 | 构建频率 | 10 次/小时软限制 | Actions 每次推送发布一次 |
@@ -119,7 +123,7 @@ Settings → Pages → Build and deployment
 
 改为 public 前建议确认三件事：
 
-1. **原始日志已移除**：`assets/logs/`（101 个文件）以及其中的主机名、Windows 用户目录路径和 GPU UUID 已从当前树与 git 历史中清除；仓库只保留正文、图表、截图与官方归档。
+1. **原始日志已移除**：`assets/logs/`（101 个文件）已从当前树和远端历史移除；含主机名、Windows 用户目录路径和 GPU UUID 的文件只保留在仓库外的本地备份中。
 2. **公开基本不可撤回**：页面与文件可被搜索引擎收录、被 fork 或缓存；即使之后删库或改回 private，副本仍可能留在他人手里。
 3. **用途限制**：GitHub Pages 不允许用于纯商业交易类站点；个人评测、技术分享没问题。
 
