@@ -100,7 +100,7 @@ python -m http.server 8000 --bind 127.0.0.1
 
 ### GitHub Pages（推荐：Actions 白名单）
 
-仓库提供 `.github/workflows/pages.yml`：推送 `main` 后只发布 10 个 HTML、`assets/`、`_headers` 和 `.nojekyll`；`tools/`、`README.md`、`.github/` 留在仓库但不出现在网站 URL 下。先确认该文件已提交到 `main`（当前它仍是未跟踪文件；提交需要 token 具备 `workflow` 权限）。
+仓库提供 `.github/workflows/pages.yml`：推送 `main` 后只发布 10 个 HTML、`assets/`、`_headers` 和 `.nojekyll`；`tools/`、`README.md`、`.github/` 留在仓库但不出现在网站 URL 下。先确认该文件已提交到 `main`。
 
 ```text
 Settings → Pages → Build and deployment
@@ -117,7 +117,7 @@ Settings → Pages → Build and deployment
 
 | 项目 | GitHub 限制 | 本站现状 |
 | --- | --- | --- |
-| 仓库可见性 | 公开仓库：源码、截图、PDF 全部可被查看与克隆 | 102 个文件 / 9.6 MB，无密钥、无 token、无原始日志 |
+| 仓库可见性 | 公开仓库：源码、截图、PDF 全部可被查看与克隆 | 103 个文件 / 9.6 MB，无密钥、无 token、无原始日志 |
 | 发布站点体积 | ≤ 1 GB | 9.6 MB，约占上限 1% |
 | 月流量 | 100 GB 软限制 | 纯静态页 + 本地图片，个人分享远达不到 |
 | 构建频率 | 10 次/小时软限制 | Actions 每次推送发布一次 |
