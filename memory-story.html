@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>05 同一个 GB10，两种内存命运 · N1X 全景评测</title>
+<meta name="description" content="为什么 nvidia-smi 说显存 30.5 GiB，CUDA 却愿意给 45.9 GiB？一篇 10 分钟读懂 ASUS GR1X 统一内存的解读。">
+<link rel="stylesheet" href="assets/site.css">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+<a class="skip-link" href="#main">跳到正文</a>
+<div class="progress-bar" aria-hidden="true"></div>
+
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="index.html"><span class="mark">N1X</span><span>N1X 全景评测<small>ASUS ProArt GR1X · 2026</small></span></a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">目录</button>
+    <nav class="nav" id="site-nav" aria-label="站点导航">
+      <a href="index.html">总览</a>
+      <a href="spec.html">参数</a>
+      <a href="nvidia-app.html">配置</a>
+      <a href="benchmark.html">基准</a>
+      <a href="memory.html">内存</a>
+      <a href="memory-story.html" class="active">快读</a>
+      <a href="qwen.html">推理</a>
+      <a href="h3.html">视频</a>
+      <a href="evidence.html">证据</a>
+      <a href="verdict.html">总评</a>
+    </nav>
+  </div>
+</header>
+
+<header class="hero compact reader-hero">
+  <div class="wrap">
+    <div class="crumbs"><a href="index.html">总览</a><span class="sep">/</span><span>05 快读</span></div>
+    <div class="eyebrow">05 / Quick read · 10 minutes</div>
+    <h1>同一个 GB10，<span>两种内存命运</span></h1>
+    <p class="sub">为什么 nvidia-smi 说显存 30.5 GiB，CUDA 却愿意给你 45.9 GiB</p>
+    <p class="lede">三个数字必须分开问：nvidia-smi 报的是<b>分区</b>，CUDA 报的是<b>配额</b>，操作系统报的是<b>总量</b>。它们都对，但回答的不是同一个问题。</p>
+    <p class="page-q"><b>本页回答：</b>同一颗 GB10，为什么 Linux 与 Windows 看到的内存上限完全不同。</p>
+    <div class="meta">
+      <span>10 分钟</span><span>8 节</span><span>3 张图</span><span>完整数据见 04 内存报告</span>
+    </div>
+    <div class="roles"><span class="role-pill">快读</span><span class="role-pill alt">解释性长文</span><span class="role-pill gray">非逐项实验记录</span></div>
+  </div>
+</header>
+
+<nav class="toc" aria-label="本页目录">
+  <div class="wrap">
+    <a href="#one">一、一个能让人争论半小时的数字</a><a href="#chip">二、GB10 不是一张显卡</a><a href="#how">三、45.92 是怎么来的</a>
+    <a href="#flip">四、翻转实验</a><a href="#pinned">五、120 GB/s 的 pinned 路径</a><a href="#real">六、真正的限制</a>
+    <a href="#os">七、Linux 与 Windows</a><a href="#method">八、方法论</a>
+  </div>
+</nav>
+
+<main class="wrap" id="main">
+<article class="reader">
+
+<section id="one">
+  <span class="sec-no">SECTION 01</span>
+  <h2>一个能让人争论半小时的数字</h2>
+  <p>一台 ASUS GR1X，Windows 11，<code>nvidia-smi</code> 显示：</p>
+  <pre>539MiB / 31232MiB</pre>
+  <p>31,232 MiB，也就是 <b>30.50 GiB</b>（扣掉 14 MiB 保留是 30.486）。再查 DXGI，<code>SharedSystemMemory = 16.18 GiB</code>。两者相加约 46.7 GiB，而机器标称 64 GB。于是很自然得出一个结论：</p>
+  <blockquote><p>64 GiB 在固件层被切成了 30.5 GiB 给 GPU、32.18 GiB 给系统。规划大模型时按 30 GB 显存算。</p></blockquote>
+  <p>这句话<b>方向对，但自己就先算不平</b>：30.50 + 32.18 = 62.68 GiB，离 64 差 1.32 GiB——这 1.3 GiB 是固件保留（推算值，不是实测）。而且 30.5 与 32.2 都是 GiB，不是 GB。这个“加不平”本身就是线索：它不是简单的硬切，是“固件预留 + 驱动配额”两层叠加。</p>
+  <p>真实边界要用 CUDA Driver API 去问。<code>cuMemGetInfo</code> 的回答是：</p>
+  <pre>total 45.92 GiB, free 45.72 GiB</pre>
+  <p>后续用 <code>bench/cap_probe.py</code> 做了 3 个独立会话的夹逼（0.25 GiB 步进）：<b>最大单次成功 45.75 GiB，46.0 GiB 失败，3/3 一致</b>；持有 45.75 GiB 后连 0.25 GiB 都加不上。所以准确说法是：<b>驱动配额读数 45.92 GiB，实际可分配 45.75 GiB（差 0.17 GiB）。</b></p>
+  <p>这个数字后来被第三方应用独立复现了一次：ComfyUI 启动日志打的是 <code>Total VRAM 47022 MB</code>——47,022 <b>MiB</b> = 49.31 GB = 45.92 GiB。很多人看到的“47 GB”，是把 MiB 数直接当 GB 读的产物，既不是十进制近似，也不是 47 GiB。</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>数字</th><th>来源</th><th>它回答的问题</th></tr></thead>
+      <tbody>
+        <tr><td class="dim">31,232 MiB = 30.50 GiB</td><td>nvidia-smi</td><td>专用帧缓冲分区多大</td></tr>
+        <tr><td class="dim">45.92 GiB</td><td>cuMemGetInfo</td><td>这个上下文最多能分配多少（配额读数）</td></tr>
+        <tr><td class="dim">32.18 GiB / 64 GiB</td><td>GlobalMemoryStatusEx / 固件、Geekbench</td><td>系统看到多少、物理装了多少</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="chip">
+  <span class="sec-no">SECTION 02</span>
+  <h2>先认清芯片：GB10 不是一张“显卡”</h2>
+  <p>这台机器 GPU 是 6144 CUDA 核心、Compute Capability 12.1，内存是 LPDDR5X；DGX Spark 的 GB10 也是 6144 CUDA 核心、20 个 CPU 核（10×Cortex-X925 + 10×A725）、128 GB LPDDR5X、256-bit @ 8533 MT/s，理论带宽 273 GB/s（<a href="https://docs.nvidia.com/dgx/dgx-spark/hardware.html">官方硬件页</a>）。</p>
+  <p>同一个硅片家族，两种产品形态。关键差别不在 GPU，而在<b>内存怎么分给谁</b>：</p>
+  <ul>
+    <li><b>DGX Spark（Linux / DGX OS）：</b>128 GB 是一个统一池，GPU 与 CPU 共享 DRAM。iGPU 没有专用帧缓冲，<code>nvidia-smi</code> 甚至显示 <code>Memory-Usage: Not Supported</code>（<a href="https://docs.nvidia.com/dgx/dgx-spark/known-issues.html">Known Issues</a>）。官方只说统一内存“允许更大内存用于 GPU 负载”，并提示 <code>cudaMemGetInfo</code> 可能<b>低估</b>可分配量（未回收的 SWAP 页）——具体上限本机没有实测，别把它写成“几乎全部”。</li>
+    <li><b>GR1X（Windows / WDDM）：</b>同样是统一内存架构，但固件先预留约 30.5 GiB 作 GPU 帧缓冲（UMA carve-out），OS 只看到 32.18 GiB；WDDM 再在这套划分上给出 CUDA 可寻址配额（45.92 GiB）。</li>
+  </ul>
+  <div class="callout">
+    <p><strong>一句话：</strong>DGX Spark 是“一体”，Windows 这台是“固件预留 + 驱动配额”两层。芯片一样，日子不一样。</p>
+  </div>
+
+  <div class="mem-total"><span>同一个 GB10，两种内存划分</span><b>示意</b></div>
+  <div class="mem-bar" aria-label="DGX Spark 与 GR1X 内存划分示意图">
+    <div class="seg os" style="width:100%"><span>DGX Spark · Linux · 单一统一池 ≈ 全部 128 GiB</span></div>
+  </div>
+  <div class="mem-legend"><span><i class="os"></i>Linux / DGX OS：没有专用 FB 概念，GPU 按统一地址访问</span></div>
+  <div class="mem-bar" style="margin-top:14px" aria-label="GR1X 内存划分示意图">
+    <div class="seg fb" style="width:47.66%"><span>专用 FB 30.5 GiB</span></div>
+    <div class="seg os" style="width:50.29%"><span>OS 可见 32.2 GiB</span></div>
+    <div class="seg rsv" style="width:2.06%"></div>
+  </div>
+  <div class="mem-legend"><span><i class="fb"></i>Windows / WDDM：固件预留 + OS 可见 + CUDA 配额（45.92 GiB）</span><span><i class="rsv"></i>固件保留约 1.3 GiB（推算）</span></div>
+  <p class="small" style="text-align:center">示意图，非按比例。DGX Spark 的 128 GiB 与 GR1X 的 64 GiB 是两个配置，不是同一台机器的两种读数。</p>
+</section>
+
+<section id="how">
+  <span class="sec-no">SECTION 03</span>
+  <h2>实测：45.92 GiB 是怎么来的</h2>
+  <p>45.92 − 30.50 = <b>15.42 GiB（残差）</b>。可见内存 32.18 GiB 的一半是 16.09 GiB；残差约是它的 96%。DXGI 报的 16.18 GiB 又是另一个量——它和残差差 0.76 GiB，两者不能混用。</p>
+  <p>所以它不是“64 GiB 的 72%”——72% 只是数值巧合——也不是某条文档化的“WDDM 公式”。Microsoft 对 <code>SharedSystemMemory</code> 的定义只有一句：<b>适配器在运行中最多可消耗的系统内存</b>（<a href="https://learn.microsoft.com/en-us/windows/win32/api/dxgi/ns-dxgi-dxgi_adapter_desc">DXGI_ADAPTER_DESC</a>），并没有“一半”这条规则。“16.18 ≈ 16.09”是我们在这台机器上量到的巧合，不是机制。</p>
+  <div class="aside">
+    <p><b>三个残差，三个来源：</b></p>
+    <p><code>45.92 − 30.50 = 15.42 GiB</code>：CUDA 配额与 FB 的差。<br>
+    <code>32.18 / 2 = 16.09 GiB</code>：可见内存的一半，恰好接近 15.42。<br>
+    <code>DXGI SharedSystemMemory = 16.18 GiB</code>：适配器可消耗的系统内存上限。</p>
+    <p>三者在数值上接近，但不是同一个量；不要用其中一个去证明另一个。</p>
+  </div>
+  <p><b>第二个坑随之而来：能分配 ≠ 能用。</b></p>
+  <p>现场会话里，分配 40 GiB 时 <code>nvidia-smi</code> 的 used 卡在 31,080 MiB、free 只剩 139 MiB；Windows 提交量从约 15 GB 涨到 59.98 GB。<b>这组数同样没有留档</b>，只能当现场回显；但它指向的事实是对的：超出 FB 的部分落在系统内存 / 页文件里，而提交余量会先见底。顺带说，提交上限本身也不是常量——当时读到 61.86 GB，复测已经涨到 98.17 GB（系统托管页文件会自己长大）。</p>
+  <p>到这一步，很多分析会得出“溢出部分慢、只能放冷数据”的结论。<b>这个结论至少不完整</b>，也是整件事最有意思的地方。</p>
+</section>
+
+<section id="flip">
+  <span class="sec-no">SECTION 04</span>
+  <h2>翻转实验：跨过 30.5 GiB 的边界，速度有没有掉？</h2>
+  <p>方法很直接：一次分配 32 GiB（比 FB 多 1.5 GiB），先整块预触碰把页提交掉，然后在不同偏移处测 512 MiB 块的写（<code>cuMemsetD8</code>）和读（D2D 到 FB）。</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>偏移（GiB）</th><th>标称区域</th><th>写（GB/s）</th><th>D2D 单向（GB/s）</th></tr></thead>
+      <tbody>
+        <tr><td class="num">0</td><td>FB</td><td class="num">179.0</td><td class="num">119.5</td></tr>
+        <tr><td class="num">8</td><td>FB</td><td class="num">178.4</td><td class="num">119.2</td></tr>
+        <tr><td class="num">16</td><td>FB</td><td class="num">181.2</td><td class="num">119.0</td></tr>
+        <tr><td class="num">24</td><td>FB</td><td class="num">177.1</td><td class="num">117.1</td></tr>
+        <tr><td class="num">29</td><td>FB</td><td class="num">181.8</td><td class="num">116.0</td></tr>
+        <tr><td class="num">30</td><td>标称边界</td><td class="num">176.3</td><td class="num">117.0</td></tr>
+        <tr><td class="num"><b>30.5</b></td><td><b>标称溢出</b></td><td class="num"><b>178.8</b></td><td class="num"><b>117.3</b></td></tr>
+        <tr><td class="num"><b>31.0</b></td><td><b>标称溢出</b></td><td class="num"><b>176.6</b></td><td class="num"><b>118.1</b></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p><b>6 个独立会话（3 升序 + 3 降序，每偏移 10 次）复测：FB 区写 179.8 GB/s、溢出区 179.0（差 −0.4%）；读 119.7 vs 121.5（+1.5%）；每偏移跨会话 sd 只有 0.7–3.0 GB/s。</b> 已用 placement_probe 标定：前 <b>29.76 GiB</b> 记在 Dedicated；32 GiB 仍是单次分页分配，属观测而非结构证明。</p>
+  <figure>
+    <img src="assets/img/fig-bandwidth-scan.webp" alt="跨 30.5 GiB 边界扫描图" width="1500" height="800" loading="lazy" decoding="async">
+    <figcaption>图 1　6 个独立会话的均值 ± 跨会话 sd（每偏移 10 次）。橙色虚线是 30.5 GiB 边界，两条线在边界两侧平直，误差棒远小于区间跨度。</figcaption>
+  </figure>
+  <p>为什么可能是平的？因为 GB10 的 FB 和“系统内存”在物理上是同一池 LPDDR5X。所谓“溢出”，可能只是这块地址在固件预留与 WDDM 配额之间换了归属，页表照样映射。是否存在一条“慢速链路”，本次实验既不能证实也不能证伪——只能说不支持“溢出必然慢”。</p>
+  <p>顺手验证了芯片身份：设备内 D2D 拷贝 <b>117.5 GB/s 单向</b>（5 会话：116.9–118.2），实际内存流量约 235 GB/s，相当于 273 GB/s 峰值的 86%；memset 纯写 <b>179.8</b>（5 会话）；<b>纯读（torch reduction，8 GiB，5 个独立会话）252 GB/s（247–262），约峰值的 92%</b>。这是典型的 LPDDR5X 效率，不是 GDDR7 独显（那个量级在 1.5–1.8 TB/s）。</p>
+  <p>页放置也做了标定：同一进程逐档分配并触碰，前 <b>29.76 GiB</b> 记在 Dedicated，之后每多 1 GiB，Shared 就多 1 GiB（36 GiB 时 Shared 6.44 GiB），而 nvidia-smi 的 FB 停在 30,978 MiB——<b>超出边界的页确实落在系统内存</b>，并且仍以 122 GB/s 被访问。</p>
+</section>
+
+<section id="pinned">
+  <span class="sec-no">SECTION 05</span>
+  <h2>那 120 GB/s 的 pinned 路径是怎么回事？</h2>
+  <p>实验里还有一组数字容易被误读：host↔device 的 <code>cuMemcpy</code>——pinned 下 <b>H2D 122.9 GB/s</b>（5 会话：121.7–123.6；早期单次 85.8 是受环境干扰的低值）、D2H 113.2 GB/s（单次），pageable 只有 17.6–21.9 GB/s（两个脚本、两种缓冲，不是同一条件的区间）。</p>
+  <p>如果拿它当“GPU 访问系统内存的速度”，就会得出“溢出很慢”的错误结论。但这是 <b>copy staging 路径</b>的开销：数据要先经过驱动的中转 / 封装，再落到目标地址，和你写一个 kernel 直接读那块内存不是一回事。pageable 更惨，是因为多了一次 bounce buffer 拷贝。</p>
+  <blockquote><p>所以：<b>加载权重该用 pinned 或 mmap；但判断“溢出区能不能当工作集”，不能看这个数字。</b></p></blockquote>
+</section>
+
+<section id="real">
+  <span class="sec-no">SECTION 06</span>
+  <h2>真正的限制：驻留与提交，不是带宽</h2>
+  <p>溢出区没那么慢，那限制在哪？</p>
+  <ol>
+    <li><b>地址空间有顶。</b>驱动报告的配额是 45.92 GiB；已做 3 个独立会话夹逼：最大单次 <b>45.75 GiB</b>，46.0 GiB 失败（3/3 一致）。45.92 GiB 仍是配额读数。</li>
+    <li><b>提交会见底。</b>40 GiB 分配对应约 60 GB 提交量（现场回显），提交上限是时点值（当时 61.86 GB，现测 98.17 GB）。按比例规划，比写死数字安全。</li>
+    <li><b>页会被驱逐。</b>溢出页住在系统内存里，一旦系统内存吃紧，Windows 就把它们换到页文件。此时性能断崖来自缺页和磁盘 I/O，而不是链路速率。</li>
+  </ol>
+  <p class="pull">溢出不是“住得远”，是“寄人篱下”。只要还住着，速度和房东一样；房东一赶，你就得搬——搬的过程才是慢的。</p>
+  <p>于是规划口径要这样写：</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>区域</th><th>容量</th><th>用途</th></tr></thead>
+      <tbody>
+        <tr><td class="dim">专用 FB</td><td class="num">30.5 GiB（单进程 dedicated 可用约 29.7 GiB）</td><td>热工作集：权重、KV cache、激活</td></tr>
+        <tr><td class="dim">溢出区</td><td class="num">≤ 10 GiB</td><td>冷权重、一次性加载，接受被驱逐的风险</td></tr>
+        <tr><td class="dim">系统内存</td><td class="num">≥ 15 GiB</td><td>OS、驱动、浏览器、其他进程</td></tr>
+        <tr><td class="dim">提交余量</td><td class="num">≥ 10 GB，且不超过当时上限的约 85%</td><td>防止页文件打满导致分配失败或进程被杀</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <ul>
+    <li>保守工作集：<b>≤ 30 GiB</b></li>
+    <li>分配层面：最大单次 <b>45.75 GiB</b>（3/3 会话）；36 GiB 超配持续 5 分钟 × 2 会话可用（中位 122 GB/s），&gt;40 GiB 长时间未验证</li>
+    <li>推理速度：按实测<b>纯读 252 GB/s</b> 估，30 GB 模型理论上限约 <b>8 tok/s</b>（252 ÷ 30 ≈ 8.4，未含实现损耗，实际约 6）。注意 118 GB/s 是 D2D 单向、180 是 memset 纯写、235 是 D2D 双向流量，都不能直接当读带宽</li>
+  </ul>
+</section>
+
+<section id="os">
+  <span class="sec-no">SECTION 07</span>
+  <h2>为什么 Linux 和 Windows 差这么多</h2>
+  <p>同一颗 GB10，DGX Spark 上 128 GB 是一个统一池，Windows 上 CUDA 只有 45.92 GiB 配额。除 128 GB vs 64 GB 的容量配置差异外，Linux / Windows 的<b>内存管理栈</b>也不同：</p>
+  <ul>
+    <li><b>Linux / DGX OS：</b>统一内存，没有 FB 分区概念，GPU 按统一地址访问；<code>nvidia-smi</code> 连 memory usage 都不显示（官方 Known Issues 的原文是“iGPU 没有专用帧缓冲”）。</li>
+    <li><b>Windows / WDDM：</b>固件先预留约 30.5 GiB 作专用 FB（这是 UMA carve-out，不是 WDDM 自己算出来的），OS 只见 32.18 GiB；WDDM 再给出 CUDA 可寻址配额。所以“专用显存”语义在 Windows 上是<b>两层叠加</b>，不是一本账。</li>
+  </ul>
+  <p>所以“64 GiB 的机器为什么只能用 45.9 GiB”不是驱动 bug，是固件划分 + Windows 内存模型共同决定的。同一台机器装 Linux 会宽松得多——但 64 GB 版本在 Linux 下也不会变成 128 GB（<a href="https://docs.nvidia.com/dgx/dgx-spark/release-notes.html">Release Notes</a> 里 64 GB 与 128 GB 是两个配置）。</p>
+</section>
+
+<section id="method">
+  <span class="sec-no">SECTION 08</span>
+  <h2>方法论：三个问题，别混着问</h2>
+  <p>这件事之所以绕，是因为大多数讨论把三个问题揉成了一个：</p>
+  <ol>
+    <li><b>最多能分配多少？</b>用 <code>cuMemGetInfo</code> / <code>cuDeviceTotalMem</code>，别看 DXGI；且要夹逼，别只读一次 total。</li>
+    <li><b>热数据住哪、多快？</b>用 device-to-device 拷贝和 memset 测，别看 host↔device 的 copy 数字；且要多次会话、给 σ。</li>
+    <li><b>超出之后会怎样？</b>看的是驻留能力和提交余量，不是“有没有慢链路”。</li>
+  </ol>
+  <p>我们的判断也走了四段：第一版说“30.5 是上限”（错）；第二版说“45.9 可分配，但溢出很慢”（一半错）；第三版靠跨边界扫描改成“一次扫描未见断崖”；第四版补了 3 会话夹逼（45.75 GiB）、6 会话扫描（差 −0.4% / +1.5%）、36 GiB 超配持续 5 分钟 × 2 会话（中位 122 GB/s、停顿 2–3 次）。<b>页放置也已标定：Dedicated 封顶 29.76 GiB，超出部分进 Shared；剩余限制是“观测而非结构证明”。</b></p>
+  <blockquote><p>技术判断最贵的不是结论，是“这个结论是用什么证据得出的”。账面数字很便宜，也很会骗人；Driver API 的一次 <code>cuMemAlloc</code> 比十页架构文档都诚实——但前提是，你得把那次调用的输出留下来。</p></blockquote>
+
+  <div class="callout">
+    <p><strong>如果你只记住三句话：</strong></p>
+    <p><b>1. 三个数字都成立。</b>30.50 GiB 是分区，45.92 GiB 是配额，32.18 GiB 是系统可见；不要相加。</p>
+    <p><b>2. 溢出不一定慢。</b>6 个会话跨过 30.5 GiB 没有断崖；页在 Shared 里仍以 122 GB/s 被访问。</p>
+    <p style="margin-bottom:0"><b>3. 真正的限制是驻留与提交。</b>工作集按 ≤ 30 GiB 规划；被驱逐后才是页文件速度。</p>
+  </div>
+  <p class="small">完整实验数据、复现命令与未覆盖项见 <a href="memory.html">04 内存与带宽实测报告</a>。实测环境：ASUS GR1X，RTX Spark N1X（6144 CUDA，CC 12.1），Windows 11 + WDDM，驱动 621.40，CUDA UMD 13.5，可见内存 32.18 GiB（34.56 GB），提交上限当时 61.86 GB / 复测 98.17 GB。基准（12:19–12:33）与 ComfyUI 负载（14:16–14:40）不是同一次干净实验。</p>
+</section>
+
+<div class="page-nav">
+  <a href="memory.html"><span class="label">上一份 · 04</span><b>← 内存与带宽全报告</b></a>
+  <a class="next" href="qwen.html"><span class="label">下一份 · 06</span><b>Qwen3.8-27B 本地推理 →</b></a>
+</div>
+
+</article>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div>
+      <p><b>N1X 全景评测</b><br>05 同一个 GB10，两种内存命运</p>
+      <p>这是一篇面向工程师与决策者的快读解读，不是逐项实验记录。所有数字均来自同项目的内存实测；完整方法、会话数与限制见 04 报告。</p>
+      <p class="small">不构成 NVIDIA / ASUS 官方认证。测试结果仅代表本机在 2026-11-25 的状态。</p>
+      <div class="foot-links"><a href="index.html">总览</a><a href="memory.html">完整报告</a><a href="qwen.html">推理报告</a><a href="h3.html">视频报告</a><a href="verdict.html">总评</a></div>
+    </div>
+    <div class="src-list">
+      <p><b>相关页面与来源</b></p>
+      <p><a href="https://docs.nvidia.com/dgx/dgx-spark/hardware.html">DGX Spark 硬件规格</a><br>
+      <a href="https://docs.nvidia.com/dgx/dgx-spark/known-issues.html">DGX Spark Known Issues</a><br>
+      <a href="https://docs.nvidia.com/dgx/dgx-spark/release-notes.html">DGX Spark Release Notes</a><br>
+      <a href="https://learn.microsoft.com/en-us/windows/win32/api/dxgi/ns-dxgi-dxgi_adapter_desc">Microsoft DXGI_ADAPTER_DESC</a></p>
+    </div>
+  </div>
+</footer>
+<script src="assets/site.js"></script>
+</body>
+</html>

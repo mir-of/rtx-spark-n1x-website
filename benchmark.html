@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>03 GPU 性能基准调研 · N1X 全景评测</title>
+<meta name="description" content="RTX Spark N1X 的 Geekbench 7、各精度算力与显存带宽实测，与 RTX 3090 / 4090 / 5090 的同口径对照。">
+<link rel="stylesheet" href="assets/site.css">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+<a class="skip-link" href="#main">跳到正文</a>
+<div class="progress-bar" aria-hidden="true"></div>
+
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="index.html"><span class="mark">N1X</span><span>N1X 全景评测<small>ASUS ProArt GR1X · 2026</small></span></a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">目录</button>
+    <nav class="nav" id="site-nav" aria-label="站点导航">
+      <a href="index.html">总览</a>
+      <a href="spec.html">参数</a>
+      <a href="nvidia-app.html">配置</a>
+      <a href="benchmark.html" class="active">基准</a>
+      <a href="memory.html">内存</a>
+      <a href="memory-story.html">快读</a>
+      <a href="qwen.html">推理</a>
+      <a href="h3.html">视频</a>
+      <a href="evidence.html">证据</a>
+      <a href="verdict.html">总评</a>
+    </nav>
+  </div>
+</header>
+
+<header class="hero compact">
+  <div class="wrap">
+    <div class="crumbs"><a href="index.html">总览</a><span class="sep">/</span><span>03 GPU 性能基准</span></div>
+    <div class="eyebrow">03 / GPU benchmark · 2026-11-25</div>
+    <h1>6,144 核，放在桌面 GPU 的<span>哪一格</span>？</h1>
+    <p class="sub">Geekbench 7 · 精度算力 · 显存带宽 · 与 RTX 3090 / 4090 / 5090 的同口径对照</p>
+    <p class="lede">官方只给了一个 1 PFLOP 的 FP4 数字。要回答“有多快”，得把本机放进公开榜单，再把峰值、实测、推算三种口径分开。本页的结论是 GPGPU 综合位置，不是游戏帧率。</p>
+    <p class="page-q"><b>本页回答：</b>它的 GPGPU 算力在桌面卡里处在什么位置，哪些是实测、哪些是推算。</p>
+    <div class="meta">
+      <span>Geekbench 7.1.0 for Windows AArch64</span>
+      <span>3× CUDA + 3× Vulkan</span>
+      <span>榜单快照 2026-11-25 16:06</span>
+      <span>PyTorch 2.14.1+cu130</span>
+    </div>
+    <div class="roles"><span class="role-pill">横向定位</span><span class="role-pill alt">同工具对比</span><span class="role-pill gray">非游戏实测</span></div>
+  </div>
+</header>
+
+<nav class="toc" aria-label="本页目录">
+  <div class="wrap">
+    <a href="#s-summary">00 摘要</a><a href="#s-tools">01 工具调研</a><a href="#s-platform">02 平台方法</a>
+    <a href="#s-gb7">03 Geekbench 7</a><a href="#s-precision">04 精度算力</a><a href="#s-bandwidth">05 显存带宽</a>
+    <a href="#s-ladder">06 天梯定位</a><a href="#s-profile">07 分项画像</a><a href="#s-conclusion">08 结论</a><a href="#s-limits">09 局限</a>
+  </div>
+</nav>
+
+<main class="wrap" id="main">
+
+<section id="s-summary">
+  <div class="kicker">00 / Executive summary</div>
+  <h2>GPGPU 综合介于 RTX 4060 与 4060 Ti 之间，纯读带宽接近理论峰值</h2>
+  <div class="callout">
+    <ul class="checklist">
+      <li><span class="ck">✓</span><div><b>Geekbench 7 Vulkan：111,605</b> 3 次 111,455 / 111,681 / 111,605，中位 111,605，极差 0.20%。同型号 N1X 官方均值 107,304，本机中位高 4.0%。<span class="tiny">插入榜单约第 110 位（8.8%，情景值）；介于 RTX 4060（101,528）与 4060 Ti（124,025）之间</span></div></li>
+      <li><span class="ck">✓</span><div><b>CUDA：179,627</b> 3 次 181,862 / 179,627 / 179,298，极差 1.43%；为 RTX 3090 的 67.9%、4090 的 37.5%、5090 的 25.1%。<span class="tiny">桌面卡为公开单条结果，跨 OS / 驱动，只作量级参考</span></div></li>
+      <li><span class="ck">✓</span><div><b>精度：FP16/BF16 58.9 / 58.4 TFLOPS</b> FP32 短时 19.1、600 秒中位 18.0；TF32 42.4；INT8 57.6；FP8 实测 159–166；FP4 仍只有推算。<span class="tiny">TF32 实测为 1×FP32 推算的 143%，说明 1× 模型不成立</span></div></li>
+      <li><span class="ck">✓</span><div><b>带宽：纯读 252.1 GB/s</b> 为 273 GB/s 理论值的 92.3%；D2D 读+写总流量 233.0（85.3%）；纯写 183.2（67.1%）。<span class="tiny">5 个独立进程；D2D 单向约 116.5，不能当读带宽</span></div></li>
+      <li><span class="ck">✓</span><div><b>定位：不是游戏卡</b> GPGPU 综合约 4060–4060 Ti；FP16 GEMM 58.9 与 RTX 4070 官方 FP16 Tensor 稠密 58.3 同量级；理论 FP32 29.6 为 3090 的 83.1%，但实测 19.1 只有 3090 理论 35.6 的 53.7%。<span class="tiny">本报告不推断游戏、渲染或端到端 LLM 性能</span></div></li>
+    </ul>
+  </div>
+  <div class="callout amber">
+    <p><strong>一句话：</strong>它的强项是“够用的 Tensor 算力 + 统一内存 + 低功耗”，不是“绝对算力”。把 111,605、179,627、19.1、18.0、29.6 混成一个“N1X 性能”，是最常见的引用错误。</p>
+  </div>
+</section>
+
+<section id="s-tools">
+  <div class="kicker">01 / Tool survey</div>
+  <h2>为什么选 Geekbench 7 作为主口径</h2>
+  <p class="lead">要做出“同工具、同口径”的对比，关键是选择既有 3090 / 4090 / 5090 公开数据、又能在本机（Windows on ARM）原生运行的工具。</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>工具</th><th>类型 / 测什么</th><th>3090 / 4090 / 5090 公开数据</th><th>本机（ARM64）可用性</th></tr></thead>
+      <tbody>
+        <tr><td class="dim">Geekbench 7 GPU</td><td>跨平台 GPGPU 综合：11 项图像、光追、粒子/流体物理；CUDA / Vulkan / OpenCL</td><td>有：Vulkan / OpenCL 有官方型号均值；CUDA 无均值榜，仅公开单条</td><td><span class="badge ok">原生 AArch64，已实测 CUDA + Vulkan</span></td></tr>
+        <tr><td class="dim">Geekbench 6 GPU</td><td>上一代同类测试</td><td>有公开结果</td><td>有 ARM64 构建</td></tr>
+        <tr><td class="dim">3DMark</td><td>游戏图形与光追</td><td>有</td><td><span class="badge no">无官方原生 ARM64</span></td></tr>
+        <tr><td class="dim">PassMark</td><td>DirectX 11 综合 + 系统测试</td><td>有（每日更新）</td><td>有 ARM64 版，需管理员</td></tr>
+        <tr><td class="dim">Blender Open Data</td><td>Cycles 渲染（CUDA/OptiX）</td><td>有</td><td><span class="badge no">无官方 Windows ARM64</span></td></tr>
+        <tr><td class="dim">Geekbench AI</td><td>AI 推理：单精度 / 半精度 / 量化</td><td>有，但桌面 GPU 样本稀少</td><td>有 ARM64 版</td></tr>
+        <tr><td class="dim">llama.cpp llama-bench</td><td>LLM 推理 pp / tg</td><td>社区数据多，配置不统一</td><td>有 win-cuda-arm64 官方构建</td></tr>
+        <tr><td class="dim">AIDA64 / nvbandwidth</td><td>显存读写拷贝带宽</td><td>评测文章零散引用</td><td><span class="badge no">均无 ARM64</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small">PassMark G3D 这类 DirectX 11 老测试在高端显卡上区分度有限（5090 仅比 4090 高 2.7%）；3DMark、Blender 虽权威，但在 Windows on ARM 上缺少官方原生版本。Geekbench 7 同时满足“有公开均值”和“本机原生可跑”，但它测的是 GPGPU 综合计算，不是游戏图形基准。</p>
+</section>
+
+<section id="s-platform">
+  <div class="kicker">02 / Platform & method</div>
+  <h2>测试平台与方法</h2>
+  <div class="grid-2">
+    <div class="table-wrap" style="margin-top:0">
+      <table>
+        <thead><tr><th>项目</th><th>规格</th></tr></thead>
+        <tbody>
+          <tr><td class="dim">整机 / SoC</td><td>ASUS GR1X / NVIDIA RTX Spark N1X（Blackwell SoC；AC-only）</td></tr>
+          <tr><td class="dim">CPU</td><td>20 核 ARM64（2×10 核簇），最高 3.9 GHz</td></tr>
+          <tr><td class="dim">内存</td><td>64 GiB 厂商标称；Windows 可见 32.18 GiB；FB 31,232 MiB（30.50 GiB）；CUDA 可寻址 45.92 GiB</td></tr>
+          <tr><td class="dim">GPU</td><td>Blackwell，48 SM，6,144 CUDA，计算能力 12.1</td></tr>
+          <tr><td class="dim">GPU 时钟</td><td>最高 3003 MHz；GB7 负载约 2.41 GHz；600 秒 FP32 中位 2262 MHz</td></tr>
+          <tr><td class="dim">系统 / 驱动</td><td>Windows 11 ARM64 Build 28000 / NVIDIA 621.40（CUDA UMD 13.5）</td></tr>
+          <tr><td class="dim">Geekbench</td><td>7.1.0 for Windows AArch64</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout" style="margin-top:0">
+      <p><strong>方法：</strong>同工具对比用 Geekbench 7.1.0 原生 AArch64，CUDA 与 Vulkan 各 3 次，每次间隔冷却 60 秒，取中位数并给出极差。对照组 Vulkan 取官方 Charts 型号均值（页面明示仅收录 ≥5 条独立结果），CUDA 无官方均值，取公开单条结果。</p>
+      <p><strong>带宽：</strong>Python ctypes 调用 CUDA Driver API；1 GiB 缓冲、20 次测量，5 个独立进程依次运行（进程间冷却 60 秒）。D2D 同时给“单向”和“读+写总流量”两个口径，不混用。纯读用 PyTorch reduction，纯写用 cuMemsetD8。</p>
+      <p><strong>精度：</strong>ComfyUI 自带 PyTorch 2.14.1+cu130，8192³ 矩阵乘，预热 4 次、测量 12 次取中位数。FP8 使用 <code>torch._scaled_mm</code>，第二操作数必须为 column-major。</p>
+      <p class="small" style="margin-bottom:0">环境：开测前 GPU 连续 4 次采样为 3–4% 利用率、470–501 MiB；Vulkan 运行期间出现 steamwebhelper，nvidia-smi 无法区分计算与合成。Vulkan 极差仍为 0.20%，但不能据此断言完全无干扰。</p>
+    </div>
+  </div>
+  <div class="callout blue">
+    <p><strong>一个容易忽略的字段冲突。</strong>Geekbench 自报 “Maximum Frequency 1.05 GHz”，与 nvidia-smi 的 3003 MHz 冲突；该字段不可作为核心频率依据。本报告以 nvidia-smi 的最高 3003 MHz 与负载实测 2.26–2.41 GHz 为准。</p>
+  </div>
+</section>
+
+<section id="s-gb7">
+  <div class="kicker">03 / Same tool, three cards</div>
+  <h2>Geekbench 7：本机与桌面三卡</h2>
+  <p class="lead">Geekbench 7 的 GPU 测试包含背景虚化、人脸追踪、超分辨率、地平线检测、照片滤镜、视频滤镜、RAW 处理、特征匹配、路径追踪、粒子物理、流体模拟共 11 项工作负载，最终折算为一个 GPU Score。官方以 RTX 4060 = 100,000 为基准校准。</p>
+  <figure>
+    <img src="assets/img/bench/fig1_gb7.webp" alt="Geekbench 7 本机与 RTX 3090/4090/5090 对比图" width="2056" height="840" loading="lazy" decoding="async">
+    <figcaption>图 1　同工具对比。左：Vulkan 官方均值；右：CUDA 公开单条 / 本机中位。左右 API 不同，不可横向相加或混用。</figcaption>
+  </figure>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>对比项（口径）</th><th>本机 N1X</th><th>RTX 3090</th><th>RTX 4090</th><th>RTX 5090</th><th>本机 / 3090</th><th>本机 / 4090</th><th>本机 / 5090</th></tr></thead>
+      <tbody>
+        <tr><td class="dim">Vulkan（本机中位；对手官方均值）</td><td class="num">111,605</td><td class="num">190,963</td><td class="num">318,753</td><td class="num">376,040</td><td class="num">58.4%</td><td class="num">35.0%</td><td class="num">29.7%</td></tr>
+        <tr><td class="dim">Vulkan（同型号 N1X 官方均值）</td><td class="num">107,304</td><td class="num">190,963</td><td class="num">318,753</td><td class="num">376,040</td><td class="num">56.2%</td><td class="num">33.7%</td><td class="num">28.5%</td></tr>
+        <tr><td class="dim">CUDA（本机中位；桌面单条）</td><td class="num">179,627</td><td class="num">264,474</td><td class="num">478,636</td><td class="num">714,176</td><td class="num">67.9%</td><td class="num">37.5%</td><td class="num">25.1%</td></tr>
+        <tr><td class="dim">OpenCL（官方均值；本机未测）</td><td>—</td><td class="num">177,963</td><td class="num">295,915</td><td class="num">374,257</td><td>—</td><td>—</td><td>—</td></tr>
+        <tr><td class="dim">理论 FP32（按各自 boost / 短时时钟）</td><td class="num">29.6</td><td class="num">35.6</td><td class="num">82.6</td><td class="num">104.8</td><td class="num">83.1%</td><td class="num">35.8%</td><td class="num">28.2%</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="grid-2">
+    <div>
+      <h3 style="margin-top:0">怎么读这组数</h3>
+      <p><b>48/82 SM × 2.41/1.70 GHz ≈ 83%</b>，与理论 FP32 的 83.1% 吻合；但 CUDA 中位只有 3090 的 67.9%，说明规模/时钟只能解释一部分，实测效率（cuBLAS、驱动、带宽）也占一部分。本报告没有做因子隔离实验，不能断言具体占比。</p>
+      <p><b>CUDA/Vulkan 比</b>（本机 1.61、3090 1.39、4090 1.50、5090 1.90）只作参考：本机为中位，桌面卡为单条，不能据此判断驱动效率或硬件利用率。</p>
+      <p class="small">3090 的 CUDA 单条记录为 1.70 GHz 公版频率；4090 为 2.58 GHz（高于公版 boost 2.52），5090 为 2.41 GHz。单条结果可能受超频 / 功耗设置影响，不能代表型号均值。</p>
+    </div>
+    <div class="callout amber" style="margin-top:0">
+      <p><strong>不要把它读成“N1X = 4060 Ti”。</strong>111,605 是 GPGPU 综合分，介于 4060 与 4060 Ti 之间；它不等于游戏帧率，也不等于某个渲染器的速度。Geekbench 官方以 4060 = 100,000 校准，分数是加权结果。</p>
+      <p class="small" style="margin-bottom:0">如果要在游戏里比较，需要同画质、同分辨率的帧率测试；本站没有做。</p>
+    </div>
+  </div>
+</section>
+
+<section id="s-precision">
+  <div class="kicker">04 / Precision</div>
+  <h2>各精度算力：峰值、实测与推算</h2>
+  <p class="lead">现代 GPU 的“算力”必须按精度分开看。下表为各精度稠密算力（FP32 为向量；TF32/FP16/FP8/INT8/FP4 为 Tensor Core）：桌面三卡取官方 boost 峰值，本机按 2.41 GHz 假设推算——这不是持续时钟。</p>
+  <figure>
+    <img src="assets/img/bench/fig2_precision.webp" alt="各精度算力对比图" width="2020" height="840" loading="lazy" decoding="async">
+    <figcaption>图 2　各精度算力（对数刻度）。斜线柱为本机推算值，黑色菱形为实测；FP8 菱形 165.8 高于斜线柱 118.4，直观显示推算模型偏低；RTX 3090 的 FP8/FP4 为 N/A。</figcaption>
+  </figure>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>精度</th><th>本机 N1X（推算 / 实测）</th><th>RTX 3090</th><th>RTX 4090</th><th>RTX 5090</th><th>本机 / 3090</th></tr></thead>
+      <tbody>
+        <tr><td class="dim">FP32（向量）</td><td class="num">29.6 TFLOPS（推算）</td><td class="num">35.6</td><td class="num">82.6</td><td class="num">104.8</td><td class="num">83.1%</td></tr>
+        <tr><td class="dim">TF32（Tensor）</td><td class="num">≥42.4（实测下限）</td><td class="num">35.6</td><td class="num">82.6</td><td class="num">104.8</td><td class="num">119%*</td></tr>
+        <tr><td class="dim">FP16 / BF16（Tensor）</td><td class="num">59.2 TFLOPS（推算；实测 58.9）</td><td class="num">71.0</td><td class="num">165.2</td><td class="num">209.5</td><td class="num">83.4%</td></tr>
+        <tr><td class="dim">FP8（Tensor）</td><td class="num">118.4（模型偏低）</td><td>不支持</td><td class="num">330.3</td><td class="num">419.0</td><td>—</td></tr>
+        <tr><td class="dim">INT8（Tensor）</td><td class="num">236.9 TOPS（推算；实测 57.6）</td><td class="num">284.0</td><td class="num">660.6</td><td class="num">838.0</td><td class="num">83.4%</td></tr>
+        <tr><td class="dim">FP4（Tensor）</td><td class="num">473.8 TFLOPS（推算）</td><td>不支持</td><td>不支持</td><td class="num">1,676</td><td>—</td></tr>
+        <tr><td class="dim">FP4 稀疏（2:4，理论 2×）</td><td class="num">947.6 TFLOPS（推算）</td><td>不支持</td><td>不支持</td><td class="num">3,352 AI TOPS*</td><td>—</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small">* 3,352 为 NVIDIA 官方“AI TOPS”营销口径（FP4 稀疏），不是统一单位；TF32 的 119% 是实测下限 42.4 ÷ 3090 的 35.6。桌面数据见 NVIDIA Ampere 白皮书第 44 页、Ada / Blackwell 白皮书第 29 / 46 页。</p>
+
+  <h3>本机实测（8192³ 矩阵乘，12 次中位数）</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>精度</th><th>本机实测</th><th>推算峰值</th><th>达成率</th><th>说明</th></tr></thead>
+      <tbody>
+        <tr><td class="dim">FP32（GEMM，关闭 TF32）</td><td class="num">19.1（短时）/ 18.0（600 s）</td><td class="num">29.6</td><td class="num">65% / 61%</td><td>600 秒中位 18.0、时钟中位 2262 MHz、温度中位 79.3 °C、功耗中位 105.9 W，未持续降频</td></tr>
+        <tr><td class="dim">TF32（GEMM）</td><td class="num">42.4 TFLOPS</td><td>模型不适用</td><td>—</td><td>为 1×FP32 推算值的 143%，故 1× 模型不成立；若按 2× 假设则约 72%，但该比率未确认</td></tr>
+        <tr><td class="dim">FP16（GEMM）</td><td class="num">58.9 TFLOPS</td><td class="num">56.5–59.2</td><td class="num">约 99–104%</td><td>区间来自 2.30–2.41 GHz 假设；短时值落在区间内，不能据此验证硬件峰值</td></tr>
+        <tr><td class="dim">BF16（GEMM）</td><td class="num">58.4 TFLOPS</td><td class="num">56.5–59.2</td><td class="num">约 99–103%</td><td>同上</td></tr>
+        <tr><td class="dim">INT8（_int_mm）</td><td class="num">57.6 TOPS</td><td class="num">236.9</td><td class="num">24%</td><td>受 PyTorch _int_mm 路径限制，不代表硬件上限</td></tr>
+        <tr><td class="dim">FP8（_scaled_mm，column-major B）</td><td class="num">159.0–165.8 TFLOPS</td><td class="num">118.4（偏低）</td><td class="num">&gt;100%</td><td>范围 147–178；4,096³ 约 196–198；与 FP32 参考的 median 相对误差 0.14%</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="notes">
+    <div class="note-card"><span class="tag">FP32</span><b>短板在达成率，不在架构比率</b><p>推算峰值 29.6、短时 19.1、600 秒 18.0；约为 4090 理论峰值的 23%（短时），相对 3090 理论 35.6 为 53.7% / 50.6%。</p></div>
+    <div class="note-card"><span class="tag">FP8</span><b>实测超过旧模型</b><p>159–166（8192³，两次）/ 196–198（4096³），已超过 v1.2 采用的 118.4 推算值。在拿到官方 FP8 规格前，只报实测、不报“新峰值”。</p></div>
+    <div class="note-card"><span class="tag">FP4</span><b>仍只有推算</b><p>473.8 稠密 / 947.6 稀疏，按 48 SM × 2.41 GHz 外推；与官方 1 PFLOPS 稀疏相差约 5%，属同一量级，但不是独立验证。</p></div>
+  </div>
+  <div class="callout">
+    <p><strong>“各精度相对 4090 约 36%、相对 5090 约 28%”只适用于上表的推算峰值。</strong>相对 3090 则为 FP32 83.1%、FP16/BF16 83.4%、INT8 83.4%，三者比例几乎相同，说明 48/82 SM 与 2.41/1.70 GHz 的规模差是主因。实测值有明显例外：TF32 为 4090 的 51%、FP8 为 50%、FP32 为 23%、INT8 为 8.7%。</p>
+  </div>
+</section>
+
+<section id="s-bandwidth">
+  <div class="kicker">05 / Memory bandwidth</div>
+  <h2>显存带宽：纯读接近峰值，写与拷贝是短板</h2>
+  <p class="lead">对统一内存架构而言，带宽往往比峰值算力更能决定实际体验。本机使用 256-bit LPDDR5X，官方口径 273 GB/s；桌面卡则是 GDDR6X / GDDR7。</p>
+  <figure>
+    <img src="assets/img/bench/fig3_bandwidth.webp" alt="显存带宽与算力带宽比对比图" width="2020" height="780" loading="lazy" decoding="async">
+    <figcaption>图 3　左：带宽理论值与本机 5 进程实测（总流量 226–238）；右：算力/带宽比。桌面卡无同工具实测。</figcaption>
+  </figure>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>项目</th><th>本机 N1X</th><th>RTX 3090</th><th>RTX 4090</th><th>RTX 5090</th></tr></thead>
+      <tbody>
+        <tr><td class="dim">显存类型 / 位宽</td><td>LPDDR5X 256-bit（统一内存）</td><td>GDDR6X 384-bit</td><td>GDDR6X 384-bit</td><td>GDDR7 512-bit</td></tr>
+        <tr><td class="dim">显存容量（各自口径）</td><td>FB 30.50 GiB；CUDA 45.92 GiB</td><td>24 GB</td><td>24 GB</td><td>32 GB</td></tr>
+        <tr><td class="dim">理论带宽</td><td class="num">273 GB/s</td><td class="num">936 GB/s</td><td class="num">1,008 GB/s</td><td class="num">1,792 GB/s</td></tr>
+        <tr><td class="dim">实测带宽（5 进程中位，读+写总流量）</td><td class="num">233.0 GB/s（226.0–237.9，CV 1.8%）</td><td>未做同工具实测</td><td>未做同工具实测</td><td>未做同工具实测</td></tr>
+        <tr><td class="dim">纯读带宽（3 进程）</td><td class="num">252.1 GB/s（250.2–253.5，CV 1.3%）</td><td>—</td><td>—</td><td>—</td></tr>
+        <tr><td class="dim">实测写带宽（5 进程中位）</td><td class="num">183.2 GB/s（180.0–187.7）</td><td>—</td><td>—</td><td>—</td></tr>
+        <tr><td class="dim">本机实测 ÷ 对手理论峰值</td><td>—</td><td class="num">24.9%</td><td class="num">23.1%</td><td class="num">13.0%</td></tr>
+        <tr><td class="dim">算力/带宽比（理论 / 理论）*</td><td class="num">10.8</td><td class="num">3.8</td><td class="num">8.2</td><td class="num">5.8</td></tr>
+        <tr><td class="dim">算力/带宽比（本机实测 / 实测）*</td><td class="num">8.2（短时）/ 7.7（600 s）</td><td>未测</td><td>未测</td><td>未测</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small">* 算力/带宽比单位为 FP32 TFLOPS 每 100 GB/s。本机 233.0 为 D2D 读+写总流量（每次拷贝读 n、写 n），单向约 116.5；纯读 252.1、纯写 183.2 是另外两个口径，不能相加或混用。桌面卡 936/1,008/1,792 GB/s 为理论值。</p>
+  <div class="grid-2">
+    <div>
+      <h3 style="margin-top:0">三个口径要分开</h3>
+      <p><b>纯读 252.1</b> 为理论值的 92.3%，说明只读工作负载接近饱和；<b>D2D 读+写总流量 233.0</b>（85.3%）受写路径牵制；<b>纯写 183.2</b>（67.1%）是最低的一项。1 GiB 及以下的小缓冲没有出现明显掉速（0.25–2 GiB 的总流量中位 233–237），但这仍不等于任意访问模式都能达到 252。</p>
+      <p class="small">233.0 GB/s 约为 3090 / 4090 / 5090 理论峰值的 24.9% / 23.1% / 13.0%，是绝对量上的主要短板；本机实测算力/带宽比 8.2 与 4090 的理论 8.2 数值相同只是巧合，两者分子分母口径不同。</p>
+    </div>
+    <div class="callout blue" style="margin-top:0">
+      <p><strong>LLM 解码的朴素上限。</strong>「纯读带宽 ÷ 模型体积」仅适用于稠密模型、无投机解码：按 252 GB/s 估算，8B FP8（约 8 GB）约 31 token/s，4B FP4（约 2 GB）约 126 token/s，30B 4-bit（15–18 GB）约 14–17 token/s。</p>
+      <p class="small" style="margin-bottom:0">同项目 27B IQ4_XS 实测：32K 30.2、89K 19.3、1K MTP 36.6（无 MTP 16.9）token/s。MoE 与多 token 预测会显著改变这一上限，不能用朴素带宽公式推断端到端吞吐。</p>
+    </div>
+  </div>
+</section>
+
+<section id="s-ladder">
+  <div class="kicker">06 / Ladder</div>
+  <h2>天梯：同型号均值的约前 10%</h2>
+  <p class="lead">Geekbench 7 Vulkan 官方榜单本次快照共 1,247 个设备条目（1,244 个唯一名称，含笔记本、虚拟化、服务器与专业卡变体；另有 18 条 llvmpipe 软件渲染条目）。</p>
+  <figure>
+    <img src="assets/img/bench/fig5_ladder.webp" alt="Geekbench 7 Vulkan 天梯定位图" width="1940" height="860" loading="lazy" decoding="async">
+    <figcaption>图 4　天梯定位（Geekbench 7 Vulkan）。浅橙为同型号官方均值，斜线为本次 3 次中位，紫色为 RTX 3090（190,963，第 35）。榜单为 2026-11-25 16:06 快照。</figcaption>
+  </figure>
+  <div class="cards">
+    <div class="card"><b>111,605</b><span>本机 Vulkan 3 次中位</span><span class="tool">极差 0.20%</span></div>
+    <div class="card"><b>107,304</b><span>同型号 N1X 官方均值</span><span class="tool">约第 123 位（9.9%）</span></div>
+    <div class="card"><b>~110</b><span>本机中位插入榜单的情景值</span><span class="tool">8.8%，不是官方排名</span></div>
+    <div class="card"><b>124,025</b><span>RTX 4060 Ti Vulkan 均值</span><span class="tool">本机中位为它的 90.0%</span></div>
+  </div>
+  <p class="small">本次 3 次 Vulkan 于 11:56–12:03 上传，榜单快照为 2026-11-25 16:06，未计入；未来榜单更新可能把这些上传计入均值，因此本报告的天梯基线固定用 107,304，不随重跑后的均值漂移。排名按条目数计算；本机中位插入的第 110 位是情景值，不是官方排名。</p>
+  <h3>PassMark 复核</h3>
+  <p>PassMark G3D 复核时：5090 39,040、4090 38,012、3090 26,456、5080 35,650、4080 34,443、5070 28,685、4070 26,851（页面每日更新）。3090 为 4090 的 69.6%、5090 的 67.8%，也低于 5070 的 28,685。5090 仅比 4090 高 2.7%，说明该 DX11 测试区分度有限；原因是 CPU / 驱动还是测试本身，本报告未进一步验证。</p>
+  <div class="callout amber">
+    <p><strong>排名不是性能等级。</strong>Geekbench 榜单混合了笔记本、虚拟化、服务器与专业卡；同型号均值也只代表该型号的公开样本。把“约第 110 位”当成“桌面 GPU 第 110 名”会误导。</p>
+  </div>
+</section>
+
+<section id="s-profile">
+  <div class="kicker">07 / Sub-scores</div>
+  <h2>分项画像：Tensor 友好项最接近，流体/特征匹配最弱</h2>
+  <figure>
+    <img src="assets/img/bench/fig4_profile.webp" alt="Geekbench 7 CUDA 分项性能画像" width="1900" height="980" loading="lazy" decoding="async">
+    <figcaption>图 5　Geekbench 7 CUDA 分项性能画像（RTX 4090 单条结果 = 100）。4090 基线为单条结果（2026-11-24），非官方均值。</figcaption>
+  </figure>
+  <p class="small">括号内是该项负载的典型用途，便于理解；分数本身仍是 Geekbench 的加权单项分，跨测试只比分数、不比吞吐。</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>工作负载</th><th>本机 CUDA 中位（极差）</th><th>RTX 3090</th><th>RTX 4090</th><th>RTX 5090</th><th>本机 / 3090</th></tr></thead>
+      <tbody>
+        <tr><td class="dim">Background Blur <span class="small" style="font-weight:400">（视频通话 / 流媒体背景虚化）</span></td><td class="num">330,991（2.1%）</td><td class="num">361,360</td><td class="num">612,603</td><td class="num">921,299</td><td class="num">91.6%</td></tr>
+        <tr><td class="dim">Face Tracking <span class="small" style="font-weight:400">（人脸检测与追踪；会议 / 直播）</span></td><td class="num">411,071（1.6%）</td><td class="num">592,575</td><td class="num">584,280</td><td class="num">1,385,762</td><td class="num">69.4%</td></tr>
+        <tr><td class="dim">Super Resolution <span class="small" style="font-weight:400">（图像 / 视频超分辨率）</span></td><td class="num">1,111,165（3.6%）</td><td class="num">947,790</td><td class="num">1,587,272</td><td class="num">2,950,509</td><td class="num">117.2%</td></tr>
+        <tr><td class="dim">Horizon Detection <span class="small" style="font-weight:400">（地平线 / 场景检测）</span></td><td class="num">107,838（4.3%）</td><td class="num">233,478</td><td class="num">335,888</td><td class="num">511,974</td><td class="num">46.2%</td></tr>
+        <tr><td class="dim">Photo Filter <span class="small" style="font-weight:400">（照片滤镜）</span></td><td class="num">138,654（4.6%）</td><td class="num">234,244</td><td class="num">412,710</td><td class="num">663,202</td><td class="num">59.2%</td></tr>
+        <tr><td class="dim">Video Filter <span class="small" style="font-weight:400">（视频滤镜；逐帧处理）</span></td><td class="num">113,809（5.0%）</td><td class="num">218,013</td><td class="num">361,872</td><td class="num">593,631</td><td class="num">52.2%</td></tr>
+        <tr><td class="dim">RAW <span class="small" style="font-weight:400">（RAW 图像处理；去马赛克 / 色彩）</span></td><td class="num">133,048（3.5%）</td><td class="num">248,417</td><td class="num">438,430</td><td class="num">708,716</td><td class="num">53.6%</td></tr>
+        <tr><td class="dim">Feature Matching <span class="small" style="font-weight:400">（特征匹配；AR / 图像拼接）</span></td><td class="num">122,596（2.6%）</td><td class="num">198,150</td><td class="num">502,589</td><td class="num">690,041</td><td class="num">61.9%</td></tr>
+        <tr><td class="dim">Path Tracer <span class="small" style="font-weight:400">（路径追踪；光追渲染）</span></td><td class="num">108,108（2.8%）</td><td class="num">169,927</td><td class="num">296,832</td><td class="num">389,837</td><td class="num">63.6%</td></tr>
+        <tr><td class="dim">Particle Physics <span class="small" style="font-weight:400">（粒子物理模拟）</span></td><td class="num">141,286（3.9%）</td><td class="num">166,019</td><td class="num">352,306</td><td class="num">402,352</td><td class="num">85.1%</td></tr>
+        <tr><td class="dim">Fluid Simulation <span class="small" style="font-weight:400">（流体模拟）</span></td><td class="num">98,276（3.9%）</td><td class="num">131,773</td><td class="num">459,901</td><td class="num">423,276</td><td class="num">74.6%</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="notes">
+    <div class="note-card"><b>聚合分比单项分稳定</b><p>CUDA 单项极差 1.6–5.0%，聚合分 1.43%；Vulkan 单项 0.3–13.6%，聚合分 0.20%。GPU Score 是加权结果，不应把单项的几个百分点差异当作确定结论。</p></div>
+    <div class="note-card"><b>相对 4090</b><p>Face Tracking 70.4%、Super Resolution 70.0% 最接近；Fluid Simulation 21.4%、Feature Matching 24.4%、RAW 30.3% 最低；其余在 31–54%。</p></div>
+    <div class="note-card"><b>相对 3090</b><p>Background 91.6%、Particle 85.1%、Fluid 74.6%，Super Resolution 117.2% 反超；单条子项有噪声，不宜过度解读。</p></div>
+  </div>
+</section>
+
+<section id="s-conclusion">
+  <div class="kicker">08 / Verdict</div>
+  <h2>分口径定位，不能合并成“整机等级”</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>较适合（按容量 / 带宽推断）</th><th>需谨慎 / 未验证</th></tr></thead>
+      <tbody>
+        <tr><td>30B 级 4-bit 量化模型：权重约 15–18 GB，可放入 30.50 GiB 专用 FB；同项目 27B IQ4_XS 实测 32k 30.2 / 90k 19.3 / 1k MTP 36.6 token/s</td><td>4K 高帧游戏、光追全开：未做游戏实测，按 48 SM / 252 GB/s 纯读与综合分推测不理想，不能据此下结论；后续补测</td></tr>
+        <tr><td>图像 / 视频 AI 前处理：超分、人脸、滤镜等 Tensor Core 友好负载</td><td>FP64 密集型 HPC：推算约 0.46 TFLOPS，未实测；后续补测</td></tr>
+        <tr><td>CUDA 开发与调试、小型 / 桌面级 ARM64 主机、低功耗推理</td><td>带宽敏感型 HPC（流体、CFD、大规模稀疏）</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <h3>优化建议</h3>
+  <ul>
+    <li><b>优先使用 Tensor Core 与量化格式：</b>FP8 已实测约 159–166 TFLOPS（8192³），但需要 column-major 权重布局与支持该 kernel 的运行时；FP4 仍只有推算，上线前必须逐项实测。</li>
+    <li><b>提高算术强度：</b>把 batch 做大、算子融合，减少对 252 GB/s 纯读 / 233 GB/s 总流量的依赖。</li>
+    <li><b>若需更高持续时钟：</b>可尝试厂商性能模式；本次使用 Windows“平衡”计划，600 秒 FP32 的时钟中位 2262 MHz、温度中位 79.3 °C、功耗中位 105.9 W，未观察到持续降频。</li>
+    <li><b>对外报数时区分口径：</b>Vulkan 中位 / CUDA 中位 / 短时 GEMM / 600 秒 GEMM / 推算峰值，避免把 111,605、179,627、19.1、18.0 或 29.6 混用。</li>
+  </ul>
+</section>
+
+<section id="s-limits">
+  <div class="kicker">09 / Limits & sources</div>
+  <h2>局限性与口径说明</h2>
+  <ul class="small" style="line-height:2">
+    <li><b>样本与排名：</b>本机 Geekbench 两项均为 3 次（CUDA 极差 1.43%、Vulkan 0.20%），仍不足以给置信区间；Vulkan 对照组为官方型号均值（样本数未披露，门槛 ≥5 条），CUDA 为公开单条（跨 OS / 驱动 / 平台），两类不可直接横比。</li>
+    <li><b>峰值、时钟与推算：</b>本机推算值按 2.41 GHz 假设（GB7 观测）；600 秒 FP32 的时钟中位为 2262 MHz，故 2.41 GHz 不是持续时钟。桌面卡按官方 boost。TF32 实测 42.4 为 1×FP32 推算的 143%，故 1× 模型不成立；FP8 实测 159–166 又超过 118.4 的推算，说明 FP8 峰值模型偏低；FP4 仍只有推算，未实测。</li>
+    <li><b>内存与带宽：</b>64 GiB 为厂商标称，Windows 可见 32.18 GiB；专用 FB 30.50 GiB；CUDA 可寻址 45.92 GiB。三者不是相加关系。带宽有三个口径：D2D 读+写总流量 233.0、纯读 252.1、纯写 183.2。纯读由 PyTorch reduction 估算，非专用读 kernel。</li>
+    <li><b>未做的测试：</b>本报告未运行 3DMark、Blender / Octane 或任何游戏；Geekbench 为跨平台综合计算测试，不能推断游戏帧率或专业渲染。LLM 吞吐引用同项目 llama.cpp 实测，非本报告复测。FP4 无 GEMM 路径，未测。</li>
+    <li><b>软件栈与环境：</b>FP32 短时 65%、600 秒 61%；INT8 24%；FP8 需 column-major，8192³ 159–166；FP4 无路径。开测前 4 次采样 3–4%、470–501 MiB；Vulkan 期间有 steamwebhelper（无法区分计算/合成）。600 秒 FP32：79.3 °C / 2262 MHz / 105.9 W，无持续降频。</li>
+  </ul>
+  <h3>数据来源</h3>
+  <div class="table-wrap compact">
+    <table>
+      <thead><tr><th>资料</th><th>链接 / 说明</th></tr></thead>
+      <tbody>
+        <tr><td>本机 Geekbench 7 CUDA（3 次）</td><td><a href="https://browser.geekbench.com/v7/gpu/440228">440228</a> · <a href="https://browser.geekbench.com/v7/gpu/440235">440235</a> · <a href="https://browser.geekbench.com/v7/gpu/440237">440237</a></td></tr>
+        <tr><td>本机 Geekbench 7 Vulkan（3 次）</td><td><a href="https://browser.geekbench.com/v7/gpu/440243">440243</a> · <a href="https://browser.geekbench.com/v7/gpu/440246">440246</a> · <a href="https://browser.geekbench.com/v7/gpu/440254">440254</a></td></tr>
+        <tr><td>RTX 3090 CUDA 单条</td><td><a href="https://browser.geekbench.com/v7/gpu/439225">439225</a>（1.70 GHz、82 SM、24 GB）</td></tr>
+        <tr><td>RTX 4090 / 5090 CUDA 单条</td><td><a href="https://browser.geekbench.com/v7/gpu/434609">434609</a> · <a href="https://browser.geekbench.com/v7/gpu/436453">436453</a></td></tr>
+        <tr><td>Vulkan / OpenCL 官方均值榜</td><td><a href="https://browser.geekbench.com/vulkan-benchmarks">browser.geekbench.com/vulkan-benchmarks</a> · <a href="https://browser.geekbench.com/opencl-benchmarks">opencl-benchmarks</a></td></tr>
+        <tr><td>NVIDIA 白皮书 / 官方规格</td><td><a href="https://www.nvidia.com/content/PDF/nvidia-ampere-ga-102-gpu-architecture-whitepaper-v2.pdf">Ampere GA102</a> · <a href="https://images.nvidia.cn/aem-dam/Solutions/geforce/ada/nvidia-ada-gpu-architecture.pdf">Ada</a> · <a href="https://images.nvidia.cn/aem-dam/Solutions/geforce/blackwell/nvidia-rtx-blackwell-gpu-architecture.pdf">Blackwell</a></td></tr>
+        <tr><td>PassMark 高端显卡天梯</td><td><a href="https://www.videocardbenchmark.net/high_end_gpus.html">videocardbenchmark.net/high_end_gpus.html</a></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small">完整版下载：<a href="assets/downloads/GPU性能跑分报告_4090_5090_本机N1X.pdf">GPU 性能跑分报告（PDF，1.0 MB）</a>。Geekbench 免费版会自动上传结果页；本报告只引用结果 URL，原始 <code>gb_*.txt</code> 中的 claim key 未写入报告。</p>
+</section>
+
+<div class="page-nav">
+  <a href="nvidia-app.html"><span class="label">上一份 · 02</span><b>← NVIDIA App 图文配置</b></a>
+  <a class="next" href="memory.html"><span class="label">下一份 · 04</span><b>内存与带宽实测 →</b></a>
+</div>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div>
+      <p><b>N1X 全景评测</b><br>03 GPU 性能基准调研</p>
+      <p>本页为同工具、同口径的横向调研，不是游戏或专业渲染评测。Vulkan 与 CUDA 两类 API 不可直接横比；桌面卡单条结果不等于型号均值。</p>
+      <p class="small">不构成 NVIDIA / ASUS 官方认证。榜单为 2026-11-25 16:06 快照，未来更新可能改变均值与排名。</p>
+      <div class="foot-links"><a href="index.html">总览</a><a href="spec.html">参数</a><a href="memory.html">内存</a><a href="qwen.html">推理</a><a href="h3.html">视频</a><a href="verdict.html">总评</a></div>
+    </div>
+    <div class="src-list">
+      <p><b>相关页面与来源</b></p>
+      <p><a href="spec.html#gpu">01 参数报告 · GPU 架构</a><br>
+      <a href="memory.html#bandwidth">04 内存报告 · 带宽实测</a><br>
+      <a href="qwen.html#discussion">06 推理报告 · 解码为何受带宽限制</a><br>
+      <a href="verdict.html#budget">09 总评 · 规划口径</a></p>
+    </div>
+  </div>
+</footer>
+<script src="assets/site.js"></script>
+</body>
+</html>

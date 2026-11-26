@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>08 原始读数与证据墙 · N1X 全景评测</title>
+<meta name="description" content="nvidia-smi、官方规格页、ffmpeg / Vulkan / DLSS 枚举、NVIDIA App 截图与原始日志索引。">
+<link rel="stylesheet" href="assets/site.css">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+<a class="skip-link" href="#main">跳到正文</a>
+<div class="progress-bar" aria-hidden="true"></div>
+
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="index.html"><span class="mark">N1X</span><span>N1X 全景评测<small>ASUS ProArt GR1X · 2026</small></span></a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">目录</button>
+    <nav class="nav" id="site-nav" aria-label="站点导航">
+      <a href="index.html">总览</a>
+      <a href="spec.html">参数</a>
+      <a href="nvidia-app.html">配置</a>
+      <a href="benchmark.html">基准</a>
+      <a href="memory.html">内存</a>
+      <a href="memory-story.html">快读</a>
+      <a href="qwen.html">推理</a>
+      <a href="h3.html">视频</a>
+      <a href="evidence.html" class="active">证据</a>
+      <a href="verdict.html">总评</a>
+    </nav>
+  </div>
+</header>
+
+<header class="hero compact">
+  <div class="wrap">
+    <div class="crumbs"><a href="index.html">总览</a><span class="sep">/</span><span>08 证据墙</span></div>
+    <div class="eyebrow">08 / Evidence wall · 2026-11-26</div>
+    <h1>原始读数与<span>证据墙</span></h1>
+    <p class="sub">nvidia-smi · 官方规格页 · ffmpeg / Vulkan / DLSS 枚举 · NVIDIA App 截图</p>
+    <p class="lede">所有结论都能回到一张图、一段命令或一个日志。这里放的是最直接的原始读数，以及读这些数字时最容易混的口径。需要复核时，从这里往下点。</p>
+    <p class="page-q"><b>本页回答：</b>每个结论背后是哪张图、哪条命令、哪份日志，口径怎么区分。</p>
+    <div class="meta">
+      <span>nvidia-smi 2026-11-25 12:13</span><span>官方规格 2026-11-26</span><span>NVIDIA App 18 张</span><span>ffmpeg 7 组</span>
+    </div>
+    <div class="roles"><span class="role-pill">证据</span><span class="role-pill alt">可复核</span><span class="role-pill gray">截图 + 日志</span></div>
+  </div>
+</header>
+
+<nav class="toc" aria-label="本页目录">
+  <div class="wrap">
+    <a href="#s-smi">00 nvidia-smi</a><a href="#s-official">01 官方规格</a><a href="#s-media">02 媒体能力</a>
+    <a href="#s-rtx">03 RTX / Vulkan / DLSS</a><a href="#s-smiapp">04 NVIDIA App</a><a href="#s-files">05 原始文件</a>
+    <a href="#s-dict">06 数字字典</a><a href="#s-levels">07 证据等级</a>
+  </div>
+</nav>
+
+<main class="wrap" id="main">
+
+<section id="s-smi">
+  <div class="kicker">00 / nvidia-smi</div>
+  <h2>最直接的一张图：539 MiB / 31,232 MiB</h2>
+  <p class="lead">这是本报告引用最多的原始读数。它同时给出驱动、CUDA UMD、显存分区、功耗状态与当前进程；但它<b>只代表 2026-11-25 12:13:31 这一时刻</b>。</p>
+  <figure class="annot">
+    <img src="assets/img/nvidia-smi.webp" alt="nvidia-smi 原始输出截图" width="884" height="580" loading="eager" decoding="async">
+    <figcaption>图 1　<code>nvidia-smi</code> 原始输出（2026-11-25 12:13:31）。GPU 名称被截断为 <code>NVIDIA RTX Spark N1X (61...</code>；驱动模型 WDDM。</figcaption>
+  </figure>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>字段</th><th>读数</th><th>它回答什么</th></tr></thead>
+      <tbody>
+        <tr><td class="dim">NVIDIA-SMI 版本</td><td class="num">621.40</td><td>工具与驱动同版本号</td></tr>
+        <tr><td class="dim">KMD Version</td><td class="num">621.40</td><td>内核模式驱动</td></tr>
+        <tr><td class="dim">CUDA UMD Version</td><td class="num">13.5</td><td>用户态 CUDA 组件；不等于 CUDA Toolkit</td></tr>
+        <tr><td class="dim">GPU Name</td><td>NVIDIA RTX Spark N1X（显示截断）</td><td>SoC 内 GPU</td></tr>
+        <tr><td class="dim">Driver-Model</td><td>WDDM</td><td>Windows 显示驱动模型</td></tr>
+        <tr><td class="dim">Bus-Id</td><td class="num">0000000F:01:00.0</td><td>SoC 内部呈现的链路</td></tr>
+        <tr><td class="dim">Memory-Usage</td><td class="num">539 MiB / 31,232 MiB</td><td>当前占用 / 专用 FB 总量</td></tr>
+        <tr><td class="dim">GPU-Util</td><td class="num">3%</td><td>采样时刻利用率</td></tr>
+        <tr><td class="dim">Temp / Perf / Pwr</td><td class="num">39 °C · P8 · 2 W / N/A</td><td>空闲状态；功耗上限字段为 N/A</td></tr>
+        <tr><td class="dim">Processes</td><td>Hermes Agent.exe · msedgewebview2.exe</td><td>均为 C+G（计算 + 图形）</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="notes">
+    <div class="note-card"><b>539 MiB 不是“空闲”</b><p>桌面合成、浏览器与常驻应用已经占了约 0.5 GiB。后续带宽基准就是在这个基线上跑的，不是裸机。</p></div>
+    <div class="note-card"><b>31,232 MiB 是分区</b><p>它等于 30.50 GiB，是专用帧缓冲；CUDA 配额 45.92 GiB 不在这张图里。三个内存口径见 04 报告。</p></div>
+    <div class="note-card"><b>2 W 不是 TDP</b><p>这是空闲功耗读数；官方 SoC TDP 为 140 W。不要把 2 W 当成“整机功耗上限”。</p></div>
+  </div>
+</section>
+
+<section id="s-official">
+  <div class="kicker">01 / Official specifications</div>
+  <h2>官方规格页：三档并列，本机是第三列</h2>
+  <p class="lead">以下为 NVIDIA 中国官网规格页的长图（2026-11-26 抓取）：三档并列，第三列为桌面主机档，也是本机对应档位。归档见 <a href="assets/spec/nvidia-rtx-spark-specifications.zh.html">中文 HTML</a> · <a href="assets/spec/RTX-Spark-N1X-Specifications.zh.pdf">PDF</a> · <a href="assets/spec/nvidia-rtx-spark-specifications.en.html">英文 HTML</a>。</p>
+  <figure>
+    <div class="figure-scroll">
+      <img src="assets/img/spec/spec-long.webp" alt="NVIDIA RTX Spark 官方规格长图" width="3000" height="4299" loading="lazy" decoding="async" srcset="assets/img/spec/spec-long-2196.webp 2196w, assets/img/spec/spec-long.webp 3000w" sizes="(max-width:620px) 92vw, 1098px" data-full="assets/img/spec/spec-long.webp">
+    </div>
+    <figcaption>图 2　官方规格页连续长图（可滚动）。完整原图：<a href="assets/img/spec/spec-long.webp">spec-long.webp</a>。</figcaption>
+  </figure>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>项目</th><th>笔记本档</th><th>笔记本档</th><th>桌面主机档（本机）</th></tr></thead>
+      <tbody>
+        <tr><td class="dim">GPU</td><td class="num">6144-core</td><td class="num">5120-core</td><td class="num"><b>6144-core</b></td></tr>
+        <tr><td class="dim">CPU</td><td class="num">20-core Grace</td><td class="num">18-core Grace</td><td class="num"><b>20-core Grace</b></td></tr>
+        <tr><td class="dim">NPU</td><td>NVIDIA NPU</td><td>NVIDIA NPU</td><td><b>“-”</b></td></tr>
+        <tr><td class="dim">功耗（TDP）</td><td class="num">45–80 W</td><td class="num">45–80 W</td><td class="num"><b>140 W</b></td></tr>
+        <tr><td class="dim">AI 性能</td><td class="num">1 Petaflop</td><td class="num">827 Teraflops</td><td class="num"><b>1 Petaflop</b></td></tr>
+        <tr><td class="dim">内存</td><td>统一内存，最高 128 GB LPDDR5X</td><td>统一内存，最高 32 GB LPDDR5X</td><td><b>统一内存，最高 128 GB LPDDR5X；本机实测配置 64 GiB（标称 64 GB）</b></td></tr>
+        <tr><td class="dim">显存位宽</td><td class="num">256-bit</td><td class="num">256-bit</td><td class="num"><b>256-bit</b></td></tr>
+        <tr><td class="dim">RT / Tensor</td><td>第四代 / 第五代</td><td>第四代 / 第五代</td><td><b>第四代 / 第五代</b></td></tr>
+        <tr><td class="dim">NVENC / NVDEC</td><td>1× 第九代 / 1× 第六代</td><td>1× 第九代 / 1× 第六代</td><td><b>1× 第九代 / 1× 第六代</b></td></tr>
+        <tr><td class="dim">DLSS</td><td>DLSS 5</td><td>DLSS 5</td><td><b>DLSS 5（6 个子项全勾）</b></td></tr>
+        <tr><td class="dim">PCIe</td><td>第五代</td><td>第五代</td><td><b>第五代</b></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout">
+    <p><strong>官方 DLSS 不是只写了一个“支持”。</strong>规格页把 DLSS 5 拆成 6 个子项逐条打勾：3D 引导神经渲染、动态多帧生成、帧生成、光线重建、超分辨率、DLAA。这与本机 DriverStore 中的 NGX 运行时组件相互印证。真正游戏内的帧生成/超分帧率仍取决于具体游戏是否调用 DLSS。</p>
+  </div>
+</section>
+
+<section id="s-media">
+  <div class="kicker">02 / Media engines</div>
+  <h2>媒体能力：ffmpeg 枚举 + 7 组编解码</h2>
+  <p class="lead">官方矩阵给出 N1X 的完整编解码列；本机用 ffmpeg 原生 ARM64 做 1080p60 / 5 s testsrc2 实测。编码用 NVENC preset p5、VBR CQ；解码用对应 cuvid 解码器。</p>
+  <div class="gallery">
+    <figure>
+      <img src="assets/img/spec/shot-ffmpeg-codecs.webp" alt="ffmpeg 编码器与解码器枚举截图" width="2400" height="880" loading="lazy" decoding="async" srcset="assets/img/spec/shot-ffmpeg-codecs-1058.webp 1058w, assets/img/spec/shot-ffmpeg-codecs.webp 2400w" sizes="(max-width:620px) 92vw, (max-width:900px) 46vw, 529px" data-full="assets/img/spec/shot-ffmpeg-codecs.webp">
+      <figcaption>图 3　ffmpeg 枚举到 av1_nvenc / h264_nvenc / hevc_nvenc，以及 av1_cuvid / h264_cuvid / hevc_cuvid / mjpeg_cuvid / mpeg1/2/4_cuvid / vc1_cuvid / vp8_cuvid / vp9_cuvid。</figcaption>
+    </figure>
+    <figure>
+      <img src="assets/img/spec/shot-codec-run.webp" alt="ffmpeg 编解码运行输出截图" width="2400" height="1094" loading="lazy" decoding="async" srcset="assets/img/spec/shot-codec-run-1058.webp 1058w, assets/img/spec/shot-codec-run.webp 2400w" sizes="(max-width:620px) 92vw, (max-width:900px) 46vw, 529px" data-full="assets/img/spec/shot-codec-run.webp">
+      <figcaption>图 4　H.264 NVENC 编码 300 帧、4.38× 实时；HEVC 4:2:2 10-bit 编码 6.33×；同一文件用 hevc_cuvid 解码 15.6×。</figcaption>
+    </figure>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>测试</th><th>像素格式</th><th>编码</th><th>平均码率</th><th>解码</th></tr></thead>
+      <tbody>
+        <tr><td class="dim">H.264 4:2:0 8-bit</td><td><code>yuv420p</code></td><td><span class="badge ok">通过</span> <span class="num">4.38×</span></td><td class="num">20.6 Mbps</td><td><span class="badge ok">通过</span> <span class="num">23.3×</span></td></tr>
+        <tr><td class="dim">HEVC 4:2:0 10-bit</td><td><code>yuv420p10le</code></td><td><span class="badge ok">通过</span> <span class="num">6.46×</span></td><td class="num">16.4 Mbps</td><td><span class="badge ok">通过</span> <span class="num">20.6×</span></td></tr>
+        <tr><td class="dim">AV1 4:2:0 8-bit</td><td><code>yuv420p</code></td><td><span class="badge ok">通过</span> <span class="num">6.14×</span></td><td class="num">17.9 Mbps</td><td><span class="badge ok">通过</span> <span class="num">18.8×</span></td></tr>
+        <tr><td class="dim">H.264 4:2:2 8-bit</td><td><code>yuv422p</code></td><td><span class="badge ok">通过</span> <span class="num">4.41×</span></td><td class="num">22.3 Mbps</td><td><span class="badge ok">通过</span> <span class="num">21.5×</span></td></tr>
+        <tr><td class="dim">HEVC 4:2:2 10-bit</td><td><code>yuv422p10le</code></td><td><span class="badge ok">通过</span> <span class="num">6.33×</span></td><td class="num">16.8 Mbps</td><td><span class="badge ok">通过</span> <span class="num">15.6×</span></td></tr>
+        <tr><td class="dim">H.264 4:4:4 8-bit</td><td><code>yuv444p</code></td><td><span class="badge ok">通过</span> <span class="num">4.26×</span></td><td class="num">24.3 Mbps</td><td><span class="badge no">不支持</span> <span class="muted">色度格式不支持</span></td></tr>
+        <tr><td class="dim">HEVC 4:4:4 10-bit</td><td><code>yuv444p10le</code></td><td><span class="badge ok">通过</span> <span class="num">5.91×</span></td><td class="num">17.2 Mbps</td><td><span class="badge ok">通过</span> <span class="num">11.4×</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="notes">
+    <div class="note-card"><b>7 / 7 编码通过</b><p>H.264 4:2:0 / 4:2:2 / 4:4:4、HEVC 4:2:0 10-bit / 4:2:2 10-bit / 4:4:4 10-bit、AV1 4:2:0 全部成功。</p></div>
+    <div class="note-card"><b>6 / 7 解码通过</b><p>H.264 4:2:0 / 4:2:2、HEVC 4:2:0 / 4:2:2 / 4:4:4、AV1 通过；H.264 4:4:4 不在 NVDEC 支持范围。</p></div>
+    <div class="note-card"><b>并发会话 12 路</b><p>12 个 720p30 NVENC 进程同时编码全部返回 0；第 13 路报 <code>OpenEncodeSessionEx failed: incompatible client key (21)</code>，与官方矩阵 12 路上限一致。</p></div>
+  </div>
+  <p class="small">H.264 4:4:4 的“不支持”是解码路径：h264_nvenc 先编码成功；h264_cuvid 打开解码器时报 <code>Codec h264_cuvid is not supported with this chroma format</code>（EINVAL）。这是 NVDEC 不支持该色度格式，不是文件损坏或脚本错误；官方矩阵也只列 H.264 解码 4:2:0 / 4:2:2。</p>
+</section>
+
+<section id="s-rtx">
+  <div class="kicker">03 / RTX · Vulkan · DLSS</div>
+  <h2>光追管线与 DLSS 运行时</h2>
+  <p class="lead">官方：第四代 RT Core、第五代 Tensor Core、DLSS 5 全套、DX12 Ultimate、Vulkan RT API。本机：dxdiag Feature Level 12_2；Vulkan 枚举到 ray_query / ray_tracing_pipeline；DLSS 的 NGX 运行时组件在 DriverStore。</p>
+  <div class="gallery">
+    <figure>
+      <img src="assets/img/spec/shot-vulkan.webp" alt="Vulkan 扩展枚举截图" width="2400" height="1522" loading="lazy" decoding="async" srcset="assets/img/spec/shot-vulkan-1058.webp 1058w, assets/img/spec/shot-vulkan.webp 2400w" sizes="(max-width:620px) 92vw, (max-width:900px) 46vw, 529px" data-full="assets/img/spec/shot-vulkan.webp">
+      <figcaption>图 5　Vulkan 1.4 枚举到 <code>VK_KHR_ray_query</code>、<code>VK_KHR_ray_tracing_pipeline</code>、<code>VK_KHR_ray_tracing_position_fetch</code>，以及 NV ray tracing 扩展；视频侧同时枚举到 H.264 / H.265 / AV1 编码与 H.264 / H.265 / AV1 / VP9 解码。</figcaption>
+    </figure>
+    <figure>
+      <img src="assets/img/spec/shot-dlss.webp" alt="DLSS NGX 运行时截图" width="2400" height="678" loading="lazy" decoding="async" srcset="assets/img/spec/shot-dlss-1058.webp 1058w, assets/img/spec/shot-dlss.webp 2400w" sizes="(max-width:620px) 92vw, (max-width:900px) 46vw, 529px" data-full="assets/img/spec/shot-dlss.webp">
+      <figcaption>图 6　DriverStore 中 <code>nvngx.dll</code> 30.0.14.9516、<code>nvngx_dlssg.dll</code> 310.2.1.0（帧生成）、<code>nvngx_dlssd.dll</code> 310.9.0.0（光线重建）；NVIDIA App 128.4.13.35。</figcaption>
+    </figure>
+  </div>
+  <div class="table-wrap compact">
+    <table>
+      <thead><tr><th>能力</th><th>本机证据</th><th>判定</th></tr></thead>
+      <tbody>
+        <tr><td class="dim">DirectX 12 Ultimate</td><td>dxdiag Feature Levels 12_2</td><td><span class="badge ok">一致</span></td></tr>
+        <tr><td class="dim">Vulkan 光追</td><td>Vulkan 1.4.357；ray_query / ray_tracing_pipeline / position_fetch</td><td><span class="badge ok">一致</span></td></tr>
+        <tr><td class="dim">DLSS 5</td><td>官方 6 个子项全勾；NGX 运行时存在</td><td><span class="badge ok">一致</span></td></tr>
+        <tr><td class="dim">游戏内帧生成/超分</td><td>未在支持 DLSS 的游戏中做帧率实测</td><td><span class="badge gray">未验证</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout amber">
+    <p><strong>边界说明：</strong>本报告验证的是“官方支持 + 运行时存在 + 光追 API 可用”。没有在支持 DLSS 的游戏中做帧生成/超分的帧率实测，因此不把 DLSS 5 的官方能力当成某个游戏的实测提升幅度。</p>
+    <p class="small" style="margin-bottom:0"><b>版本字段说明：</b>DLSS 运行时表里的 “NVIDIA App 128.4.13.35” 是驱动侧 DLSS 覆盖 / 驱动管理组件的版本号，不是 NVIDIA App 安装器版本；后者在 02 报告中为 11.0.10.136。两者不是同一个字段。</p>
+  </div>
+</section>
+
+<section id="s-smiapp">
+  <div class="kicker">04 / NVIDIA App</div>
+  <h2>NVIDIA App：GUI 侧的四个关键页</h2>
+  <p class="lead">完整 18 张截图与逐页读数见 <a href="nvidia-app.html">02 NVIDIA App 图文配置</a>。这里只放四个交叉核对最常用的页面。</p>
+  <div class="gallery">
+    <figure>
+      <img src="assets/img/nvapp/fig02_myrig_details_system.webp" alt="NVIDIA App 我的装备详情系统信息" width="1464" height="1032" loading="lazy" decoding="async" srcset="assets/img/nvapp/fig02_myrig_details_system-1058.webp 1058w, assets/img/nvapp/fig02_myrig_details_system.webp 1464w" sizes="(max-width:620px) 92vw, (max-width:900px) 46vw, 529px" data-full="assets/img/nvapp/fig02_myrig_details_system.webp">
+      <figcaption>图 7　我的装备：详情（系统信息）—— 操作系统、DirectX 12、驱动 621.40、CPU、内存 64.0 GB（即 64 GiB）、存储 1.9 TB。</figcaption>
+    </figure>
+    <figure>
+      <img src="assets/img/nvapp/fig03_myrig_details_gpu.webp" alt="NVIDIA App 我的装备详情显卡参数" width="1464" height="1032" loading="lazy" decoding="async" srcset="assets/img/nvapp/fig03_myrig_details_gpu-1058.webp 1058w, assets/img/nvapp/fig03_myrig_details_gpu.webp 1464w" sizes="(max-width:620px) 92vw, (max-width:900px) 46vw, 529px" data-full="assets/img/nvapp/fig03_myrig_details_gpu.webp">
+      <figcaption>图 8　我的装备：详情（显卡/显存）—— 专用视频内存 31232 MB、共享系统内存 16477 MB、全部可用 47709 MB。</figcaption>
+    </figure>
+  </div>
+  <div class="gallery">
+    <figure>
+      <img src="assets/img/nvapp/fig12_advanced.webp" alt="NVIDIA App 高级设置" width="1464" height="742" loading="lazy" decoding="async" srcset="assets/img/nvapp/fig12_advanced-1058.webp 1058w, assets/img/nvapp/fig12_advanced.webp 1464w" sizes="(max-width:620px) 92vw, (max-width:900px) 46vw, 529px" data-full="assets/img/nvapp/fig12_advanced.webp">
+      <figcaption>图 9　系统 › 高级 —— 专用 GPU 显存 30.50 GB，与 31232 MB 是同一个数。</figcaption>
+    </figure>
+    <figure>
+      <img src="assets/img/nvapp/fig11_performance.webp" alt="NVIDIA App 性能统计" width="1464" height="412" loading="lazy" decoding="async" srcset="assets/img/nvapp/fig11_performance-1058.webp 1058w, assets/img/nvapp/fig11_performance.webp 1464w" sizes="(max-width:620px) 92vw, (max-width:900px) 46vw, 529px" data-full="assets/img/nvapp/fig11_performance.webp">
+      <figcaption>图 10　系统 › 性能 —— 12:48:26 的瞬时读数：GPU 2216 MHz、3 W、36 °C、1%；VRAM 9400 MHz。</figcaption>
+    </figure>
+  </div>
+  <div class="callout blue">
+    <p><strong>两套口径。</strong>NVIDIA App 报 Direct3D 功能级别 12_1；Windows dxdiag 报 Feature Levels 12_2。两者引用时都要写明来源，不要混成一个数字。应用不显示 CUDA 版本，CUDA 13.5 来自 nvidia-smi 旁证。</p>
+  </div>
+</section>
+
+<section id="s-files">
+  <div class="kicker">05 / Raw files</div>
+  <h2>原始文件与归档</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>文件</th><th>内容</th></tr></thead>
+      <tbody>
+        <tr><td><a href="assets/img/h3/fig-09.webp">img/h3/…</a> · <a href="h3.html#s-resources">07 视频报告</a></td><td>MiniMax H3 的 NVML / typeperf 遥测曲线与成片抽帧</td></tr>
+        <tr><td><a href="assets/spec/nvidia-rtx-spark-specifications.zh.html">spec/…zh.html</a> · <a href="assets/spec/RTX-Spark-N1X-Specifications.zh.pdf">spec/…zh.pdf</a></td><td>官方规格页归档（中文）</td></tr>
+        <tr><td><a href="assets/spec/nvidia-video-codec-matrix.html">spec/nvidia-video-codec-matrix.html</a></td><td>NVIDIA 官方编解码支持矩阵归档</td></tr>
+        <tr><td><a href="assets/downloads/ASUS-GR1X-内存与带宽实测报告.pdf">ASUS GR1X 内存与带宽实测报告.pdf</a></td><td>内存全报告 PDF</td></tr>
+        <tr><td><a href="assets/downloads/GPU性能跑分报告_4090_5090_本机N1X.pdf">GPU 性能跑分报告.pdf</a></td><td>GPU 基准 PDF</td></tr>
+        <tr><td><a href="assets/downloads/NVIDIA-App-本机硬件与软件配置图文报告.pdf">NVIDIA App 图文报告.pdf</a></td><td>18 张截图的 PDF 版</td></tr>
+        <tr><td><a href="assets/downloads/Qwen3.8-27B-RTX-Spark-测试报告.pdf">Qwen3.8-27B 测试报告.pdf</a></td><td>本地推理 PDF</td></tr>
+        </tbody>
+    </table>
+  </div>
+  <p class="small">原始日志（system / cuda-props / nvidia-smi / dxdiag / vulkan、codec / nvenc / qwen / mem，共 101 个文件）未随公开站点发布，保留在作者本地；如需核查具体读数，可提供脱敏副本。</p>
+  </section>
+
+<section id="s-dict">
+  <div class="kicker">06 / Dictionary</div>
+  <h2>数字字典：六组最容易混的口径</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>口径</th><th>本机值</th><th>含义 / 不要怎么用</th></tr></thead>
+      <tbody>
+        <tr><td class="dim">GiB vs GB</td><td class="num">31,232 MiB = 30.50 GiB = 32.75 GB</td><td>1 GiB = 2<sup>30</sup> B；1 GB = 10<sup>9</sup> B。容量默认 GiB，带宽默认 GB/s。</td></tr>
+        <tr><td class="dim">FB / CUDA 配额 / 系统可见</td><td class="num">30.50 / 45.92 / 32.18 GiB</td><td>三个数字回答不同问题，不能相加。45.92 − 30.50 = 15.42 是残差。</td></tr>
+        <tr><td class="dim">最大单次分配 vs 配额</td><td class="num">45.75 vs 45.92 GiB</td><td>配额是读数，45.75 是 3/3 会话夹逼的可分配量；差 0.17 GiB。</td></tr>
+        <tr><td class="dim">纯读 / 纯写 / D2D</td><td class="num">252 / 183 GB/s；D2D 单向 116.5–117.5（总流量 233–235，视会话）</td><td>不要用 D2D 单向或 memset 写去估算读密集任务。三个口径不能相加或混用。</td></tr>
+        <tr><td class="dim">官方 / 实测 / 推算</td><td class="num">1 PFLOP / 58.9 TFLOPS FP16 / 473.8 TFLOPS FP4</td><td>1 PFLOP 是官方 FP4 稀疏；58.9 是实测；473.8 是推算。不能互相替代。</td></tr>
+        <tr><td class="dim">1×Gen1 / C2C / 32-bit</td><td class="num">当前 1×Gen1；C2C Enabled；SMBIOS 32-bit</td><td>都是链路 / 单器件读数，不是规格降级；官方 PCIe Gen5、SoC 256-bit。</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small">不同报告的同名指标可能来自不同会话（例如 D2D 单向 117.5 vs 118.1、纯读 252.0 vs 252.1）；差异在会话波动内，引用时带上报告名与日期，不要把两个数当成矛盾。</p>
+</section>
+
+<section id="s-levels">
+  <div class="kicker">07 / Evidence levels</div>
+  <h2>证据等级与“没有做什么”</h2>
+  <div class="notes">
+    <div class="note-card"><span class="badge ok">实测通过</span><b>多会话 / 多次重复且一致</b><p>例如 6 会话跨边界扫描、5 会话纯读、7/7 编码、12 路 NVENC 并发。可直接引用为“在本机该状态下成立”。</p></div>
+    <div class="note-card"><span class="badge info">实测读数</span><b>本机读到，但未必多次</b><p>例如单次 D2H、单次 40 GiB 提交量、NVIDIA App 的瞬时性能页。引用时写明“单次 / 某一时刻”。</p></div>
+    <div class="note-card"><span class="badge warn">口径 / 推算</span><b>依赖假设或现场回显</b><p>例如 FP4 473.8、1.32 GiB 固件保留、2.41 GHz 推算峰值。不能当硬件实测上限。</p></div>
+  </div>
+  <div class="callout amber">
+    <p><strong>本站在这些地方明确“没有做”：</strong>没有跑 3DMark / Blender / 任何游戏；没有在支持 DLSS 的游戏中做帧生成帧率实测；没有跑 FP4 GEMM；没有做 &gt;40 GiB、&gt;10 min 的长时间超配；没有做 30 分钟以上的热漂移；没有做内存压力下的驱逐实测；没有在 Linux / DGX OS 上复测。</p>
+    <p class="small" style="margin-bottom:0">这些不是“省略”，而是结论的边界。需要时应在同一台机器上补测，而不是从现有数据外推。</p>
+  </div>
+</section>
+
+<div class="page-nav">
+  <a href="h3.html"><span class="label">上一份 · 07</span><b>← MiniMax H3 视频生成</b></a>
+  <a class="next" href="verdict.html"><span class="label">下一份 · 09</span><b>总评与选型建议 →</b></a>
+</div>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div>
+      <p><b>N1X 全景评测</b><br>07 原始读数与证据墙</p>
+      <p>本页只做索引与口径说明，不新增结论。所有截图、日志与归档均来自本机或 NVIDIA / ASUS 官方页面；引用时请保留原始出处。</p>
+      <p class="small">官方规格可能随页面更新而变化；以归档文件与原始链接为准。所有商标归各自所有者。</p>
+      <div class="foot-links"><a href="index.html">总览</a><a href="spec.html">参数</a><a href="memory.html">内存</a><a href="qwen.html">推理</a><a href="h3.html">视频</a><a href="verdict.html">总评</a></div>
+    </div>
+    <div class="src-list">
+      <p><b>相关页面与来源</b></p>
+      <p><a href="https://www.nvidia.cn/products/rtx-spark/specifications/">NVIDIA RTX Spark 规格页（中文）</a><br>
+      <a href="https://www.nvidia.com/en-us/products/rtx-spark/specifications/">NVIDIA RTX Spark Specifications（EN）</a><br>
+      <a href="https://developer.nvidia.com/video-encode-and-decode-gpu-support-matrix-new">NVIDIA Video Encode / Decode Support Matrix</a><br>
+      <a href="https://www.asus.com.cn/displays-desktops/mini-pcs/proart-mini-pc-series/proart-gr1x-mini-pc/techspec/">ASUS ProArt GR1X 技术规格</a></p>
+    </div>
+  </div>
+</footer>
+<script src="assets/site.js"></script>
+</body>
+</html>

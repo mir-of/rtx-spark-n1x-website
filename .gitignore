@@ -1,0 +1,7 @@
+tools/tmp/
+tools/qa/
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
+tools/perf-tmp/

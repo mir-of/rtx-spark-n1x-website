@@ -1,0 +1,649 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>01 参数与能力报告 · NVIDIA RTX Spark N1X · ASUS ProArt GR1X</title>
+<style>
+:root{
+  --bg:#f3f6ef; --card:#ffffff; --ink:#0d1710; --muted:#5f6f62;
+  --line:#dfe7d8; --green:#76b900; --green-dark:#3e6900; --green-soft:#edf7d9;
+  --dark:#08110a; --dark2:#101c12; --blue:#0ea5e9; --amber:#b45309; --red:#dc2626;
+  --shadow:0 16px 40px rgba(13,23,16,.08);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI","Microsoft YaHei","PingFang SC",sans-serif;line-height:1.72;-webkit-font-smoothing:antialiased}
+a{color:var(--green-dark);text-decoration:none;border-bottom:1px solid rgba(118,185,0,.35)}
+a:hover{border-bottom-color:var(--green)}
+.wrap{max-width:1180px;margin:0 auto;padding:0 30px}
+.hero{position:relative;overflow:hidden;background:
+  radial-gradient(900px 500px at 78% 10%, rgba(118,185,0,.22), transparent 62%),
+  radial-gradient(700px 420px at 10% 90%, rgba(14,165,233,.10), transparent 60%),
+  linear-gradient(145deg,#060c07 0%,#0b150d 58%,#122114 100%);
+  color:#e9f2e4;padding:58px 0 42px}
+.hero:after{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;mask-image:linear-gradient(180deg,rgba(0,0,0,.7),transparent 80%)}
+.hero .wrap{position:relative;z-index:1}
+.eyebrow{font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:#a6c98a;font-weight:700}
+.hero h1{font-size:clamp(38px,5vw,64px);line-height:1.02;margin:14px 0 8px;letter-spacing:-.03em;font-weight:800}
+.hero h1 span{color:var(--green)}
+.hero .sub{font-size:19px;color:#c8d9c1;margin:0 0 18px;font-weight:500}
+.hero .lede{max-width:760px;color:#a9bda5;font-size:15.5px;line-height:1.8;margin:0}
+.hero-grid{display:grid;grid-template-columns:minmax(0,1.35fr) 350px;gap:44px;align-items:center}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:24px}
+.meta span{font-size:12px;color:#bed2b8;border:1px solid rgba(160,200,140,.25);background:rgba(255,255,255,.04);padding:5px 11px;border-radius:999px}
+.chip{position:relative;background:linear-gradient(160deg,rgba(255,255,255,.07),rgba(255,255,255,.02));border:1px solid rgba(150,200,120,.25);border-radius:20px;padding:16px 16px 14px;box-shadow:0 24px 70px rgba(0,0,0,.35);backdrop-filter:blur(6px)}
+.chip:before{content:"";position:absolute;inset:-22px;background:radial-gradient(circle at 50% 45%,rgba(118,185,0,.25),transparent 62%);filter:blur(18px);z-index:-1}
+.chip-head{display:flex;justify-content:space-between;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:#9fc27f;margin-bottom:12px}
+.sm-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:6px}
+.sm-grid i{display:block;aspect-ratio:1;border-radius:3px;background:linear-gradient(135deg,rgba(160,235,60,.95),rgba(118,185,0,.28));opacity:var(--o);box-shadow:inset 0 1px 0 rgba(255,255,255,.18)}
+.chip-foot{display:flex;align-items:baseline;justify-content:space-between;margin-top:12px;padding-top:10px;border-top:1px solid rgba(160,200,140,.16);color:#bcd4b0;font-size:11px}
+.chip-foot b{color:#d9ffb0;font-size:20px;letter-spacing:-.02em}
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:38px}
+.stat{background:rgba(255,255,255,.045);border:1px solid rgba(160,200,140,.16);border-radius:14px;padding:15px 16px}
+.stat b{display:block;font-size:27px;line-height:1.1;color:#f2ffe8;letter-spacing:-.02em}
+.stat span{display:block;font-size:11.5px;color:#9fb59a;margin-top:5px;letter-spacing:.03em}
+.toc{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.toc .wrap{display:flex;gap:20px;overflow-x:auto;padding-top:11px;padding-bottom:11px;font-size:12.5px;white-space:nowrap}
+.toc a{color:#5e6e60;border-bottom:none;font-weight:600}
+.toc a:hover{color:var(--green-dark)}
+main{padding:22px 0 40px}
+section{padding:44px 0 8px;scroll-margin-top:60px}
+.kicker{font-size:11.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--green-dark);font-weight:800}
+h2{font-size:clamp(27px,3.2vw,38px);line-height:1.18;letter-spacing:-.02em;margin:8px 0 12px}
+.lead{font-size:15.5px;color:var(--muted);max-width:880px;margin:0 0 22px}
+h3{font-size:19px;margin:30px 0 10px;letter-spacing:-.01em}
+p{margin:0 0 14px}
+.small{font-size:12px;color:var(--muted)}
+.muted{color:var(--muted)}
+.checklist{list-style:none;margin:0;padding:0;display:grid;gap:11px}
+.checklist li{display:flex;align-items:flex-start;gap:11px}
+.checklist .ck{flex:0 0 20px;width:20px;height:20px;border-radius:6px;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;margin-top:2px}
+.checklist b{font-size:14px}
+.checklist .tiny{display:block;font-size:11.5px;line-height:1.6;color:var(--muted);margin-top:2px;font-weight:400}
+.card .tool{display:block;font-size:10.5px;line-height:1.5;color:#8a948b;margin-top:4px}
+.method-box{background:#f7faf2;border:1px solid #e1ead8;border-radius:12px;padding:14px 16px;margin:12px 0 16px}
+.method-box p{font-size:12.5px;color:var(--muted);margin:0 0 6px}
+.method-box p:last-child{margin-bottom:0}
+.num{font-family:"Cascadia Mono",Consolas,monospace;font-size:.95em}
+code{font-family:"Cascadia Mono",Consolas,monospace;font-size:.9em;background:#eef3e8;border:1px solid #e2ead9;padding:1px 5px;border-radius:5px}
+.callout{background:linear-gradient(135deg,#f4fbe6,#edf6dd);border:1px solid #d9e9c4;border-left:5px solid var(--green);border-radius:14px;padding:20px 24px;margin:22px 0;box-shadow:var(--shadow)}
+.callout strong{color:#284a00}
+.callout p:last-child{margin-bottom:0}
+.notes{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:24px 0}
+.note-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 19px;box-shadow:0 8px 24px rgba(13,23,16,.04)}
+.note-card b{display:block;font-size:13px;margin-bottom:7px}
+.note-card p{font-size:13px;color:var(--muted);margin:0}
+.badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;line-height:1.7;white-space:nowrap}
+.badge.ok{background:#e8f6d2;color:#3c6b00}
+.badge.info{background:#e2f3fd;color:#0369a1}
+.badge.warn{background:#fef1c7;color:#92400e}
+.badge.no{background:#fee2e2;color:#b91c1c}
+.table-wrap{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:auto;box-shadow:var(--shadow);margin:20px 0}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;background:#f0f5ea;color:#546555;font-size:11px;letter-spacing:.09em;text-transform:uppercase;padding:12px 14px;border-bottom:1px solid var(--line);font-weight:800}
+td{padding:11px 14px;border-bottom:1px solid #edf1e8;vertical-align:top}
+tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:#fbfcf8}
+td.dim{font-weight:700;color:#26352a;white-space:nowrap}
+td.status{white-space:nowrap}
+tr.group td{background:#eaf3df;color:#3e6900;font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:800;padding:8px 14px;border-bottom:1px solid #d8e8c8}
+figure{margin:24px 0;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:10px;box-shadow:var(--shadow)}
+figure img{display:block;width:100%;height:auto;border-radius:10px}
+figcaption{font-size:12.5px;color:var(--muted);padding:10px 6px 2px;line-height:1.6}
+figure.annot{position:relative}
+.fig-note{padding:2px 4px 9px;text-align:right}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:18px 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:17px 18px;box-shadow:0 8px 24px rgba(13,23,16,.04)}
+.card b{display:block;font-size:23px;letter-spacing:-.02em}
+.card span{display:block;font-size:11.5px;color:var(--muted);margin-top:4px}
+.mem-total{display:flex;justify-content:space-between;align-items:baseline;margin:18px 0 8px;font-size:12.5px;color:var(--muted)}
+.mem-total b{font-size:20px;color:var(--ink)}
+.mem-bar{display:flex;height:42px;border-radius:12px;overflow:hidden;border:1px solid var(--line);background:#eef3e8;box-shadow:inset 0 1px 3px rgba(0,0,0,.04)}
+.mem-bar .seg{height:100%;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;border-right:2px solid rgba(255,255,255,.7)}
+.mem-bar .os{background:linear-gradient(180deg,#3b82f6,#2563eb)}
+.mem-bar .fb{background:linear-gradient(180deg,#8fce00,#6fa900)}
+.mem-bar .rsv{background:#cbd5e1;min-width:18px}
+.mem-legend{display:flex;flex-wrap:wrap;gap:16px;margin-top:11px;font-size:12px;color:var(--muted)}
+.mem-legend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px}
+.mem-legend .os{background:#2563eb}.mem-legend .fb{background:#6fa900}.mem-legend .rsv{background:#cbd5e1}
+.kv{display:grid;grid-template-columns:180px 1fr;gap:0}
+.kv div{padding:9px 0;border-bottom:1px solid #edf1e8}
+.kv div:nth-last-child(-n+2){border-bottom:none}
+.kv .k{color:var(--muted);font-size:12.5px}
+.kv .v{font-size:13.5px}
+pre{background:#0b130d;color:#d6e5d3;border:1px solid #223225;border-radius:12px;padding:16px 18px;overflow:auto;font-family:"Cascadia Mono",Consolas,monospace;font-size:12px;line-height:1.65}
+pre .c{color:#7fa27f}
+.svg-wrap{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 20px 8px;box-shadow:var(--shadow);margin:20px 0}
+.svg-wrap svg{width:100%;height:auto;display:block}
+footer{background:#0a120b;color:#a9bda5;margin-top:50px;padding:38px 0 44px}
+footer b{color:#dcead7}
+footer a{color:#c7e3ad;border-bottom-color:rgba(199,227,173,.35)}
+footer .wrap{display:grid;grid-template-columns:1.2fr .8fr;gap:30px}
+footer p{font-size:12.5px;line-height:1.8;margin:0 0 10px}
+.src-list{font-size:12.5px;line-height:1.9}
+.src-list a{display:inline}
+@media (max-width:900px){
+  .hero-grid{grid-template-columns:1fr}.chip{max-width:380px}
+  .stat-grid{grid-template-columns:1fr 1fr}.notes,.cards{grid-template-columns:1fr 1fr}
+  footer .wrap{grid-template-columns:1fr}
+}
+@media (max-width:620px){
+  .wrap{padding:0 18px}.stat-grid,.notes,.cards,.grid-2{grid-template-columns:1fr}
+  .hero{padding-top:40px}.mem-bar .seg span{display:none}
+  td.dim{white-space:normal}
+}
+@media print{
+  body{background:#fff}.toc{position:static}.hero{background:#0b150d !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  section{page-break-inside:auto}figure,.table-wrap,.svg-wrap,.callout{page-break-inside:avoid}
+  a{color:inherit;border-bottom:none}
+}
+</style>
+
+<link rel="stylesheet" href="assets/frame.css">
+<style>
+  .toc{top:58px}
+  section{scroll-margin-top:112px}
+  @media (max-width:900px){ .toc{top:58px} section{scroll-margin-top:106px} }
+</style>
+
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+<a class="skip-link" href="#main">跳到正文</a>
+
+<div class="progress-bar" style="position:fixed;left:0;top:0;height:2px;width:0;background:linear-gradient(90deg,#76b900,#c8f36b);z-index:100;transition:width .08s linear"></div>
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="index.html"><span class="mark">N1X</span><span>N1X 全景评测<small>ASUS ProArt GR1X · 2026</small></span></a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">目录</button>
+    <nav class="nav" id="site-nav" aria-label="站点导航">
+      <a href="index.html">总览</a>
+      <a href="spec.html" class="active">参数</a>
+      <a href="nvidia-app.html">配置</a>
+      <a href="benchmark.html">基准</a>
+      <a href="memory.html">内存</a>
+      <a href="memory-story.html">快读</a>
+      <a href="qwen.html">推理</a>
+      <a href="h3.html">视频</a>
+      <a href="evidence.html">证据</a>
+      <a href="verdict.html">总评</a>
+    </nav>
+  </div>
+</header>
+
+<header class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <div class="crumbs"><a href="index.html">总览</a><span class="sep">/</span><span>01 参数与能力</span></div>
+      <div class="eyebrow">Hardware dossier · 2026-11-26</div>
+      <h1>NVIDIA RTX Spark <span>N1X</span></h1>
+      <p class="sub">ASUS ProArt GR1X · 参数与能力报告</p>
+      <p class="lede">官方规格 × 本机实测。先确认这台 ASUS GR1X 对应官方哪一档，再逐项核对 RTX、光追、DLSS 5 与第九代 NVENC / 第六代 NVDEC，最后用原生 ARM64 ffmpeg 把 H.264、HEVC、AV1 真正编一遍、解一遍。</p>
+    <p class="page-q"><b>本页回答：</b>官方规格里的能力，本机逐项是否成立；这台 GR1X 对应哪一档。</p>
+      <div class="meta">
+        <span>Windows 11 Pro 26H1 · ARM64</span>
+        <span>Driver 621.40</span>
+        <span>CUDA UMD 13.5</span>
+        <span>BIOS 2026-11-09</span>
+        <span>采集 2026-11-26 11:58–14:12（UTC+8）</span>
+      </div>
+      <div class="roles"><span class="role-pill">基线</span><span class="role-pill alt">官方 × 实测</span><span class="role-pill gray">28 项核对</span></div>
+    </div>
+    <div class="chip" aria-label="48 个 SM 示意图">
+      <div class="chip-head"><span>Blackwell RTX</span><span>N1X</span></div>
+      <div class="sm-grid"><i style="--o:0.35"></i><i style="--o:0.85"></i><i style="--o:0.64"></i><i style="--o:0.42"></i><i style="--o:0.92"></i><i style="--o:0.71"></i><i style="--o:0.49"></i><i style="--o:0.99"></i><i style="--o:0.78"></i><i style="--o:0.56"></i><i style="--o:0.35"></i><i style="--o:0.85"></i><i style="--o:0.64"></i><i style="--o:0.42"></i><i style="--o:0.92"></i><i style="--o:0.71"></i><i style="--o:0.49"></i><i style="--o:0.99"></i><i style="--o:0.78"></i><i style="--o:0.56"></i><i style="--o:0.35"></i><i style="--o:0.85"></i><i style="--o:0.64"></i><i style="--o:0.42"></i><i style="--o:0.92"></i><i style="--o:0.71"></i><i style="--o:0.49"></i><i style="--o:0.99"></i><i style="--o:0.78"></i><i style="--o:0.56"></i><i style="--o:0.35"></i><i style="--o:0.85"></i><i style="--o:0.64"></i><i style="--o:0.42"></i><i style="--o:0.92"></i><i style="--o:0.71"></i><i style="--o:0.49"></i><i style="--o:0.99"></i><i style="--o:0.78"></i><i style="--o:0.56"></i><i style="--o:0.35"></i><i style="--o:0.85"></i><i style="--o:0.64"></i><i style="--o:0.42"></i><i style="--o:0.92"></i><i style="--o:0.71"></i><i style="--o:0.49"></i><i style="--o:0.99"></i></div>
+      <div class="chip-foot"><b>48 SM</b><span>× 128 CUDA = 6,144</span></div>
+    </div>
+  </div>
+  <div class="wrap stat-grid">
+    <div class="stat"><b>6,144</b><span>CUDA 核心 · 48 SM</span></div>
+    <div class="stat"><b>20</b><span>CPU 核心 · 20 线程</span></div>
+    <div class="stat"><b>64 GiB</b><span>LPDDR5X · 标称 64 GB</span></div>
+    <div class="stat"><b>1 PFLOP</b><span>官方 FP4 AI 性能 · 140 W TDP</span></div>
+  </div>
+</header>
+<nav class="toc" aria-label="目录">
+  <div class="wrap">
+    <a href="#summary">00 摘要</a><a href="#official">01 官方规格</a><a href="#identity">02 身份</a><a href="#compare">03 对照</a>
+    <a href="#gpu">04 GPU</a><a href="#memory">05 内存</a><a href="#media">06 媒体</a><a href="#rtx">07 RTX / DLSS</a>
+    <a href="#platform">08 平台</a><a href="#method">09 方法</a>
+  </div>
+</nav>
+<main class="wrap" id="main">
+
+<section id="summary">
+  <div class="kicker">00 / Executive summary</div>
+  <h2>一句话：图形与媒体能力全部复现，AI 性能与 TDP 未独立实测</h2>
+  <div class="callout">
+    <ul class="checklist">
+      <li><span class="ck">✓</span><div><b>RTX / 光追</b> 第四代 RT Core、DX12 Ultimate、Vulkan RT<span class="tiny">官方规格 + 本机 dxdiag Feature Level 12_2 + Vulkan ray_query / ray_tracing_pipeline</span></div></li>
+      <li><span class="ck">✓</span><div><b>Tensor / DLSS</b> 第五代 Tensor Core、DLSS 5 全套<span class="tiny">官方 6 个子项全勾；DriverStore 有 NGX 运行时组件</span></div></li>
+      <li><span class="ck">✓</span><div><b>NVENC</b> 1× 第九代；H.264 / HEVC / AV1 编码<span class="tiny">7/7 实测通过，含 H.264 / HEVC 4:2:2 与 4:4:4</span></div></li>
+      <li><span class="ck">✓</span><div><b>NVDEC</b> 1× 第六代；H.264 / HEVC / AV1 解码<span class="tiny">6/7 实测通过；H.264 4:4:4 为 NVDEC 色度格式不支持</span></div></li>
+      <li><span class="ck">✓</span><div><b>平台 / API</b> CUDA 12.1 · sm_121 · 驱动 621.40 · CUDA UMD 13.5<span class="tiny">官方页、驱动枚举、原始日志三方交叉核对</span></div></li>
+    </ul>
+  </div>
+  <div class="notes">
+    <div class="note-card"><b>内存不是“少了 32 GB”</b><p>64 GiB 是物理统一内存；Windows 可见 32.18 GiB，GPU 专用帧缓冲 30.50 GiB，其余约 1.32 GiB 为固件/保留。CUDA 可寻址 45.92 GiB 是地址空间口径。</p></div>
+    <div class="note-card"><b>桌面档没有 NPU</b><p>官方表桌面 6144/20 档的 NPU 栏为 “-”；本机 Windows 也未枚举到 NPU 设备。带 NVIDIA NPU 的是两个笔记本档。</p></div>
+    <div class="note-card"><b>PCIe 读数不是规格降级</b><p>官方规格为 PCIe Gen5。nvidia-smi 当前显示 1×Gen1（设备/主机最大 Gen5），且 C2C Mode Enabled；这是链路当前读数，不代表 Gen5 能力缺失。</p></div>
+  </div>
+</section>
+
+<section id="official">
+  <div class="kicker">01 / Official specifications</div>
+  <h2>官方规格页：三档并列，能力条目齐全</h2>
+  <p class="lead">以下为 NVIDIA 中国官网规格页的连续长图（2026-11-26 抓取）：三档并列，第三列为桌面主机档，也是本机对应档位。官方页面：<a href="https://www.nvidia.cn/products/rtx-spark/specifications/">nvidia.cn/products/rtx-spark/specifications</a>；归档见 <a href="assets/spec/nvidia-rtx-spark-specifications.zh.html">中文 HTML</a> · <a href="assets/spec/RTX-Spark-N1X-Specifications.zh.pdf">PDF</a> · <a href="assets/spec/nvidia-rtx-spark-specifications.en.html">英文 HTML</a>。</p>
+  <figure class="annot">
+      <div class="fig-note"><span class="badge ok">本机档位 · 第三列</span></div>
+      <img src="assets/img/spec/spec-long.webp" alt="NVIDIA RTX Spark 官方规格页连续长图" width="3000" height="4299" loading="lazy" decoding="async" srcset="assets/img/spec/spec-long-2196.webp 2196w, assets/img/spec/spec-long.webp 3000w" sizes="(max-width:620px) 92vw, 1098px" data-full="assets/img/spec/spec-long.webp">
+      <figcaption>官方规格页连续长图：从页面标题到 DLSS 区，包含 GPU / CPU / NPU / TDP / AI 性能 / 内存，以及 RT Core / Tensor Core / NVENC / NVDEC 与 DLSS 5 子项。第三列（桌面主机）为本机档位。</figcaption>
+    </figure>
+  <div class="callout">
+    <p><strong>官方 DLSS 不是只写了一个 “支持”。</strong>规格页把 DLSS 5 拆成 6 个子项逐条打勾；这与本机 DriverStore 中的 NGX 运行时组件相互印证。真正游戏内的帧生成/超分帧率仍取决于具体游戏是否调用 DLSS。</p>
+  </div>
+</section>
+
+<section id="identity">
+  <div class="kicker">02 / Identity</div>
+  <h2>这台机器，对应官方哪一档？</h2>
+  <p class="lead">NVIDIA 规格页并列三档：笔记本 6144/20、笔记本 5120/18、桌面主机 6144/20。ASUS GR1X 是 AC 供电的 mini PC，CPU / GPU 为 20 核 / 6144 核，落在第三列；官方桌面档 NPU 为 “-”，也与本机未枚举到 NPU 一致。</p>
+  <div class="grid-2">
+    <div class="table-wrap">
+      <table>
+        <tbody>
+          <tr><td class="dim">机型</td><td>ASUS GR1X（ASUS N1X 平台）</td></tr>
+          <tr><td class="dim">SoC</td><td>NVIDIA RTX Spark N1X</td></tr>
+          <tr><td class="dim">官方档位</td><td>桌面主机 · 6144-core GPU + 20-core CPU</td></tr>
+          <tr><td class="dim">主板 / BIOS</td><td>ASUSTeK GR1X · GR1XN1XN.0015.2026.1109.1040（2026-11-09）</td></tr>
+          <tr><td class="dim">操作系统</td><td>Windows 11 Pro 26H1 · Build 28000.3501 · ARM64</td></tr>
+          <tr><td class="dim">GPU 驱动</td><td>621.40（KMD 621.40）· CUDA UMD 13.5</td></tr>
+          <tr><td class="dim">GPU VBIOS</td><td>9A.0B.37.00.04 · Device ID 2E1310DE</td></tr>
+          <tr><td class="dim">采集时间</td><td>2026-11-26 11:58–14:12（UTC+8）</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card" style="display:flex;flex-direction:column;justify-content:center">
+      <b style="font-size:18px;margin-bottom:6px">判定依据</b>
+      <p class="small" style="margin-bottom:10px">① 官方第三列是 6144-core / 20-core；本机 nvidia-smi 与 CUDA 属性完全一致。</p>
+      <p class="small" style="margin-bottom:10px">② 官方第三列 NPU 为 “-”；本机 PnP 设备中没有 NPU / Neural / AI accelerator。</p>
+      <p class="small" style="margin-bottom:0">③ 整机 AC 供电、无电池，属于桌面 mini PC，而不是 45–80 W 的笔记本档。</p>
+    </div>
+  </div>
+</section>
+
+<section id="compare">
+  <div class="kicker">03 / Cross-check</div>
+  <h2>官方 vs 本机：28 项逐条核对</h2>
+  <p class="lead">判定标准：“一致” 表示官方条目在本机可被驱动/系统 API 或实测复现；“实测” 表示官方表未列、由本机读取；“说明” 表示口径差异，不是能力缺失。</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>项目</th><th>官方规格（桌面档）</th><th>本机读取 / 实测</th><th>判定</th></tr></thead>
+      <tbody>
+        <tr class="group"><td colspan="4">计算与图形</td></tr>
+<tr><td class="dim">GPU 型号</td><td>6144-core NVIDIA Blackwell RTX GPU</td><td>nvidia-smi 同名字；48 SM / 6,144 CUDA</td><td class="status"><span class="badge ok">一致</span></td></tr>
+<tr><td class="dim">CUDA 核心</td><td>6,144</td><td>6,144（48 SM × 128）</td><td class="status"><span class="badge ok">一致</span></td></tr>
+<tr><td class="dim">SM 数量</td><td>官方未列</td><td>48</td><td class="status"><span class="badge info">实测</span></td></tr>
+<tr><td class="dim">计算能力</td><td>CUDA 12.1</td><td>sm_121（12.1）</td><td class="status"><span class="badge ok">一致</span></td></tr>
+<tr><td class="dim">RT Core</td><td>第四代</td><td>Vulkan ray_query / ray_tracing_pipeline；DX12 FL 12_2</td><td class="status"><span class="badge ok">一致</span></td></tr>
+<tr><td class="dim">Tensor Core</td><td>第五代</td><td>DLSS / NGX 运行时存在</td><td class="status"><span class="badge ok">一致</span></td></tr>
+<tr><td class="dim">AI 性能</td><td>1 PFLOP（FP4）</td><td>项目推算 FP4 稠密 473.8 / 稀疏 947.6 TFLOPS（非实测）</td><td class="status"><span class="badge warn">官方 + 推算</span></td></tr>
+<tr><td class="dim">TDP</td><td>140 W</td><td>空闲采样 GPU 3.96 W（整机 TDP 未复测）</td><td class="status"><span class="badge info">官方值</span></td></tr>
+<tr class="group"><td colspan="4">媒体引擎</td></tr>
+<tr><td class="dim">NVENC</td><td>1× 第九代</td><td>ffmpeg：h264_nvenc / hevc_nvenc / av1_nvenc</td><td class="status"><span class="badge ok">一致</span></td></tr>
+<tr><td class="dim">NVDEC</td><td>1× 第六代</td><td>ffmpeg：h264_cuvid / hevc_cuvid / av1_cuvid 等</td><td class="status"><span class="badge ok">一致</span></td></tr>
+<tr><td class="dim">编码实测</td><td>H.264 / HEVC / AV1；H.264 / HEVC 覆盖 4:2:2 与 4:4:4</td><td>7 / 7 通过</td><td class="status"><span class="badge ok">通过</span></td></tr>
+<tr><td class="dim">解码实测</td><td>H.264 / HEVC / AV1</td><td>6 / 7 通过；H.264 4:4:4 解码报 NVDEC 色度格式不支持</td><td class="status"><span class="badge info">符合矩阵</span></td></tr>
+<tr><td class="dim">NVENC 并发会话</td><td>12（官方矩阵）</td><td>12 路并发成功；第 13 路被拒（OpenEncodeSessionEx）</td><td class="status"><span class="badge ok">实测</span></td></tr>
+<tr class="group"><td colspan="4">内存</td></tr>
+<tr><td class="dim">内存类型 / 容量</td><td>统一 LPDDR5X；最高 128 GB</td><td>64 GB LPDDR5X-9400（本机配置）</td><td class="status"><span class="badge ok">符合（本机 64 GiB 配置；官方最高 128 GB）</span></td></tr>
+<tr><td class="dim">显存位宽</td><td>256-bit</td><td>SMBIOS 单器件上报 32-bit；官方为 SoC 总位宽 256-bit</td><td class="status"><span class="badge warn">说明</span></td></tr>
+<tr><td class="dim">Windows 可见内存</td><td>官方未列</td><td>32.18 GiB</td><td class="status"><span class="badge info">实测</span></td></tr>
+<tr><td class="dim">GPU 帧缓冲</td><td>官方未列</td><td>30.50 GiB（31,232 MiB）</td><td class="status"><span class="badge info">实测</span></td></tr>
+<tr><td class="dim">CUDA 可寻址</td><td>官方未列</td><td>45.92 GiB</td><td class="status"><span class="badge info">实测</span></td></tr>
+<tr><td class="dim">D2D 带宽</td><td>官方未列</td><td>118.1 GB/s 单向 / 236.2 GB/s 合计（cuda_bench.py · cuMemcpyDtoD）</td><td class="status"><span class="badge info">实测</span></td></tr>
+<tr class="group"><td colspan="4">平台与 IO</td></tr>
+<tr><td class="dim">CPU</td><td>20-core NVIDIA Grace CPU</td><td>20C / 20T · 最高 3900 MHz · L2 25.0 MB · L3 24.0 MB</td><td class="status"><span class="badge ok">一致</span></td></tr>
+<tr><td class="dim">NPU</td><td>桌面档 “-”</td><td>Windows 未枚举到 NPU 设备</td><td class="status"><span class="badge ok">一致（无）</span></td></tr>
+<tr><td class="dim">PCIe</td><td>第五代</td><td>当前 1×Gen1；设备/主机最大 Gen5；C2C Enabled</td><td class="status"><span class="badge warn">说明</span></td></tr>
+<tr><td class="dim">操作系统</td><td>Windows 11</td><td>Windows 11 Pro 26H1 · Build 28000.3501 · ARM64</td><td class="status"><span class="badge ok">一致</span></td></tr>
+<tr><td class="dim">DLSS</td><td>DLSS 5 + 全套特性</td><td>NGX dlssg 310.2.1.0 / dlssd 310.9.0.0</td><td class="status"><span class="badge ok">一致</span></td></tr>
+<tr><td class="dim">DirectX 12 Ultimate</td><td>支持</td><td>Feature Levels 12_2</td><td class="status"><span class="badge ok">一致</span></td></tr>
+<tr><td class="dim">Vulkan RT / OpenGL</td><td>支持</td><td>Vulkan 1.4.357 · RT 扩展齐全</td><td class="status"><span class="badge ok">一致</span></td></tr>
+<tr><td class="dim">CUDA 能力</td><td>12.1</td><td>12.1</td><td class="status"><span class="badge ok">一致</span></td></tr>
+<tr><td class="dim">驱动</td><td>官方未列</td><td>621.40 · CUDA UMD 13.5</td><td class="status"><span class="badge info">实测</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small">注：CUDA 可寻址 45.92 GiB 与 GPU 专用帧缓冲 30.50 GiB 不是同一口径；前者是 CUDA 进程可见的可分配地址空间，后者是 nvidia-smi 报告的专用 FB。二者不能相加为物理内存。</p>
+  <div class="notes">
+    <div class="note-card"><b>1×Gen1 是什么</b><p>1 条 PCIe 1.0 lane（2.5 GT/s，理论约 250 MB/s 每方向）。这是 nvidia-smi 的当前链路读数；设备/主机最大 Gen5，不代表 GPU 只有 Gen1。</p></div>
+    <div class="note-card"><b>C2C 是什么</b><p>Chip-to-Chip，SoC 内 CPU-GPU 的一致性互连（NVLink-C2C）。本机 C2C Mode Enabled，统一内存访问由此受益。</p></div>
+    <div class="note-card"><b>32-bit 与 256-bit</b><p>SMBIOS 报的是单器件位宽；官方 256-bit 是 SoC 总位宽。256 / 32 = 8，说明 WMI 报的不是总线总位宽，两者不能直接比较。</p></div>
+  </div>
+  <p class="small">H.264 4:4:4 的“解码不支持”怎么测：h264_nvenc 编码成功；再用 <code>h264_cuvid</code> 解码，ffmpeg 报 <code>Codec h264_cuvid is not supported with this chroma format</code>。属 NVDEC 色度格式不支持，不是文件损坏或脚本错误。详见 <a href="#media">06 媒体</a>。</p>
+</section>
+
+<section id="gpu">
+  <div class="kicker">04 / GPU architecture</div>
+  <h2>48 个 SM，6,144 个 CUDA 核心</h2>
+  <p class="lead">官方只写 6144-core；本机 CUDA 运行时给出 48 个 SM、计算能力 12.1、24 MiB L2。按 Blackwell 每 SM 128 个 CUDA 核心计算，48 × 128 = 6,144，与官方数字闭合。</p>
+  <div class="cards">
+    <div class="card"><b>48</b><span>SM（CUDA 运行时）</span></div>
+    <div class="card"><b>24 MiB</b><span>L2 缓存（25,165,824 B）</span></div>
+    <div class="card"><b>3,003 MHz</b><span>最大 Boost；空闲 221 MHz</span></div>
+    <div class="card"><b>12.1</b><span>计算能力 · sm_121</span></div>
+  </div>
+  <div class="grid-2">
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>CUDA 设备属性</th><th>本机值</th></tr></thead>
+        <tbody>
+          <tr><td>每 SM CUDA 核心</td><td class="num">128（48 × 128 = 6,144）</td></tr>
+          <tr><td>最大线程 / 块</td><td class="num">1,024</td></tr>
+          <tr><td>最大线程 / SM</td><td class="num">1,536</td></tr>
+          <tr><td>共享内存 / SM</td><td class="num">102,400 B（100 KiB）</td></tr>
+          <tr><td>共享内存 / 块（opt-in）</td><td class="num">101,376 B（99 KiB）</td></tr>
+          <tr><td>寄存器 / SM</td><td class="num">65,536</td></tr>
+          <tr><td>Warp 大小</td><td class="num">32</td></tr>
+          <tr><td>L2 缓存</td><td class="num">25,165,824 B（24 MiB）</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout" style="margin-top:0">
+      <p><strong>算力口径要分清。</strong>官方产品页明确 1 PFLOP 是 FP4 AI 性能；规格页只写 1 Petaflop。本报告不把 1 PFLOP 当成 FP16/FP8 的实测值。</p>
+      <p>可复现的本地证据是：CUDA 12.1 / sm_121、48 SM、24 MiB L2，以及 PyTorch 2.14.1+cu130 可以在本机枚举到 <b>45.92 GiB 的 CUDA 配额</b>；最大单次分配 <b>45.75 GiB</b>（3/3 会话），46.0 GiB 失败。</p>
+      <p class="small" style="margin-bottom:0">来源：<code>logs/cuda-props.json</code> · <code>logs/nvidia-smi-q.txt</code></p>
+    </div>
+  </div>
+  <h3>FP4 算力：官方口径与项目推算</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>FP4 口径</th><th>数值</th><th>性质 / 方法</th></tr></thead>
+      <tbody>
+        <tr><td class="dim">官方 AI 性能</td><td class="num">1 PFLOP</td><td>NVIDIA 产品页：“up to 1 petaflop FP4 AI performance”</td></tr>
+        <tr><td class="dim">项目推算 FP4 稠密</td><td class="num">473.8 TFLOPS</td><td>48 SM × 2.41 GHz × Blackwell 每 SM FP4 吞吐比率；<b>推算，非实测</b></td></tr>
+        <tr><td class="dim">项目推算 FP4 稀疏（2:4）</td><td class="num">947.6 TFLOPS</td><td>稠密 × 2（2:4 结构化稀疏）；<b>推算，非实测</b></td></tr>
+        <tr><td class="dim">按最高 Boost 重算</td><td class="num">590.4 TFLOPS 稠密 / ≈1.18 PFLOPS 稀疏</td><td>3.003 GHz 重算；仍为推算</td></tr>
+        <tr><td class="dim">直接 FP4 GEMM 实测</td><td class="num">未取得</td><td>PyTorch 2.14.1+cu130 无 FP4 GEMM 路径</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small">方法说明：项目内既有 <code>bench/make_report_v13.py</code> / <code>bench/blackwell.txt</code> 以 48 SM、2.41 GHz（Geekbench 负载观测值）和 Blackwell 每 SM 的 FP4/FP8 吞吐比率外推；2:4 稀疏按 2× 计。这里借用的是“项目内推算结果”，不是本次新增的 FP4 GEMM 实测，也不把 473.8/947.6 当作硬件实测上限。</p>
+</section>
+
+<section id="memory">
+  <div class="kicker">05 / Unified memory</div>
+  <h2>64 GiB 统一内存，为什么 Windows 只看到 32 GB</h2>
+  <p class="lead">这不是“少了 32 GB”，而是统一内存被固件切成系统可见区与 GPU 专用帧缓冲。下面几套数字同时成立，只是口径不同。</p>
+  <div class="mem-total"><span>物理 LPDDR5X 统一内存</span><b>64 GiB</b></div>
+  <div class="mem-bar">
+    <div class="seg os" style="width:50.29%"><span>Windows 可见 32.18 GiB</span></div>
+    <div class="seg fb" style="width:47.66%"><span>GPU 帧缓冲 30.50 GiB</span></div>
+    <div class="seg rsv" style="width:2.06%"></div>
+  </div>
+  <div class="mem-legend">
+    <span><i class="os"></i>Windows 可见 32.18 GiB（50.3%）</span>
+    <span><i class="fb"></i>GPU 专用 FB 30.50 GiB（47.7%）</span>
+    <span><i class="rsv"></i>固件/保留约 1.32 GiB（2.1%）</span>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>口径</th><th>数值</th><th>来源 / 说明</th></tr></thead>
+      <tbody>
+        <tr><td class="dim">物理统一内存</td><td class="num">64.00 GiB</td><td>SMBIOS：68,719,476,736 B，Samsung LPDDR5X，9,400 MT/s</td></tr>
+        <tr><td class="dim">Windows 可见</td><td class="num">32.18 GiB</td><td>Win32_ComputerSystem / TotalVisibleMemorySize</td></tr>
+        <tr><td class="dim">GPU 专用帧缓冲</td><td class="num">30.50 GiB</td><td>nvidia-smi：31,232 MiB</td></tr>
+        <tr><td class="dim">固件/保留（差额）</td><td class="num">≈ 1.32 GiB</td><td>64 − 32.18 − 30.50</td></tr>
+        <tr><td class="dim">CUDA 可寻址</td><td class="num">45.92 GiB</td><td>cuMemGetInfo total；CUDA 进程可见地址空间，不是额外物理内存</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small">为什么 SMBIOS 写 32-bit：SMBIOS Type 17 的 Data Width / Total Width 是单个内存器件/模组字段；本机 LPDDR5X 为板载，WMI 只枚举到 1 个 DIMM0，所以报 32-bit。官方 256-bit 是 SoC 内存控制器侧总位宽；256 / 32 = 8，说明 WMI 报的不是总线总位宽，两者不能直接比较。</p>
+  <h3>带宽实测</h3>
+  <div class="cards">
+    <div class="card"><b>118.1 GB/s</b><span>D2D 拷贝单向（1 GiB × 20）</span><span class="tool">工具：cuda_bench.py · cuMemcpyDtoD</span></div>
+    <div class="card"><b>236.2 GB/s</b><span>D2D 读+写合计</span><span class="tool">工具：cuda_bench.py · 读 + 写流量合计</span></div>
+    <div class="card"><b>180.1 GB/s</b><span>memset 写入</span><span class="tool">工具：cuda_bench.py · cuMemsetD8</span></div>
+    <div class="card"><b>273 GB/s</b><span>理论峰值 · GB10 官方口径（8,533 MT/s）</span><span class="tool">替代口径 300.8 GB/s（本机 SMBIOS 9,400 MT/s）· 计算值</span></div>
+  </div>
+  <p class="small">主口径采用 GB10 官方 <b>273 GB/s</b>（8,533 MT/s），D2D 读+写效率约 <b>86.5%</b>；按本机 SMBIOS 的 9,400 MT/s × 256-bit 计算为 <b>300.8 GB/s</b>，对应约 78.5%，作为替代口径并列。页可达 H2D 为 16.9 GB/s。引用百分比时要写明分母。来源：<code>logs/bandwidth.txt</code>。</p>
+</section>
+
+<section id="media">
+  <div class="kicker">06 / Media engines</div>
+  <h2>第九代 NVENC / 第六代 NVDEC：不是“支持”，是实际编解通过</h2>
+  <p class="lead">官方矩阵给出 N1X 的完整编解码列；本机用 ffmpeg 原生 ARM64（N-129288，2026-11-25 构建）做 1080p60 / 5 s testsrc2 实测。编码用 NVENC preset p5、VBR CQ；解码用对应 cuvid 解码器。</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>格式</th><th>编码（NVENC 第九代）</th><th>解码（NVDEC 第六代）</th></tr></thead>
+      <tbody>
+        <tr><td class="dim">H.264 / AVC</td><td>4:2:0 / 4:2:2 / 4:4:4 / lossless</td><td>4:2:0 / 4:2:2</td></tr>
+        <tr><td class="dim">HEVC / H.265</td><td>4:2:0 / 4:2:2 / 4:4:4 / 10-bit / 8K / B 帧 / lossless</td><td>4:2:0 / 4:2:2 / 4:4:4（8/10/12-bit）</td></tr>
+        <tr><td class="dim">AV1</td><td>4:2:0</td><td>4:2:0 8/10-bit</td></tr>
+        <tr><td class="dim">VP9 / VP8</td><td>—</td><td>VP9 8/10/12-bit；VP8</td></tr>
+        <tr><td class="dim">MPEG-1/2/4、VC-1</td><td>—</td><td>全部支持</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small">以上为 NVIDIA 官方编解码支持矩阵中 “NVIDIA RTX Spark N1X” 行，按格式合并；矩阵中编码与解码对应列均为 YES。单卡最大并发 NVENC 会话为 12。</p>
+  <h3>实测结果与方法（1080p60 / 5 s / 300 帧）</h3>
+  <div class="method-box">
+    <p><b>工具：</b>ffmpeg N-129288-gc81e35cf2b-20261125（原生 ARM64）；编码用 NVENC preset p5 / VBR，CQ 23（H.264）、24（HEVC）、30（AV1）；解码用 h264_cuvid / hevc_cuvid / av1_cuvid + <code>-f null -</code>。</p>
+    <p><b>素材：</b>testsrc2 1920×1080@60，5.000 s（300 帧）。<b>速度口径：</b>ffmpeg speed 为相对实时倍数；墙钟含 lavfi 合成与进程启动，不是纯编码器峰值。</p>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>测试</th><th>像素格式</th><th>编码</th><th>平均码率</th><th>解码</th></tr></thead>
+      <tbody>
+        <tr>
+      <td class="dim">H.264 4:2:0 8-bit</td>
+      <td><code>yuv420p</code></td>
+      <td><span class="badge ok">通过</span> <span class="num">4.38×</span> <span class="muted">/ 1.27s</span></td>
+      <td class="num">20.6 Mbps</td>
+      <td><span class="badge ok">通过</span> <span class="num">23.3×</span> <span class="muted">/ 0.50s</span></td>
+    </tr>
+<tr>
+      <td class="dim">HEVC 4:2:0 10-bit</td>
+      <td><code>yuv420p10le</code></td>
+      <td><span class="badge ok">通过</span> <span class="num">6.46×</span> <span class="muted">/ 0.91s</span></td>
+      <td class="num">16.4 Mbps</td>
+      <td><span class="badge ok">通过</span> <span class="num">20.6×</span> <span class="muted">/ 0.37s</span></td>
+    </tr>
+<tr>
+      <td class="dim">AV1 4:2:0 8-bit</td>
+      <td><code>yuv420p</code></td>
+      <td><span class="badge ok">通过</span> <span class="num">6.14×</span> <span class="muted">/ 0.99s</span></td>
+      <td class="num">17.9 Mbps</td>
+      <td><span class="badge ok">通过</span> <span class="num">18.8×</span> <span class="muted">/ 0.41s</span></td>
+    </tr>
+<tr>
+      <td class="dim">H.264 4:2:2 8-bit</td>
+      <td><code>yuv422p</code></td>
+      <td><span class="badge ok">通过</span> <span class="num">4.41×</span> <span class="muted">/ 1.29s</span></td>
+      <td class="num">22.3 Mbps</td>
+      <td><span class="badge ok">通过</span> <span class="num">21.5×</span> <span class="muted">/ 0.38s</span></td>
+    </tr>
+<tr>
+      <td class="dim">HEVC 4:2:2 10-bit</td>
+      <td><code>yuv422p10le</code></td>
+      <td><span class="badge ok">通过</span> <span class="num">6.33×</span> <span class="muted">/ 0.93s</span></td>
+      <td class="num">16.8 Mbps</td>
+      <td><span class="badge ok">通过</span> <span class="num">15.6×</span> <span class="muted">/ 0.46s</span></td>
+    </tr>
+<tr>
+      <td class="dim">H.264 4:4:4 8-bit</td>
+      <td><code>yuv444p</code></td>
+      <td><span class="badge ok">通过</span> <span class="num">4.26×</span> <span class="muted">/ 1.33s</span></td>
+      <td class="num">24.3 Mbps</td>
+      <td><span class="badge no">不支持</span> <span class="muted">色度格式不支持</span></td>
+    </tr>
+<tr>
+      <td class="dim">HEVC 4:4:4 10-bit</td>
+      <td><code>yuv444p10le</code></td>
+      <td><span class="badge ok">通过</span> <span class="num">5.91×</span> <span class="muted">/ 1.02s</span></td>
+      <td class="num">17.2 Mbps</td>
+      <td><span class="badge ok">通过</span> <span class="num">11.4×</span> <span class="muted">/ 0.58s</span></td>
+    </tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small">H.264 4:4:4 的“不支持”是解码路径：h264_nvenc 先编码成功；h264_cuvid 打开解码器时报 <code>Codec h264_cuvid is not supported with this chroma format</code>（EINVAL）。这是 NVDEC 不支持该色度格式，不是文件损坏或脚本错误；官方矩阵也只列 H.264 解码 4:2:0 / 4:2:2。</p>
+  <div class="svg-wrap">
+    <svg viewBox="0 0 1100 446" role="img" aria-label="编码与解码速度对比" xmlns="http://www.w3.org/2000/svg"><style>text{font-family:"Segoe UI","Microsoft YaHei",sans-serif;fill:#3f4a42}.lbl{font-size:12.5px;font-weight:600}.val{font-size:11.5px;font-weight:700}.tick{font-size:10.5px;fill:#8a948b}.leg{font-size:11.5px;fill:#5b6b5e}</style><line x1="218.0" y1="38" x2="218.0" y2="412" stroke="#e7ece3" stroke-width="1"/><text class="tick" x="218.0" y="428" text-anchor="middle">0×</text><line x1="370.0" y1="38" x2="370.0" y2="412" stroke="#e7ece3" stroke-width="1"/><text class="tick" x="370.0" y="428" text-anchor="middle">5×</text><line x1="522.0" y1="38" x2="522.0" y2="412" stroke="#e7ece3" stroke-width="1"/><text class="tick" x="522.0" y="428" text-anchor="middle">10×</text><line x1="674.0" y1="38" x2="674.0" y2="412" stroke="#e7ece3" stroke-width="1"/><text class="tick" x="674.0" y="428" text-anchor="middle">15×</text><line x1="826.0" y1="38" x2="826.0" y2="412" stroke="#e7ece3" stroke-width="1"/><text class="tick" x="826.0" y="428" text-anchor="middle">20×</text><line x1="978.0" y1="38" x2="978.0" y2="412" stroke="#e7ece3" stroke-width="1"/><text class="tick" x="978.0" y="428" text-anchor="middle">25×</text><rect x="700" y="10" width="10" height="10" rx="2" fill="#76b900"/><text class="leg" x="716" y="19">编码</text><rect x="770" y="10" width="10" height="10" rx="2" fill="#0ea5e9"/><text class="leg" x="786" y="19">解码</text><text class="lbl" x="0" y="71">H.264 4:2:0 8-bit</text><rect x="218" y="58" width="133.2" height="12" rx="3" fill="#76b900" opacity=".92"/><text class="val" x="358.2" y="68">4.38×</text><rect x="218" y="75" width="708.3" height="12" rx="3" fill="#0ea5e9" opacity=".9"/><text class="val" x="933.3" y="85">23.3×</text><text class="lbl" x="0" y="119">HEVC 4:2:0 10-bit</text><rect x="218" y="106" width="196.4" height="12" rx="3" fill="#76b900" opacity=".92"/><text class="val" x="421.4" y="116">6.46×</text><rect x="218" y="123" width="626.2" height="12" rx="3" fill="#0ea5e9" opacity=".9"/><text class="val" x="851.2" y="133">20.6×</text><text class="lbl" x="0" y="167">AV1 4:2:0 8-bit</text><rect x="218" y="154" width="186.7" height="12" rx="3" fill="#76b900" opacity=".92"/><text class="val" x="411.7" y="164">6.14×</text><rect x="218" y="171" width="571.5" height="12" rx="3" fill="#0ea5e9" opacity=".9"/><text class="val" x="796.5" y="181">18.8×</text><text class="lbl" x="0" y="215">H.264 4:2:2 8-bit</text><rect x="218" y="202" width="134.1" height="12" rx="3" fill="#76b900" opacity=".92"/><text class="val" x="359.1" y="212">4.41×</text><rect x="218" y="219" width="653.6" height="12" rx="3" fill="#0ea5e9" opacity=".9"/><text class="val" x="878.6" y="229">21.5×</text><text class="lbl" x="0" y="263">HEVC 4:2:2 10-bit</text><rect x="218" y="250" width="192.4" height="12" rx="3" fill="#76b900" opacity=".92"/><text class="val" x="417.4" y="260">6.33×</text><rect x="218" y="267" width="474.2" height="12" rx="3" fill="#0ea5e9" opacity=".9"/><text class="val" x="699.2" y="277">15.6×</text><text class="lbl" x="0" y="311">H.264 4:4:4 8-bit</text><rect x="218" y="298" width="129.5" height="12" rx="3" fill="#76b900" opacity=".92"/><text class="val" x="354.5" y="308">4.26×</text><text class="val" x="222" y="325" fill="#dc2626">NVDEC 不支持此色度格式</text><text class="lbl" x="0" y="359">HEVC 4:4:4 10-bit</text><rect x="218" y="346" width="179.7" height="12" rx="3" fill="#76b900" opacity=".92"/><text class="val" x="404.7" y="356">5.91×</text><rect x="218" y="363" width="346.6" height="12" rx="3" fill="#0ea5e9" opacity=".9"/><text class="val" x="571.6" y="373">11.4×</text></svg>
+  </div>
+  <p class="small">图注：横轴为相对实时的倍数（×），绿色为编码、蓝色为解码；条越长越快。H.264 4:4:4 只有编码条，解码因 NVDEC 不支持该色度格式而缺失。</p>
+  <div class="notes">
+    <div class="note-card"><b>7 / 7 编码通过</b><p>H.264 4:2:0 / 4:2:2 / 4:4:4、HEVC 4:2:0 10-bit / 4:2:2 10-bit / 4:4:4 10-bit、AV1 4:2:0 全部成功。</p></div>
+    <div class="note-card"><b>6 / 7 解码通过</b><p>H.264 4:2:0 / 4:2:2、HEVC 4:2:0 / 4:2:2 / 4:4:4、AV1 通过；H.264 4:4:4 不在 NVDEC 支持范围。</p></div>
+    <div class="note-card"><b>4:2:2 是重点</b><p>HEVC 4:2:2 10-bit 的编码与解码都通过，HEVC 4:4:4 10-bit 也通过；说明 HEVC 的 4:2:2 / 4:4:4 路径实际可用（H.264 4:4:4 解码除外）。</p></div>
+  </div>
+  <div class="callout">
+    <p><strong>并发会话实测：12 路成功，第 13 路被拒。</strong>12 个 720p30 NVENC 进程同时编码全部返回 0；第 13 路报 <code>OpenEncodeSessionEx failed: incompatible client key (21)</code>。与官方矩阵的 12 路上限一致。完整日志：<code>logs/nvenc/</code>。</p>
+  </div>
+  <figure class="">
+      <img src="assets/img/spec/shot-ffmpeg-codecs.webp" alt="ffmpeg 枚举 NVENC 编码器与 CUVID 解码器" width="2400" height="880" loading="lazy" decoding="async">
+      <figcaption>实际命令输出：ffmpeg 枚举到 av1_nvenc / h264_nvenc / hevc_nvenc，以及 av1_cuvid / h264_cuvid / hevc_cuvid / mjpeg_cuvid / mpeg1_cuvid / mpeg2_cuvid / mpeg4_cuvid / vc1_cuvid / vp8_cuvid / vp9_cuvid。</figcaption>
+    </figure>
+  <figure class="">
+      <img src="assets/img/spec/shot-codec-run.webp" alt="ffmpeg 实际编码与解码输出" width="2400" height="1094" loading="lazy" decoding="async">
+      <figcaption>实际命令输出：H.264 NVENC 编码 300 帧、4.38× 实时；HEVC 4:2:2 10-bit 编码 6.33× 实时；同一文件用 hevc_cuvid 解码 15.6× 实时。完整日志见 <code>logs/codec/</code>。</figcaption>
+    </figure>
+</section>
+
+<section id="rtx">
+  <div class="kicker">07 / RTX · Ray tracing · DLSS</div>
+  <h2>RTX 功能：光追管线与 DLSS 运行时</h2>
+  <p class="lead">官方：第四代 RT Core、第五代 Tensor Core、DLSS 5 全套、DX12 Ultimate、Vulkan RT API。本机：dxdiag Feature Level 12_2；Vulkan 枚举到 ray_query / ray_tracing_pipeline；DLSS 的 NGX 运行时组件在 DriverStore。</p>
+  <div class="cards">
+    <div class="card"><b>4th</b><span>RT Core · 官方规格</span></div>
+    <div class="card"><b>5th</b><span>Tensor Core · 官方规格</span></div>
+    <div class="card"><b>DLSS 5</b><span>3D 引导神经渲染 / 动态多帧 / FG / RR / SR / DLAA</span></div>
+    <div class="card"><b>12_2</b><span>DXDIAG Feature Level</span></div>
+  </div>
+  <figure class="">
+      <img src="assets/img/spec/shot-vulkan.webp" alt="vulkaninfo 枚举的光追与视频扩展" width="2400" height="1522" loading="lazy" decoding="async">
+      <figcaption>实际命令输出：Vulkan 1.4 枚举到 VK_KHR_ray_query、VK_KHR_ray_tracing_pipeline、VK_KHR_ray_tracing_position_fetch，以及 NV ray tracing 扩展；视频侧同时枚举到 H.264 / H.265 / AV1 编码与 H.264 / H.265 / AV1 / VP9 解码。</figcaption>
+    </figure>
+  <figure class="">
+      <img src="assets/img/spec/shot-dlss.webp" alt="DLSS 运行时组件版本" width="2400" height="678" loading="lazy" decoding="async">
+      <figcaption>实际读取：DriverStore 中 nvngx.dll 30.0.14.9516、nvngx_dlssg.dll 310.2.1.0（帧生成）、nvngx_dlssd.dll 310.9.0.0（光线重建）；NVIDIA App 128.4.13.35。DLSS 超分 DLL 通常随游戏/应用提供，或由 NVIDIA App 按需下载。</figcaption>
+    </figure>
+  <div class="callout">
+    <p><strong>边界说明：</strong>本报告验证的是“官方支持 + 运行时存在 + 光追 API 可用”。没有在支持 DLSS 的游戏中做帧生成/超分的帧率实测，因此不把 DLSS 5 的官方能力当成某个游戏的实测提升幅度。</p>
+  </div>
+</section>
+
+<section id="platform">
+  <div class="kicker">08 / Platform & IO</div>
+  <h2>CPU、存储与 IO</h2>
+  <p class="lead">20 核 Grace CPU、两个 10 核集群、最高 3.9 GHz；2 TB NVMe；10GbE + Wi-Fi 7。整机 AC 供电，属于桌面 mini PC。</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>子系统</th><th>本机配置</th><th>来源 / 备注</th></tr></thead>
+      <tbody>
+        <tr><td class="dim">CPU</td><td>NVIDIA RTX Spark N1X · 20C / 20T · 最高 3900 MHz</td><td>Win32_Processor；官方 20-core Grace CPU</td></tr>
+        <tr><td class="dim">CPU 缓存</td><td>L2 25,600 KB · L3 24,576 KB</td><td>WMI</td></tr>
+        <tr><td class="dim">内存</td><td>64 GiB LPDDR5X-9400（Samsung，DIMM0）</td><td>SMBIOS；官方 256-bit</td></tr>
+        <tr><td class="dim">存储</td><td>Micron MTFDKBA2T0QGN-1BN1AABGA · 2,048,407,280,640 B（约 1.86 TiB）</td><td>Win32_DiskDrive</td></tr>
+        <tr><td class="dim">有线网络</td><td>Realtek PCIe 10GbE（采集时链路 1 Gbps）</td><td>Win32_NetworkAdapter</td></tr>
+        <tr><td class="dim">无线</td><td>MediaTek Wi-Fi 7 MT7925 + Bluetooth</td><td>Win32_NetworkAdapter</td></tr>
+        <tr><td class="dim">NPU</td><td>未枚举到 NPU 设备</td><td>官方桌面档 NPU 为 “-”；笔记本档才有 NVIDIA NPU</td></tr>
+        <tr><td class="dim">PCIe / 互联</td><td>官方 Gen5；本机当前 1×Gen1，设备/主机最大 Gen5；C2C Enabled</td><td>nvidia-smi 当前读数；设备/主机最大 Gen5</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small">CPU 的 “两个 10 核集群” 来自 Geekbench 7 sysinfo（2026-11-25）；本文不把具体微架构名称（如 X925 / A725）当作本次实测结论，因为官方规格页只称 “20-core NVIDIA Grace CPU”。</p>
+</section>
+
+<section id="method">
+  <div class="kicker">09 / Method & data</div>
+  <h2>测试方法、原始数据与口径</h2>
+  <p class="lead">所有数字均可回溯到本目录下的日志或官方页面。命令、参数与原始输出如下。</p>
+  <div class="grid-2">
+    <div>
+      <h3>采集与验证命令</h3>
+      <pre><span class="c"># GPU / 驱动 / 显存 / 编码器状态</span>
+nvidia-smi
+nvidia-smi -q
+vulkaninfo
+
+<span class="c"># 系统与显示</span>
+dxdiag /t logs\dxdiag.txt
+
+<span class="c"># CUDA 设备属性 + 带宽</span>
+python tools\cuda_props.py
+python tools\cuda_bench.py
+
+<span class="c"># 编解码实测 + 并发会话</span>
+python tools\codec_tests.py
+python tools\concurrent_nvenc.py</pre>
+    </div>
+    <div>
+      <h3>测试条件</h3>
+      <div class="kv">
+        <div class="k">素材</div><div class="v">testsrc2 · 1920×1080 · 60 fps · 5.000 s（300 帧）</div>
+        <div class="k">编码</div><div class="v">NVENC preset p5 · VBR · CQ 23（H.264）/ 24（HEVC）/ 30（AV1）· <code>-b:v 0</code></div>
+        <div class="k">解码</div><div class="v">h264_cuvid / hevc_cuvid / av1_cuvid · <code>-f null -</code></div>
+        <div class="k">ffmpeg</div><div class="v">N-129288-gc81e35cf2b-20261125 · 原生 ARM64</div>
+        <div class="k">带宽</div><div class="v">1 GiB D2D × 20 · 1 GiB memset × 20 · 256 MiB pageable H2D × 4</div>
+        <div class="k">并发</div><div class="v">12 路 720p30（<code>-re</code>）+ 第 13 路；验证 NVENC 会话上限</div>
+        <div class="k">采集时间</div><div class="v">2026-11-26 11:58–14:12（UTC+8）</div>
+      </div>
+    </div>
+  </div>
+  <h3>口径与限制</h3>
+  <ul class="small" style="line-height:2">
+    <li>编码速度为端到端：包含 lavfi 合成、像素格式转换与进程启动，不是纯 NVENC 硬件峰值。</li>
+    <li>解码速度为相对实时（ffmpeg speed）；H.264 4:4:4 解码失败是色度格式不支持，不是驱动崩溃。</li>
+    <li>DLSS 只验证官方支持、NGX 运行时与 API 可用；未在支持 DLSS 的游戏中做帧生成/超分实测。</li>
+    <li>AI 性能 1 PFLOP 为 NVIDIA 官方 FP4 口径；FP4 稠密 473.8 / 稀疏 947.6 TFLOPS 是项目内按 48 SM × 2.41 GHz 外推的推算值，不是本次实测。TDP 140 W 同为官方规格；本次没有做整机满载功耗与峰值算力复测。</li>
+    <li>NVENC 并发会话实测：12 路成功，第 13 路被拒（<code>OpenEncodeSessionEx failed: incompatible client key (21)</code>），与官方矩阵 12 路一致。</li>
+    <li>内存理论峰值主口径采用 GB10 官方 273 GB/s（8,533 MT/s）；按本机 SMBIOS 9,400 MT/s × 256-bit 计算的 300.8 GB/s 作为替代口径并列。</li>
+    <li>PCIe 当前 1×Gen1 是 nvidia-smi 读数；设备/主机最大 Gen5，官方规格为 PCIe Gen5，C2C Mode Enabled。</li>
+  </ul>
+  <h3>原始文件</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>文件</th><th>内容</th></tr></thead>
+      <tbody>
+        <tr><td><a href="assets/spec/nvidia-rtx-spark-specifications.zh.html">spec/…zh.html</a> · <a href="assets/spec/RTX-Spark-N1X-Specifications.zh.pdf">spec/…zh.pdf</a></td><td>官方规格页归档（中文）</td></tr>
+        <tr><td><a href="assets/spec/nvidia-video-codec-matrix.html">spec/nvidia-video-codec-matrix.html</a></td><td>NVIDIA 官方编解码支持矩阵归档</td></tr>
+      <tr><td>原始日志</td><td>未随公开站点发布，保留在作者本地</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+</main>
+<footer>
+  <div class="wrap">
+    <div>
+      <p><b>NVIDIA RTX Spark N1X 参数与能力报告</b><br>ASUS ProArt GR1X · 2026-11-26</p>
+      <p>本报告由本地实测数据与 NVIDIA 官方规格页对照生成。官方规格可能随页面更新而变化；以归档文件与原始链接为准。所有商标归各自所有者。</p>
+      <p class="small">不构成 NVIDIA / ASUS 官方认证。测试结果仅代表本机在该时间点的状态。</p>
+    </div>
+    <div class="src-list">
+      <p><b>相关页面与来源</b></p>
+      <p><a href="https://www.nvidia.cn/products/rtx-spark/specifications/">NVIDIA RTX Spark 规格页（中文）</a><br>
+      <a href="https://www.nvidia.com/en-us/products/rtx-spark/specifications/">NVIDIA RTX Spark Specifications（EN）</a><br>
+      <a href="https://developer.nvidia.com/video-encode-and-decode-gpu-support-matrix-new">NVIDIA Video Encode / Decode Support Matrix</a><br>
+      <a href="https://www.nvidia.com/en-us/products/rtx-spark/">NVIDIA RTX Spark 产品页</a><br>
+      <a href="https://www.asus.com.cn/displays-desktops/mini-pcs/proart-mini-pc-series/proart-gr1x-mini-pc/techspec/">ASUS ProArt GR1X 技术规格</a></p>
+    </div>
+  </div>
+</footer>
+
+<div class="n1x-return">
+  <div class="wrap">
+    <a href="index.html">← 返回总览</a>
+    <span>下一份：02 NVIDIA App 本机配置图文报告</span>
+    <a href="nvidia-app.html">继续阅读 →</a>
+  </div>
+</div>
+<script src="assets/site.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>04 内存与带宽实测 · N1X 全景评测</title>
+<meta name="description" content="ASUS GR1X 统一内存的容量边界、带宽、跨 30.5 GiB 扫描、页放置与超配行为完整实验报告。">
+<link rel="stylesheet" href="assets/site.css">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+<a class="skip-link" href="#main">跳到正文</a>
+<div class="progress-bar" aria-hidden="true"></div>
+
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="index.html"><span class="mark">N1X</span><span>N1X 全景评测<small>ASUS ProArt GR1X · 2026</small></span></a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">目录</button>
+    <nav class="nav" id="site-nav" aria-label="站点导航">
+      <a href="index.html">总览</a>
+      <a href="spec.html">参数</a>
+      <a href="nvidia-app.html">配置</a>
+      <a href="benchmark.html">基准</a>
+      <a href="memory.html" class="active">内存</a>
+      <a href="memory-story.html">快读</a>
+      <a href="qwen.html">推理</a>
+      <a href="h3.html">视频</a>
+      <a href="evidence.html">证据</a>
+      <a href="verdict.html">总评</a>
+    </nav>
+  </div>
+</header>
+
+<header class="hero compact">
+  <div class="wrap">
+    <div class="crumbs"><a href="index.html">总览</a><span class="sep">/</span><span>04 内存与带宽实测</span></div>
+    <div class="eyebrow">04 / Unified memory · 2026-11-25</div>
+    <h1>64 GiB 统一内存，<span>三个数字都成立</span></h1>
+    <p class="sub">30.50 GiB 帧缓冲 · 45.92 GiB CUDA 配额 · 32.18 GiB 系统可见</p>
+    <p class="lede">这一份是完整实验报告：先分开三个口径，再用 6 个独立会话跨过 30.5 GiB 边界，最后用 WDDM 计数证明页落在哪里。结论不是“溢出一定慢”，而是“常驻即可全速，被驱逐才慢”。</p>
+    <p class="page-q"><b>本页回答：</b>30.5 / 45.92 / 32.18 三个数字分别是什么，跨过 30.5 GiB 后会不会变慢。</p>
+    <div class="meta">
+      <span>Windows 11 + WDDM</span>
+      <span>Driver 621.40 · CUDA UMD 13.5</span>
+      <span>6 会话扫描 · 3 会话夹逼 · 3 次真实生成</span>
+      <span>2026-11-25</span>
+    </div>
+    <div class="roles"><span class="role-pill">机制</span><span class="role-pill alt">全面报告</span><span class="role-pill gray">含未验证项</span></div>
+  </div>
+</header>
+
+<nav class="toc" aria-label="本页目录">
+  <div class="wrap">
+    <a href="#s-summary">00 摘要</a><a href="#limits">01 三个上限</a>
+    <a href="#capacity">02 容量边界</a><a href="#bandwidth">03 带宽实测</a><a href="#scan">04 跨边界扫描</a>
+    <a href="#placement">05 页放置与超配</a><a href="#real">06 真实负载</a><a href="#mechanism">07 机制</a>
+    <a href="#advice">08 工程建议</a><a href="#method">09 复现与局限</a>
+  </div>
+</nav>
+
+<main class="wrap" id="main">
+
+<section id="s-summary">
+  <div class="kicker">00 / Executive summary</div>
+  <h2>别再问“显存多大”，要问“哪个口径”</h2>
+  <div class="callout">
+    <ul class="checklist">
+      <li><span class="ck">1</span><div><b>CUDA 可寻址配额是 45.92 GiB</b>（<code>cuMemGetInfo</code> 读数），不是 nvidia-smi 的 31,232 MiB。31,232 MiB = 30.50 GiB，只是“专用帧缓冲（FB）”分区；扣掉 14 MiB 驱动保留后可用 30.486 GiB。分配探测 3/3 会话显示最大单次可分配 <b>45.75 GiB</b>，46.0 GiB 失败。<span class="tiny">配额读数与可分配量差 0.17 GiB</span></div></li>
+      <li><span class="ck">2</span><div><b>三个数字回答不同问题</b> 30.50 GiB = 分区；45.92 GiB = 配额；32.18 GiB = 系统可见。45.92 − 30.50 = 15.42 GiB（残差），约为可见内存一半（16.09 GiB）的 96%；DXGI 的 16.18 GiB 又是另一个量。这是本机观测到的量级关系，不是文档化公式。<span class="tiny">Microsoft 只把 SharedSystemMemory 定义为“适配器可消耗的系统内存上限”</span></div></li>
+      <li><span class="ck">3</span><div><b>“超出 30.5 GiB 后访问变慢”在 6 个独立会话中均未观察到</b> FB 区写 179.8 GB/s、溢出区 179.0（差 −0.4%）；读 119.7 vs 121.5（+1.5%）；36 GiB 超配持续 5 分钟 × 2 会话中位 122 GB/s、停顿仅 2–3 次。<span class="tiny">页放置已标定：Dedicated 在 29.76 GiB 封顶，超出部分逐 GiB 进入 Shared</span></div></li>
+      <li><span class="ck">4</span><div><b>真正限制超配的是常驻与提交，不是带宽</b> 提交上限是时点快照（当时 61.86 GB，复测 98.17 GB）；页一旦被驱逐就退化为页文件速度。<span class="tiny">规划工作集应 ≤ 30 GiB；超配部分只适合冷数据</span></div></li>
+      <li><span class="ck">5</span><div><b>第三方复现了 45.92 GiB 这个读数</b> ComfyUI 启动日志 <code>Total VRAM 47022 MB</code>（47,022 MiB = 45.92 GiB），与本机 Driver API 读数一致。它不是性能复现，只证明该配额读数不是自测脚本的伪影。<span class="tiny">同时证明 sm_121 在 torch 2.14.1+cu130 上可直接工作</span></div></li>
+    </ul>
+  </div>
+  <div class="callout dark">
+    <p><strong>规划口径（先记住这一行）：</strong>工作集按 ≤ 30 GiB 保守规划；最大单次分配 45.75 GiB（3/3 会话）；36 GiB 超配持续 5 min × 2 会话可用（122 GB/s）；&gt;40 GiB 长时间负载未验证；45.92 GiB 是配额读数，不是“可用容量”。</p>
+  </div>
+  <div class="callout amber">
+    <p><strong>高风险实验提示：</strong><code>bench/scan_cli.py</code>（或早期 <code>cuda_bench3.py</code>）会分配 32 GiB 并把提交推到接近上限，可能造成其他进程短暂分页。复跑前请关闭其他应用、确认提交余量、有人值守。</p>
+  </div>
+</section>
+
+<section id="limits">
+  <div class="kicker">01 / Three ceilings</div>
+  <h2>三个“上限”必须分开</h2>
+  <p class="lead">这不是“少了 32 GB”，而是统一内存被固件切成系统可见区与 GPU 专用帧缓冲；WDDM 再在这套划分上给出 CUDA 配额。下面几套数字同时成立，只是口径不同。</p>
+
+  <div class="mem-total"><span>物理 LPDDR5X 统一内存（SMBIOS 68,719,476,736 B）</span><b>64 GiB</b></div>
+  <div class="mem-bar" aria-label="64 GiB 统一内存分区示意图">
+    <div class="seg os" style="width:50.29%"><span>Windows 可见 32.18 GiB</span></div>
+    <div class="seg fb" style="width:47.66%"><span>GPU 帧缓冲 30.50 GiB</span></div>
+    <div class="seg rsv" style="width:2.06%"></div>
+  </div>
+  <div class="mem-legend">
+    <span><i class="os"></i>Windows 可见 32.18 GiB（50.3%）</span>
+    <span><i class="fb"></i>GPU 专用 FB 30.50 GiB（47.7%）</span>
+    <span><i class="rsv"></i>固件 / 保留约 1.32 GiB（2.1%，推算）</span>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>口径</th><th>数值</th><th>来源 / 含义</th><th>实测值</th></tr></thead>
+      <tbody>
+        <tr><td class="dim">专用帧缓冲 FB</td><td class="num">31,232 MiB = 30.50 GiB（可用 30.486）</td><td>nvidia-smi 显示值，热数据主战场</td><td><code>nvidia-smi</code> total 31,232 MiB；<code>-q -d MEMORY</code> 显示 Reserved 14 MiB</td></tr>
+        <tr><td class="dim">CUDA 可寻址</td><td class="num">45.92 GiB（残差 15.42）</td><td><code>cuDeviceTotalMem</code> / <code>cuMemGetInfo</code></td><td>total 45.92 GiB，free 45.72 GiB（空闲时，n=1）</td></tr>
+        <tr><td class="dim">物理内存</td><td class="num">64 GiB（厂商标称 64 GB；SMBIOS 68,719,476,736 B）</td><td>固件预留后 OS 可见 32.18 GiB</td><td><code>GlobalMemoryStatusEx</code> 34,556,649,472 B = 32.18 GiB = 34.56 GB</td></tr>
+        <tr><td class="dim">单进程 Dedicated 封顶</td><td class="num">29.76 GiB</td><td>WDDM <code>GPU Process Memory</code> 计数</td><td>见 05 页放置；36 GiB 分配时 Shared 6.44 GiB</td></tr>
+        <tr><td class="dim">提交上限（RAM + 页文件）</td><td class="num">61.86 GB → 98.17 GB</td><td>时点值，系统托管页文件会增长</td><td>测试当天 61.86 GB；17:13 复测 98.17 GB</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small">为什么 SMBIOS 写 32-bit：SMBIOS Type 17 的 Data Width / Total Width 是单个内存器件 / 模组字段；本机 LPDDR5X 为板载，WMI 只枚举到 1 个 DIMM0，所以报 32-bit。官方 256-bit 是 SoC 内存控制器侧总位宽；256 / 32 = 8，说明 WMI 报的不是总线总位宽，两者不能直接比较。</p>
+
+  <div class="grid-2">
+    <div class="callout" style="margin-top:0">
+      <p><strong>45.92 是“配额”，不是“可用容量”。</strong>它是地址空间 / 提交配额；按需提交，实际驻留受 RAM + 页文件约束。45.92 − 30.50 = 15.42 GiB 是残差，不是额外物理内存。</p>
+      <p class="small" style="margin-bottom:0">可用 <code>cap_probe</code> 夹逼：最大单次 45.75 GiB，46.0 GiB 失败，3/3 会话一致。</p>
+    </div>
+    <div class="callout blue" style="margin-top:0">
+      <p><strong>32.18 是“系统可见”，不是“可用给应用”。</strong>OS 自身、驱动、浏览器、桌面合成都要从这里拿。实际给大模型工作集的余量，要扣掉常驻与提交余量。</p>
+      <p class="small" style="margin-bottom:0">ComfyUI 日志 <code>total RAM 32956 MB</code> = 32.18 GiB，交叉一致。</p>
+    </div>
+  </div>
+</section>
+
+
+<section id="capacity">
+  <div class="kicker">02 / Capacity boundary</div>
+  <h2>容量夹逼：45.92 是读数，45.75 是能分配</h2>
+  <p class="lead">用 <code>bench/cap_probe.py</code> 做 0.25 GiB 步进的三会话夹逼。每次独立进程、独立上下文，结果 3/3 完全一致。</p>
+  <div class="cards">
+    <div class="card"><b>45.92 GiB</b><span>cuMemGetInfo total（配额读数）</span><span class="tool">三次不同负荷状态读数一致</span></div>
+    <div class="card"><b>45.75 GiB</b><span>最大单次成功分配</span><span class="tool">3/3 会话，0.25 GiB 步进</span></div>
+    <div class="card"><b>46.0 GiB</b><span>失败点</span><span class="tool">3/3 会话一致</span></div>
+    <div class="card"><b>0.17 GiB</b><span>配额读数与可分配量之差</span><span class="tool">45.92 − 45.75</span></div>
+  </div>
+  <div class="callout">
+    <p><strong>准确写法：</strong>驱动配额读数 45.92 GiB，实际可分配 45.75 GiB（差 0.17 GiB）；持有 45.75 GiB 后连 0.25 GiB 都加不上（<code>grow_fail=0.25</code>）。不要把 45.92 写成“已验证可用上限”，也不要把 30.5 写成“CUDA 上限”。</p>
+  </div>
+  <p class="small">注：32 GiB 分配 + 预留余量后，<code>cuMemGetInfo</code> 的 free 会同步下降；45.92 GiB 是上下文级配额，不是固定物理量。该配额在三次不同负荷状态（12:13 / 14:42 / 15:15）读数均为 47,021.8–47,022 MiB，<b>在本机当前负荷区间内未观察到浮动</b>；“会随系统内存压力浮动”是推定，未做压力实验。</p>
+</section>
+
+<section id="bandwidth">
+  <div class="kicker">03 / Bandwidth</div>
+  <h2>带宽实测：读 252、写 183、拷贝 117.5</h2>
+  <p class="lead">所有带宽按十进制 GB/s（10<sup>9</sup> B/s），容量按 GiB（2<sup>30</sup> B）。D2D 每次拷贝 n 字节、读+写共 2n 字节；报告同时给“单向”和“读+写总流量”两个口径，不混用。</p>
+  <div class="cards">
+    <div class="card"><b>252 GB/s</b><span>纯读（torch reduction，8 GiB）</span><span class="tool">5 会话：247–262 · 峰值的 92%</span></div>
+    <div class="card"><b>117.5 GB/s</b><span>D2D 拷贝单向（1 GiB）</span><span class="tool">5 会话：116.9–118.2 · 总流量 235</span></div>
+    <div class="card"><b>179.8 GB/s</b><span>memset 纯写（1 GiB）</span><span class="tool">5 会话：178.9–180.4</span></div>
+    <div class="card"><b>122.9 GB/s</b><span>pinned H2D（512 MiB）</span><span class="tool">5 会话：121.7–123.6</span></div>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>测试</th><th>结果（会话级均值）</th><th>说明</th></tr></thead>
+      <tbody>
+        <tr><td class="dim">D2D 1 GiB（<code>cuMemcpyDtoD</code>）</td><td class="num">117.5 GB/s（5 会话：116.9–118.2）</td><td>单向；实际流量约 235 GB/s；会话内 sd 4.9–6.5</td></tr>
+        <tr><td class="dim">memset（<code>cuMemsetD8</code>，1 GiB）</td><td class="num">179.8 GB/s（5 会话：178.9–180.4）</td><td>纯写；会话内 sd 10.1–11.7</td></tr>
+        <tr><td class="dim">纯读（torch reduction，8 GiB）</td><td class="num">252 GB/s（5 会话：247–262）</td><td>读；<code>bench/read_bw.py</code>；会话内 sd 2.3–11.2</td></tr>
+        <tr><td class="dim">H2D pinned（512 MiB 缓冲）</td><td class="num">122.9 GB/s（5 会话：121.7–123.6）</td><td>跨分区 staging；会话内 sd 10.0–11.2</td></tr>
+        <tr><td class="dim">D2H pinned</td><td class="num">113.2 GB/s（单次）</td><td>跨分区 staging</td></tr>
+        <tr><td class="dim">H2D pageable</td><td class="num">21.9 GB/s（512 MiB×4）/ 17.6 GB/s（256 MiB×4）</td><td>两个脚本、两种缓冲，不是同一条件的区间</td></tr>
+        <tr><td class="dim">预触碰 32 GiB</td><td class="num">0.937 s（单次）</td><td>含页提交</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small">口径提示：同一指标在不同会话有约 ±1–2% 的波动。本页 D2D 单向 117.5（总流量约 235）来自 5 个会话；03 GPU 基准的 5 进程中位为 233.0，参数报告的单次读数为 118.1 / 236.2。它们不是同一次会话，引用时应带上报告名与日期。</p>
+  <div class="grid-2">
+    <div class="callout" style="margin-top:0">
+      <p><strong>效率（对 273 GB/s 理论峰值）：</strong>copy 流量 86%（235/273）、写 66%（180/273）、纯读 92%（252/273）、pinned H2D 约 45%（123/273）。符合 LPDDR5X 特征；GDDR7 独显应在 1.5–1.8 TB/s 量级（业界公开规格量级，非本机对比）。</p>
+      <p class="small" style="margin-bottom:0">若按本机 SMBIOS 的 9,400 MT/s × 256-bit 口径，理论峰值为 300.8 GB/s，则读+写总流量效率约 78.5%；本报告主口径采用 GB10 官方 273 GB/s（8,533 MT/s），两者并列，避免把“SMBIOS 标称速率”当成唯一实际运行速率。</p>
+    </div>
+    <div class="callout amber" style="margin-top:0">
+      <p><strong>读带宽此前被 118（D2D 单向）与 180（memset 写）误用</strong>，导致 tok/s 估算偏低；以 252 GB/s 为准。会话级复测还纠正了一个低值：早期单次 pinned H2D 为 85.8 GB/s，干净 5 会话实为 122.9，说明当时的 85.8 受环境干扰。纯写 179.8 / 180.1 / 183.2 来自不同会话（内存报告 / 基准报告），引用时请带报告名。</p>
+      <p class="small" style="margin-bottom:0">加载权重应显式使用 pinned 缓冲或直接 mmap；pageable 路径是纯损失。加载 20 GiB 权重在 123 GB/s 下传输约 0.17 s（若需 20 GiB 源 + 20 GiB 目标共约 43 GB，超过 34.56 GB 物理，故该外推不成立；仅说明链路量级），实际瓶颈是磁盘与反序列化。</p>
+    </div>
+  </div>
+</section>
+
+<section id="scan">
+  <div class="kicker">04 / Cross-boundary scan</div>
+  <h2>跨过 30.5 GiB：6 个会话都没有断崖</h2>
+  <p class="lead">方法很直接：一次分配 32 GiB（比 FB 多 1.5 GiB），先整块预触碰把页提交掉，然后在不同偏移处测 512 MiB 块的写（<code>cuMemsetD8</code>）和读（D2D 到 FB）。6 个独立会话（3 升序 + 3 降序，每偏移 10 次）。</p>
+  <figure>
+    <img src="assets/img/fig-bandwidth-scan.webp" alt="跨 30.5 GiB 边界带宽扫描图" width="1500" height="800" loading="lazy" decoding="async">
+    <figcaption>图 1　6 个独立会话的均值 ± 跨会话 sd（每偏移 10 次）。横轴为分配内偏移，纵轴为带宽；橙色虚线是 30.5 GiB 边界。两条线在边界两侧平直，误差棒远小于区间跨度。</figcaption>
+  </figure>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>偏移（GiB）</th><th>标称区域</th><th>memset（GB/s）</th><th>D2D 单向（GB/s）</th></tr></thead>
+      <tbody>
+        <tr><td class="num">0</td><td>FB</td><td class="num">179.0</td><td class="num">119.5</td></tr>
+        <tr><td class="num">4</td><td>FB</td><td class="num">177.8</td><td class="num">122.5</td></tr>
+        <tr><td class="num">8</td><td>FB</td><td class="num">178.4</td><td class="num">119.2</td></tr>
+        <tr><td class="num">12</td><td>FB</td><td class="num">178.9</td><td class="num">124.9</td></tr>
+        <tr><td class="num">16</td><td>FB</td><td class="num">181.2</td><td class="num">119.0</td></tr>
+        <tr><td class="num">20</td><td>FB</td><td class="num">178.5</td><td class="num">118.7</td></tr>
+        <tr><td class="num">24</td><td>FB</td><td class="num">177.1</td><td class="num">117.1</td></tr>
+        <tr><td class="num">28</td><td>FB</td><td class="num">175.3</td><td class="num">123.3</td></tr>
+        <tr><td class="num">29</td><td>FB</td><td class="num">181.8</td><td class="num">116.0</td></tr>
+        <tr><td class="num">30</td><td>标称边界</td><td class="num">176.3</td><td class="num">117.0</td></tr>
+        <tr><td class="num"><b>30.5</b></td><td><b>标称溢出</b></td><td class="num"><b>178.8</b></td><td class="num"><b>117.3</b></td></tr>
+        <tr><td class="num"><b>31.0</b></td><td><b>标称溢出</b></td><td class="num"><b>176.6</b></td><td class="num"><b>118.1</b></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="cards">
+    <div class="card"><b>179.8 GB/s</b><span>FB 区（0–29 GiB）写均值</span><span class="tool">跨会话 sd 1.8</span></div>
+    <div class="card"><b>179.0 GB/s</b><span>溢出区（30.5 / 31 GiB）写</span><span class="tool">sd 1.6 · 差 −0.4%</span></div>
+    <div class="card"><b>119.7 GB/s</b><span>FB 区读均值</span><span class="tool">sd 2.4</span></div>
+    <div class="card"><b>121.5 GB/s</b><span>溢出区读均值</span><span class="tool">sd 1.4 · 差 +1.5%</span></div>
+  </div>
+  <div class="callout">
+    <p><strong>但仍须限定：</strong>32 GiB 是单次分页分配，WDDM 不保证前 30.5 GiB 线性落在 FB；脚本只按偏移贴“标称区域”标签。因此应写“在本次放置假设下、6 个会话一致未观察到断崖”，而不是“结构上不降速”。页放置已在下一节单独标定。</p>
+  </div>
+  <h3>尺寸阶梯</h3>
+  <p><code>bench/scan_cli.py --mode ladder</code>，整块 memset + 512 MiB D2D：</p>
+  <div class="table-wrap compact">
+    <table>
+      <thead><tr><th>分配尺寸</th><th>整块 memset</th><th>512 MiB D2D</th></tr></thead>
+      <tbody>
+        <tr><td class="num">28 GiB</td><td class="num">111.9 GB/s</td><td class="num">117.4 GB/s</td></tr>
+        <tr><td class="num">30 GiB</td><td class="num">110.5</td><td class="num">120.0</td></tr>
+        <tr><td class="num">31 GiB</td><td class="num">109.7</td><td class="num">120.2</td></tr>
+        <tr><td class="num">32 GiB</td><td class="num">108.0</td><td class="num">115.5</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small">整块写从 28→32 GiB 下降约 3.5%，但 512 MiB 拷贝基本不变——跨过 FB 边界后可能有轻微管理开销，但远不足以构成断崖。</p>
+</section>
+
+<section id="placement">
+  <div class="kicker">05 / Placement & overcommit</div>
+  <h2>页放置：Dedicated 在 29.76 GiB 封顶，之后进 Shared</h2>
+  <p class="lead"><code>bench/placement_probe.py</code> 在同一进程内逐档分配并触碰，同时读 <code>GPU Process Memory(pid_*)</code> 的 Dedicated / Shared Usage（WDDM 计数，1 s 一次）。</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>分配（GiB）</th><th>nvidia-smi used（MiB）</th><th>Dedicated（GiB）</th><th>Shared（GiB）</th></tr></thead>
+      <tbody>
+        <tr><td class="num">8</td><td class="num">8,834</td><td class="num">8.13</td><td class="num">0.06</td></tr>
+        <tr><td class="num">16</td><td class="num">17,026</td><td class="num">16.13</td><td class="num">0.06</td></tr>
+        <tr><td class="num">24</td><td class="num">25,218</td><td class="num">24.13</td><td class="num">0.06</td></tr>
+        <tr><td class="num">28</td><td class="num">29,314</td><td class="num">28.13</td><td class="num">0.06</td></tr>
+        <tr><td class="num">29</td><td class="num">30,338</td><td class="num">29.13</td><td class="num">0.06</td></tr>
+        <tr><td class="num">30</td><td class="num">30,978</td><td class="num"><b>29.76</b></td><td class="num">0.44</td></tr>
+        <tr><td class="num">30.5</td><td class="num">30,978</td><td class="num">29.76</td><td class="num">0.94</td></tr>
+        <tr><td class="num">31</td><td class="num">30,978</td><td class="num">29.76</td><td class="num">1.44</td></tr>
+        <tr><td class="num">32</td><td class="num">30,978</td><td class="num">29.76</td><td class="num">2.44</td></tr>
+        <tr><td class="num">34</td><td class="num">30,982</td><td class="num">29.77</td><td class="num">4.44</td></tr>
+        <tr><td class="num">36</td><td class="num">30,978</td><td class="num">29.77</td><td class="num"><b>6.44</b></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout">
+    <p><strong>结论：Dedicated 在 29.76 GiB 处封顶，之后每多分配 1 GiB，Shared 就线性多 1 GiB；nvidia-smi 的 FB 停在 30,978 MiB。</strong>这直接证明超出边界后的页落在系统内存（shared），而不是“整块都在 FB”的巧合。结合 36 GiB 持续 122 GB/s，说明这些 shared 页被 GPU 以同等速度访问。</p>
+  </div>
+  <p class="small">说明：Dedicated 封顶点 29.76 GiB 比 FB 总量 30.5 GiB 低约 0.7 GiB，差值来自驱动保留与其他上下文的占用；因此 04 节里按 30.5 贴的“标称边界”偏保守，真实按进程的拐点在 29.76 GiB 附近。</p>
+
+  <h3>超配持续负载</h3>
+  <p><code>bench/sustained.py</code>：分配 36 GiB，超配 5.5 GiB；5 分钟 × 2 会话；每会话约 64,200 次 512 MiB 拷贝。</p>
+  <div class="table-wrap compact">
+    <table>
+      <thead><tr><th>会话</th><th>迭代次数</th><th>中位带宽</th><th>p95 延迟</th><th>&gt;3× 中位停顿</th><th>commit used</th></tr></thead>
+      <tbody>
+        <tr><td class="num">1</td><td class="num">64,201</td><td class="num">122.16 GB/s</td><td class="num">5.5 ms</td><td class="num">2</td><td class="num">53.5 GB</td></tr>
+        <tr><td class="num">2</td><td class="num">64,181</td><td class="num">122.20 GB/s</td><td>—</td><td class="num">3</td><td>—</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small">5 分钟内超配区被持续随机偏移访问，带宽与 FB 内 D2D（117.5）相当、几乎没有停顿——与“常驻即可全速、被驱逐才慢”一致。注意 5 分钟不等于长时间生产负载，未覆盖系统级内存压力。</p>
+</section>
+
+<section id="real">
+  <div class="kicker">06 / Real workload</div>
+  <h2>真实负载：ComfyUI 的 47 GB 从哪来</h2>
+  <p class="lead">本机 ComfyUI 便携版启动日志：<code>[INFO] Total VRAM 47022 MB, total RAM 32956 MB</code>。47,022 MiB = 49.31 GB = 45.92 GiB，正是 <code>cuMemGetInfo</code> 的配额读数；“47 GB”是把 MiB 数直接当 GB 读的产物，既不是十进制近似，也不是 47 GiB。</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>指标</th><th>ComfyUI 日志</th><th>本报告实测</th><th>一致性</th></tr></thead>
+      <tbody>
+        <tr><td class="dim">显存总量</td><td class="num">47,022 MiB = 45.92 GiB</td><td class="num">45.92 GiB（<code>cuMemGetInfo</code>）</td><td><span class="badge ok">差 221 KB（&lt;0.001%）</span></td></tr>
+        <tr><td class="dim">系统内存</td><td class="num">32,956 MiB = 32.18 GiB</td><td class="num">32.18 GiB（<code>GlobalMemoryStatusEx</code>）</td><td><span class="badge ok">一致</span></td></tr>
+        <tr><td class="dim">设备</td><td>RTX Spark N1X</td><td>同</td><td><span class="badge ok">一致</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small">机制：<code>comfy/model_management.py</code> 的 <code>get_total_memory()</code> 调用 CUDA Driver 的 <code>cuMemGetInfo</code>；模块级打印除以 1024²，标签写 MB、实为 MiB。<code>total RAM</code> 走 <code>psutil</code>。<code>server.py</code> 把同一数值以字节形式暴露为 <code>/system_stats.vram_total</code>。ComfyUI 自报 <code>loaded completely; 30962.15 MB usable</code>，说明它的预算口径约 30 GiB，不是 45.9 GiB。</p>
+
+  <h3>MiniMax H3 文生视频：3 次独立生成</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>项目</th><th>三次实测（R1 / R2 / R3）</th></tr></thead>
+      <tbody>
+        <tr><td class="dim">分辨率 / 帧数</td><td>1344×768 / 124 帧（5.17 s @ 24 fps）</td></tr>
+        <tr><td class="dim">采样</td><td>20 步，<code>res_multistep</code>，turbo=false</td></tr>
+        <tr><td class="dim">权重加载</td><td><b>141 / 142 / 142 s</b>（冷 / 冷 / 热进程；每次 <code>/free</code> 后重载）</td></tr>
+        <tr><td class="dim">采样 20 步</td><td>1,130 / 1,179 / 1,222 s</td></tr>
+        <tr><td class="dim">全流程</td><td><b>1,323 / 1,375 / 1,418 s（22.0 / 22.9 / 23.6 min）</b></td></tr>
+        <tr><td class="dim">稳态单步</td><td><b>60.5 ± 0.8 / 63.2 ± 0.9 / 64.4 ± 0.9 s</b>（剔除首段约 40 s 的热身）</td></tr>
+        <tr><td class="dim">产出</td><td>每次 2.02 MB（2,023,798 B）；同种子 → 字节级一致</td></tr>
+        <tr><td class="dim">FB 使用</td><td>峰值 31,073 / 31,064 / 31,064 MiB（30.35 GiB）；遥测均值约 30.2–30.35 GiB</td></tr>
+        <tr><td class="dim">功耗 / 温度</td><td>均值 72.4 / 70.0 / 68.8 W，峰值 97 W；温度均值 67 °C、峰值 75 °C</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="notes">
+    <div class="note-card"><b>采样期 FB 接近打满</b><p>三次峰值 31,064–31,073 MiB（约 30.35 GiB），末尾卸载阶段回落到约 29.3 GiB。30.5 GiB 是热工作集的实际天花板（三次一致，仍属观测而非证明）。</p></div>
+    <div class="note-card"><b>42 GB 是磁盘量，不是常驻量</b><p>ComfyUI 顺序装卸：TE 14,960 MB 加载→用完卸载→DiT 19,996 MB 加载→VAE 各自加载。采样期同时驻留约 22.7 GiB，从未接近 30.5 GiB。</p></div>
+    <div class="note-card"><b>跨运行波动大于运行内</b><p>运行内 sd 0.8–0.9 s（约 1.4%），但三次运行的稳态单步从 60.5 到 64.4 s（6.2%）。同日 A1（8 步 turbo / 5s @1344×768）为 959 s ≈ 110 s/step，属不同配置，不能直接比较。</p></div>
+  </div>
+  <p class="small">注：此机型上 ComfyUI 必须加 <code>--disable-dynamic-vram</code> 启动，否则 <code>comfy_aimdo</code>（DynamicVRAM/AIMDO）在 cc12.1 + 驱动 621.40 上会 access violation 崩溃。</p>
+  <p class="small">本节是早期 3 次 20 步 base 会话；更细的 A/B/C 对照（5s / 10s、原生 vs FreeVideo）见 <a href="h3.html">07 视频报告</a>。H3 报告里的 A 组 8 步 turbo 即上文 A1（959 s），D 组是另一次 20 步运行（24m05s，不同 prompt 与 <code>--verbose</code>），差异来自会话与参数，不是矛盾。</p>
+</section>
+
+<section id="mechanism">
+  <div class="kicker">07 / Mechanism</div>
+  <h2>同一池内存，两层划分</h2>
+  <div class="grid-2">
+    <div>
+      <p><b>第一层：固件预留。</b>约 30.5 GiB 作为 GPU 帧缓冲，操作系统只能看到其余 32.18 GiB；余下约 1.32 GiB 为固件保留（推算值：64 − 30.50 − 32.18）。</p>
+      <p><b>第二层：WDDM 配额。</b>CUDA 在“帧缓冲 + 共享预算”上拿到 45.92 GiB 的地址空间。它不是额外物理内存，而是可提交的配额；超出 FB 的页落在系统内存 / 页文件。</p>
+      <p><b>为什么“溢出”不一定慢。</b>溢出页没有被搬到一条更慢的链路上：它们仍在同一组 LPDDR5X 里，只是记账科目从 Dedicated 变成了 Shared。页驻留时，GPU 以接近帧缓冲内的速度访问；真正变慢发生在页被驱逐之后——那时瓶颈是缺页与页文件，而不是带宽。</p>
+    </div>
+    <div class="callout blue" style="margin-top:0">
+      <p><strong>为什么 Linux 和 Windows 差这么多。</strong>同一颗 GB10，DGX Spark 上 128 GB 是一个统一池，GPU 与 CPU 共享 DRAM；iGPU 没有专用帧缓冲，<code>nvidia-smi</code> 甚至显示 <code>Memory-Usage: Not Supported</code>。Windows/WDDM 上，固件先预留约 30.5 GiB 作专用 FB，OS 只见 32.18 GiB；WDDM 再给出 CUDA 配额。所以“专用显存”语义在 Windows 上是两层叠加，不是一本账。</p>
+      <p class="small" style="margin-bottom:0">“64 GiB 的机器为什么只能用 45.9 GiB”不是驱动 bug，是固件划分 + Windows 内存模型共同决定的。同一台机器装 Linux 会宽松得多——但 64 GB 版本在 Linux 下也不会变成 128 GB。</p>
+    </div>
+  </div>
+  <div class="callout dark">
+    <p><strong>打个比方：</strong>溢出不是“住得远”，是“寄人篱下”。只要还住着，速度和房东一样；房东一赶，你就得搬——搬的过程才是慢的。</p>
+  </div>
+  <h3>对“超配”的正确理解</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>说法</th><th>判定</th><th>依据</th></tr></thead>
+      <tbody>
+        <tr><td class="dim">30.5 GiB 是 CUDA 上限</td><td><span class="badge no">错</span></td><td><code>cuMemGetInfo</code> total 45.92 GiB；最大单次分配 45.75 GiB（3/3 会话）</td></tr>
+        <tr><td class="dim">45.9 GiB 是“可用容量”</td><td><span class="badge no">错</span></td><td>是地址空间 / 提交配额；on-demand 提交，实际驻留受 RAM + 页文件约束</td></tr>
+        <tr><td class="dim">溢出区带宽远低于片内</td><td><span class="badge no">错（6 会话）</span></td><td>30.5 / 31 GiB 偏移与 FB 相当（写 −0.4%、读 +1.5%）；页放置已标定</td></tr>
+        <tr><td class="dim">溢出区不能当工作集用</td><td><span class="badge warn">部分对</span></td><td>常驻时可用；被驱逐即退化为页文件速度，且提交余量会耗尽</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="advice">
+  <div class="kicker">08 / Engineering advice</div>
+  <h2>规划口径：工作集 ≤ 30 GiB</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>区域</th><th>建议容量</th><th>用途</th></tr></thead>
+      <tbody>
+        <tr><td class="dim">专用 FB（单进程 Dedicated）</td><td class="num">≤ 30 GiB</td><td>热工作集：权重、KV cache、激活</td></tr>
+        <tr><td class="dim">溢出区（Shared）</td><td class="num">≤ 6–10 GiB</td><td>冷权重、一次性加载；接受被驱逐风险</td></tr>
+        <tr><td class="dim">系统内存</td><td class="num">≥ 15 GiB</td><td>操作系统、驱动、常驻应用</td></tr>
+        <tr><td class="dim">提交余量</td><td class="num">≥ 10 GB，且不超过当时提交上限的约 85%</td><td>防止页文件打满导致分配失败或进程被杀</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <ul>
+    <li><b>保守工作集：</b>≤ 30 GiB（单进程 Dedicated 实测封顶 29.76 GiB）。</li>
+    <li><b>分配层面：</b>最大单次 45.75 GiB（3/3 会话）；36 GiB 超配持续 5 分钟 × 2 会话可用（中位 122 GB/s、停顿 2–3 次），但 &gt;40 GiB 的长时间负载未验证。</li>
+    <li><b>推理速度：</b>按实测纯读 252 GB/s 估，30 GB 模型理论上限约 8 tok/s（252 ÷ 30 ≈ 8.4，未含实现损耗，实际约 6）；早前用 118 / 180 / 235 推算的 4 tok/s 属口径错误，已作废。</li>
+    <li><b>权重加载：</b>使用 pinned 缓冲或 mmap；pageable 路径会损失 4–5 倍。</li>
+    <li><b>超配：</b>把最冷的数据放到溢出区，并留足提交余量；不要依赖“溢出区扛住热工作集”。</li>
+  </ul>
+  <div class="callout amber">
+    <p><strong>不要把“磁盘模型大小”当成“显存工作集”。</strong>本机 42 GB 模型文件（含未启用 LoRA 1.96 GB）采用顺序装卸，采样期常驻约 22.7 GiB，未接近 30.5 GiB。规划时应按框架的实际加载顺序与同时驻留峰值计算。</p>
+  </div>
+</section>
+
+<section id="method">
+  <div class="kicker">09 / Reproduce & limits</div>
+  <h2>复现要点与未覆盖项</h2>
+  <div class="grid-2">
+    <div>
+      <h3 style="margin-top:0">脚本与结果</h3>
+      <pre><span class="c"># 工作区根目录；解释器为 DSH 运行时 Python 3.12.14 或 ComfyUI 3.13</span>
+&lt;python 3.12.14&gt; bench\bench_cli.py --mode d2d --size-gib 1 --reps 20 --out bench\runs\d2d.json
+&lt;python 3.12.14&gt; bench\cap_probe.py --step 0.25 --max-gib 47 --out bench\runs\cap.json
+&lt;python 3.12.14&gt; bench\scan_cli.py --mode scan --size-gib 32 --reps 10 --order asc --out bench\runs\scan.json
+&lt;ComfyUI python&gt; bench\read_bw.py --size-gib 8 --reps 10 --out bench\runs\read.json
+&lt;ComfyUI python&gt; bench\sustained.py --size-gib 36 --minutes 5 --out bench\runs\sustained.json
+&lt;ComfyUI python&gt; bench\run_real3.py --runs 3 --steps 20 --seconds 5</pre>
+      <p class="small">结果文件在 <code>bench/runs/*.json</code>（原始日志未随站点发布），会话日志在 <code>bench/runs/*_log.txt</code>。仍属现场回显、无脚本：40 GiB 分配→提交量、DXGI <code>SharedSystemMemory = 16.18 GiB</code>、<code>cuMemAllocManaged</code> 属性、运行期功耗单点 92.9 W。</p>
+    </div>
+    <div>
+      <h3 style="margin-top:0">软件栈</h3>
+      <ul class="small" style="line-height:1.9">
+        <li><b>sm_121 已在本机验证可用：</b>ComfyUI 自带 <code>torch 2.14.1+cu130</code>，<code>torch.cuda.is_available() = True</code>、<code>get_device_capability() = (12,1)</code>，无需自行编译；但 llama.cpp / vLLM 等其他框架对 sm_121 的支持仍需逐项确认。</li>
+        <li><code>cuMemAllocManaged</code> 可用（managed=1），但 <code>concurrentManagedAccess=0</code>——现场回显，未留脚本；该结论未复测。</li>
+        <li>本机无 CUDA Toolkit；ComfyUI 便携版自带 PyTorch 2.14.1+cu130。</li>
+      </ul>
+      <h3>未覆盖项</h3>
+      <ul class="small" style="line-height:1.9">
+        <li>未做内存压力下的驱逐实测（需主动制造系统级内存压力，风险高）。</li>
+        <li>页放置已完成标定（Dedicated 封顶 29.76 GiB，超出进 Shared）。</li>
+        <li>40 GiB 以上的长时间（&gt;10 min）生产负载未测；当前只到 36 GiB × 5 min × 2 会话。</li>
+        <li>真实负载已完成 3 次独立生成（R1/R2 冷启动、R3 热进程），结果见 06；未做跨天/跨驱动版本复测。</li>
+        <li>单次测量、WDDM 环境存在波动；本次多会话已给出会话内 sd，但跨天/跨驱动版本未测。</li>
+      </ul>
+    </div>
+  </div>
+  <p class="small">完整版下载：<a href="assets/downloads/ASUS-GR1X-内存与带宽实测报告.pdf">ASUS GR1X 内存与带宽实测报告（PDF，0.6 MB）</a>。外部来源见页面底部与 <a href="evidence.html#s-files">08 证据墙 · 原始文件</a>。</p>
+</section>
+
+<div class="page-nav">
+  <a href="benchmark.html"><span class="label">上一份 · 03</span><b>← GPU 性能基准</b></a>
+  <a class="next" href="memory-story.html"><span class="label">下一份 · 05</span><b>快读：同一个 GB10，两种内存命运 →</b></a>
+</div>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div>
+      <p><b>N1X 全景评测</b><br>04 内存与带宽实测报告</p>
+      <p>本报告由本地实测数据与 CUDA Driver API 生成，部分结论依赖多会话复测与 WDDM 计数。容量按 GiB、带宽按 GB/s，均已标注口径。</p>
+      <p class="small">不构成 NVIDIA / ASUS 官方认证。测试结果仅代表本机在 2026-11-25 的状态。</p>
+      <div class="foot-links"><a href="index.html">总览</a><a href="memory-story.html">快读版</a><a href="benchmark.html">GPU 基准</a><a href="qwen.html">推理报告</a><a href="h3.html">视频报告</a><a href="evidence.html">证据墙</a></div>
+    </div>
+    <div class="src-list">
+      <p><b>相关页面与来源</b></p>
+      <p><a href="https://docs.nvidia.com/dgx/dgx-spark/hardware.html">DGX Spark 硬件规格</a><br>
+      <a href="https://docs.nvidia.com/dgx/dgx-spark/known-issues.html">DGX Spark Known Issues</a><br>
+      <a href="https://docs.nvidia.com/dgx/dgx-spark/release-notes.html">DGX Spark Release Notes</a><br>
+      <a href="https://learn.microsoft.com/en-us/windows/win32/api/dxgi/ns-dxgi-dxgi_adapter_desc">Microsoft DXGI_ADAPTER_DESC</a><br>
+      <a href="https://download.pytorch.org/whl/cu130/torch/">PyTorch cu130 轮子索引</a></p>
+    </div>
+  </div>
+</footer>
+<script src="assets/site.js"></script>
+</body>
+</html>

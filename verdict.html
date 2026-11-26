@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>09 总评与选型建议 · N1X 全景评测</title>
+<meta name="description" content="RTX Spark N1X / ASUS GR1X 的分维度结论、适用场景与待补测边界、内存预算、模型与并发建议，以及仍未回答的问题。">
+<link rel="stylesheet" href="assets/site.css">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+<a class="skip-link" href="#main">跳到正文</a>
+<div class="progress-bar" aria-hidden="true"></div>
+
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="index.html"><span class="mark">N1X</span><span>N1X 全景评测<small>ASUS ProArt GR1X · 2026</small></span></a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">目录</button>
+    <nav class="nav" id="site-nav" aria-label="站点导航">
+      <a href="index.html">总览</a>
+      <a href="spec.html">参数</a>
+      <a href="nvidia-app.html">配置</a>
+      <a href="benchmark.html">基准</a>
+      <a href="memory.html">内存</a>
+      <a href="memory-story.html">快读</a>
+      <a href="qwen.html">推理</a>
+      <a href="h3.html">视频</a>
+      <a href="evidence.html">证据</a>
+      <a href="verdict.html" class="active">总评</a>
+    </nav>
+  </div>
+</header>
+
+<header class="hero compact">
+  <div class="wrap">
+    <div class="crumbs"><a href="index.html">总览</a><span class="sep">/</span><span>09 总评</span></div>
+    <div class="eyebrow">09 / Verdict · 2026-11-26</div>
+    <h1>它适合谁，<span>哪些还需补测</span></h1>
+    <p class="sub">把前八份报告收成一张选型表</p>
+    <p class="lede">N1X 不是“便宜的 4090”，也不是“全能工作站”。它的强项是 64 GiB 统一内存 + 140 W + ARM64 的本地 AI 与视频负载；短板是绝对带宽与 FP32 持续算力；游戏图形尚待实测。</p>
+    <p class="page-q"><b>本页回答：</b>它适合谁、哪些场景要等补测、怎么按内存与并发做规划。</p>
+    <div class="meta">
+      <span>跨报告综合</span><span>不新增实测</span><span>所有结论可回溯</span>
+    </div>
+    <div class="roles"><span class="role-pill">结论</span><span class="role-pill alt">选型建议</span><span class="role-pill gray">含未验证项</span></div>
+  </div>
+</header>
+
+<nav class="toc" aria-label="本页目录">
+  <div class="wrap">
+    <a href="#s-tldr">00 一句话</a><a href="#s-scorecard">01 分维度结论</a><a href="#s-fit">02 适用场景</a>
+    <a href="#s-unfit">03 边界与未测</a><a href="#budget">04 规划口径</a><a href="#s-decide">05 决策表</a>
+    <a href="#open">06 未回答问题</a><a href="#s-close">07 结语</a>
+  </div>
+</nav>
+
+<main class="wrap" id="main">
+
+<section id="s-tldr">
+  <div class="kicker">00 / The short version</div>
+  <h2>一台“内存很大、带宽中等、算力够用”的 ARM64 小型工作站</h2>
+  <div class="verdict-grid">
+    <div class="verdict-main">
+      <div class="kicker">One paragraph</div>
+      <h2>买它，是为了“把 27B 装进 140 W 的盒子里”，不是为了“跑 4K 光追”</h2>
+      <p>它的 64 GiB 统一内存让 27B 级 4-bit 模型可以常驻，并且 30.5 GiB 专用 FB 内还能留下约 12 GiB 余量；它的 252 GB/s 纯读带宽决定了 30B 级稠密模型在<b>无投机解码</b>时的朴素解码上限大约在 8 tok/s，而 Qwen3.8-27B + MTP 实测能到 36.6 tok/s（短上下文）——这说明<b>投机解码与模型结构</b>能把“带宽账面”改写很多。</p>
+      <p>但它的绝对带宽只有 RTX 3090 的 24.9%、4090 的 23.1%、5090 的 13.0%；FP32 实测 19.1 TFLOPS，约为 3090 理论值的 53.7%。<strong>如果你的任务吃绝对算力或带宽，它不是一个便宜的替代品。</strong></p>
+      <p style="margin-bottom:0">一句话：<strong>AI 推理、长文档、视频生成、CUDA/ARM64 开发是主场；4K 光追游戏与 FP64 HPC 尚待补测；带宽敏感 HPC 不是强项。</strong></p>
+    </div>
+    <div class="verdict-side">
+      <div class="note-card"><span class="tag">强项</span><b>64 GiB 统一内存 + 140 W</b><p>27B IQ4_XS 峰值 18.4 GiB，FB 内仍余约 12 GiB；视频生成可把 FB 打到 30.35 GiB。</p></div>
+      <div class="note-card"><span class="tag">强项</span><b>Tensor 与媒体能力齐全</b><p>FP16 58.9 TFLOPS、FP8 159–166、7/7 编码、6/7 解码、DLSS 5 运行时、Vulkan RT。</p></div>
+      <div class="note-card"><span class="tag">边界</span><b>带宽与 FP32 是短板</b><p>纯读 252 GB/s；FP32 短时 19.1 / 600 s 18.0；绝对算力型任务不是强项。</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="s-scorecard">
+  <div class="kicker">01 / Scorecard</div>
+  <h2>分维度结论：不合并成“整机等级”</h2>
+  <p class="lead">同一台机器在不同维度上的位置不一样。把“GPGPU 约 4060–4060 Ti”“内存 64 GiB”“LLM 36.6 tok/s”合并成一个分数，会丢掉最重要的信息。</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>维度</th><th>结论</th><th>关键证据</th><th>适用判断</th></tr></thead>
+      <tbody>
+        <tr><td class="dim">身份 / 规格</td><td>桌面 6144/20 档，无 NPU，140 W</td><td>官方规格 + nvidia-smi + CUDA 48 SM；NVIDIA App 6144</td><td><span class="badge ok">明确</span></td></tr>
+        <tr><td class="dim">官方能力</td><td>RTX / 光追 / DLSS 5 / NVENC 9 / NVDEC 6 / PCIe Gen5 / CUDA 12.1 全部可复现</td><td>28 项核对；7/7 编码、6/7 解码；Vulkan RT；FL 12_2</td><td><span class="badge ok">通过</span></td></tr>
+        <tr><td class="dim">GPGPU 综合</td><td>介于 RTX 4060 与 4060 Ti 之间</td><td>GB7 Vulkan 111,605；CUDA 179,627；3090 的 58.4% / 67.9%</td><td><span class="badge info">够用</span></td></tr>
+        <tr><td class="dim">精度算力</td><td>FP16/BF16 约 59 TFLOPS；FP8 实测超过旧模型；FP4 仅推算</td><td>FP32 19.1/18.0；FP16 58.9；FP8 159–166；FP4 473.8*</td><td><span class="badge warn">分精度看</span></td></tr>
+        <tr><td class="dim">显存带宽</td><td>纯读接近峰值，写与拷贝是短板</td><td>纯读 252 / 总流量 233 / 纯写 183；理论 273</td><td><span class="badge warn">带宽敏感慎选</span></td></tr>
+        <tr><td class="dim">内存容量</td><td>30.50 GiB FB + 45.92 GiB 配额；工作集 ≤ 30 GiB 最稳</td><td>最大单次 45.75；Dedicated 封顶 29.76；36 GiB×5 min 122 GB/s</td><td><span class="badge ok">强项</span></td></tr>
+        <tr><td class="dim">本地 LLM</td><td>27B IQ4_XS 可稳定运行；短上下文快，长上下文受带宽拖累</td><td>36.6 / 30.2 / 19.3 tok/s；MTP ×2.16；cache ×169</td><td><span class="badge ok">推荐</span></td></tr>
+        <tr><td class="dim">并发</td><td>适合 1–2 个并发用户</td><td>8 路聚合 2.07×，单请求降到 12.8 tok/s</td><td><span class="badge warn">别堆并发</span></td></tr>
+        <tr><td class="dim">热 / 功耗</td><td>10–13.5 分钟持续负载 77–83 °C，无持续降频</td><td>32K 76.5 °C / 89K 77.2 °C；600 s FP32 79.3 °C / 105.9 W</td><td><span class="badge ok">稳定</span></td></tr>
+        <tr><td class="dim">游戏 / 渲染</td><td>未测；按 48 SM / 252 GB/s 与综合分推测不理想</td><td>无 3DMark / Blender / 游戏帧率数据</td><td><span class="badge gray">未验证</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small">* FP4 473.8 TFLOPS 为推算；官方 1 PFLOP 为 FP4 稀疏口径。完整口径见 <a href="benchmark.html#s-precision">03 精度算力</a>。</p>
+</section>
+
+<section id="s-fit">
+  <div class="kicker">02 / Fit</div>
+  <h2>适合：把大模型留在本地的人</h2>
+  <div class="cards three">
+    <div class="card" style="padding:20px"><b style="font-size:17px">本地 27B 级推理</b><span style="font-size:12.5px;line-height:1.7;margin-top:8px">8K 上下文 + MTP：36.6 tok/s、14.4 GiB 峰值、余量充足。适合日常对话、代码辅助、agent 循环。</span><span class="tool">证据：06 推理报告 · 3.1 / 3.2</span></div>
+    <div class="card" style="padding:20px"><b style="font-size:17px">长文档批处理</b><span style="font-size:12.5px;line-height:1.7;margin-top:8px">89K 上下文首 token 约 123 s，解码 19.3 tok/s；交互式追问靠 prompt cache，第二轮首 token 回到 0.4 s 以内。</span><span class="tool">证据：06 推理报告 · 3.3 / 3.4</span></div>
+    <div class="card" style="padding:20px"><b style="font-size:17px">视频生成 / 多模态</b><span style="font-size:12.5px;line-height:1.7;margin-top:8px">5s @1344×768 原生 8 步 15m59s；10s @1344×768 需 FreeVideo 8+3，9m37s；三组峰值 30.33–30.38 GiB。</span><span class="tool">证据：07 视频报告 · 00 / 07</span></div>
+    <div class="card" style="padding:20px"><b style="font-size:17px">CUDA / ARM64 开发</b><span style="font-size:12.5px;line-height:1.7;margin-top:8px">sm_121 在 torch 2.14.1+cu130 上直接可用；48 SM、24 MiB L2、6,144 CUDA，适合调试与小规模训练/推理。</span><span class="tool">证据：01 参数 · 04；04 内存 · 09（方法与局限）</span></div>
+    <div class="card" style="padding:20px"><b style="font-size:17px">媒体前处理</b><span style="font-size:12.5px;line-height:1.7;margin-top:8px">第九代 NVENC / 第六代 NVDEC；7/7 编码、6/7 解码；HEVC 4:2:2 10-bit 编解都通过。适合转码、超分、人脸/滤镜等 Tensor 友好负载。</span><span class="tool">证据：01 参数 · 06</span></div>
+    <div class="card" style="padding:20px"><b style="font-size:17px">低功耗常驻</b><span style="font-size:12.5px;line-height:1.7;margin-top:8px">140 W SoC TDP，AC-only mini PC；空闲 2 W / 39 °C。适合办公室、实验室桌面常驻，而不是机房。</span><span class="tool">证据：01 参数 · 08（平台与 IO）；index#raw / evidence#s-smi</span></div>
+  </div>
+</section>
+
+<section id="s-unfit">
+  <div class="kicker">03 / Limits &amp; open tests</div>
+  <h2>边界与未验证：哪些场景需要补测</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>场景</th><th>为什么需要谨慎 / 未验证</th><th>更合适的方向</th></tr></thead>
+      <tbody>
+        <tr><td class="dim">4K 高帧游戏、光追全开</td><td>没有游戏实测；按 48 SM / 252 GB/s 与 GB7 综合分推测不理想，但不能据此下结论；后续补测。</td><td>桌面独显（4090 / 5090 级）</td></tr>
+        <tr><td class="dim">FP64 密集型 HPC</td><td>FP64 比例 1:64、约 0.46 TFLOPS（推算，未实测）；后续补测后再判定。</td><td>服务器级 GPU / CPU 集群</td></tr>
+        <tr><td class="dim">带宽敏感型 HPC</td><td>纯读 252 GB/s，是 3090 理论 936 的 26.9%、5090 1,792 的 14.1%；流体、CFD、大规模稀疏会被带宽按住。</td><td>HBM / GDDR7 独显</td></tr>
+        <tr><td class="dim">高并发在线服务</td><td>8 路并发聚合仅 2.07×，单请求降到 12.8 tok/s；每请求约 23 token 的短输出都如此，长输出更差。</td><td>多卡 / MoE 专用推理卡</td></tr>
+        <tr><td class="dim">&gt;40 GiB 长时间超配</td><td>只测到 36 GiB × 5 min × 2 会话；&gt;40 GiB、&gt;10 min 未验证，不能从 5 分钟外推。</td><td>更大内存的 DGX Spark / 服务器</td></tr>
+        <tr><td class="dim">30 分钟以上持续满载</td><td>热稳态只覆盖 10–13.5 分钟；更长时间的热漂移未验证。</td><td>需要长时间满载时先补测</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout amber">
+    <p><strong>“需补测”不等于“不能跑”。</strong>它可以在 4K 下跑游戏、可以跑 FP64 代码、可以接 8 路请求；现有证据不足以判定这些场景的性能上限。选型时应该看“单位功耗/单位成本下的有效吞吐”，而不是“能不能启动”。</p>
+  </div>
+</section>
+
+<section id="budget">
+  <div class="kicker">04 / Planning</div>
+  <h2>规划口径：内存、模型与并发</h2>
+  <h3>内存预算</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>区域</th><th>建议容量</th><th>用途 / 风险</th></tr></thead>
+      <tbody>
+        <tr><td class="dim">专用 FB（单进程 Dedicated）</td><td class="num">≤ 30 GiB</td><td>热工作集：权重、KV cache、激活。实测 Dedicated 封顶 29.76 GiB。</td></tr>
+        <tr><td class="dim">溢出区（Shared）</td><td class="num">≤ 6–10 GiB</td><td>冷权重、一次性加载；常驻时全速，被驱逐后退化为页文件速度。</td></tr>
+        <tr><td class="dim">系统内存</td><td class="num">≥ 15 GiB</td><td>OS、驱动、浏览器、桌面合成、常驻应用。</td></tr>
+        <tr><td class="dim">提交余量</td><td class="num">≥ 10 GB，且不超过当时上限的约 85%</td><td>提交上限是时点值（61.86 → 98.17 GB）；按比例规划，不写死。</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <h3>模型与上下文</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>场景</th><th>建议</th><th>预期</th></tr></thead>
+      <tbody>
+        <tr><td class="dim">日常对话 / 代码 / agent</td><td>Qwen3.8-27B IQ4_XS，8K ctx，MTP 开</td><td class="num">36.6 tok/s；14.4 GiB；余量充足</td></tr>
+        <tr><td class="dim">32K 文档</td><td>98K ctx，MTP 开；首 token 约 37 s</td><td class="num">30.2 tok/s；18.3 GiB</td></tr>
+        <tr><td class="dim">89K 长文档</td><td>批处理式；首 token 约 123 s；追问用 prompt cache</td><td class="num">19.3 tok/s；18.1 GiB；缓存命中 0.4 s 内</td></tr>
+        <tr><td class="dim">多轮对话</td><td>保留 prompt cache；不要每轮清空</td><td class="num">32K 命中 ×169；1K 命中 ×7.5</td></tr>
+        <tr><td class="dim">多用户</td><td>1–2 路；更高并发换 MoE 模型</td><td class="num">8 路聚合 2.07×，单请求 12.8 tok/s</td></tr>
+        <tr><td class="dim">更长上下文 / 更大模型</td><td>先按 ≤ 30 GiB 工作集验证；不要假设 45.92 GiB 都能常驻</td><td class="num">超出 FB 的页可常驻，但受提交与驱逐约束</td></tr>
+        <tr><td class="dim">5s 视频生成</td><td>H3 原生 8 步 turbo，1344×768</td><td class="num">15m59s；30.38 GiB + 5.57 GiB 共享</td></tr>
+        <tr><td class="dim">10s @1344×768</td><td>FreeVideo Light 8+3</td><td class="num">9m37s；30.33 GiB；82 °C；音频需 +20 dB</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout">
+    <p><strong>一个反直觉但重要的结论：</strong>27B IQ4_XS 的权重只有 13.4 GiB，远小于 30.5 GiB FB；真正让长上下文变慢的不是“装不下”，而是每生成一个 token 都要读更长的 KV cache。容量规划与带宽规划是两件事。</p>
+  </div>
+</section>
+
+<section id="s-decide">
+  <div class="kicker">05 / Decision table</div>
+  <h2>如果你的需求是……</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>需求</th><th>N1X 是否合适</th><th>理由</th></tr></thead>
+      <tbody>
+        <tr><td class="dim">在 140 W 内跑 27B 级本地模型</td><td><span class="badge ok">合适</span></td><td>64 GiB 统一内存 + 18.4 GiB 峰值 + 36.6 tok/s；这是它的甜点。</td></tr>
+        <tr><td class="dim">需要 30B 以上稠密模型常驻</td><td><span class="badge warn">看量化</span></td><td>4-bit 15–18 GB 可放入 FB；更大需要溢出，受提交与驱逐约束。</td></tr>
+        <tr><td class="dim">需要 4K 游戏 / 光追</td><td><span class="badge warn">合适 · 未测</span></td><td>未做游戏实测；现有证据不足以判定，后续补测。</td></tr>
+        <tr><td class="dim">需要 FP64 / 大规模 CFD</td><td><span class="badge warn">未测</span></td><td>FP64 约 0.46 TFLOPS（推算）；带宽也远低于独显；后续补测后再判定。</td></tr>
+        <tr><td class="dim">需要 8 路以上并发服务</td><td><span class="badge warn">适合 1–2 路</span></td><td>8 路聚合仅 2.07×、单请求降到 12.8 tok/s；8 路以上超出甜点区，优先多卡或 MoE 专用方案。</td></tr>
+        <tr><td class="dim">需要本地视频生成（5–10 s）</td><td><span class="badge ok">合适</span></td><td>5s 原生可交付 15m59s；10s @1344×768 换 FreeVideo 9m37s；分辨率、时长、画质三选二。</td></tr>
+        <tr><td class="dim">需要视频转码 / 媒体前处理</td><td><span class="badge ok">合适</span></td><td>7/7 编码、6/7 解码；HEVC 4:2:2 10-bit 编解通过；12 路 NVENC 并发。</td></tr>
+        <tr><td class="dim">需要 Windows + ARM64 + CUDA 开发</td><td><span class="badge ok">合适</span></td><td>sm_121 在 cu130 轮子上直接可用；48 SM / 24 MiB L2；生态仍在成熟。</td></tr>
+        <tr><td class="dim">需要安静的桌面常驻</td><td><span class="badge ok">合适</span></td><td>140 W SoC、空闲 2 W / 39 °C；Mini PC 形态。</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="open">
+  <div class="kicker">06 / Open questions</div>
+  <h2>仍未回答的问题</h2>
+  <p class="lead">这些不是“遗漏”，而是现有证据无法覆盖的边界。对外引用时，应该把它们和结论一起说。</p>
+  <div class="notes two">
+    <div class="note-card"><b>游戏与 DLSS 帧率</b><p>没有 3DMark / Blender / 游戏实测；DLSS 5 只验证了官方支持、NGX 运行时与 API 可用。不能把“支持 DLSS 5”当成“某游戏提升 X%”。</p></div>
+    <div class="note-card"><b>FP4 GEMM</b><p>PyTorch 2.14.1+cu130 没有 FP4 GEMM 路径；473.8 / 947.6 是推算。官方 1 PFLOP 是 FP4 稀疏营销口径，不是独立验证。</p></div>
+    <div class="note-card"><b>&gt;40 GiB 长时间超配</b><p>只测到 36 GiB × 5 min × 2 会话；提交上限、页驱逐与系统级内存压力下的表现未覆盖。</p></div>
+    <div class="note-card"><b>30 分钟以上热漂移</b><p>持续负载只覆盖 10–13.5 分钟；更长时间是否降频、温度是否单调爬升，未验证。</p></div>
+    <div class="note-card"><b>Linux / DGX OS 对照</b><p>同一颗 GB10 在 Linux 下的统一内存上限没有在本机实测；DGX Spark 的 128 GB 与 GR1X 的 64 GiB 是两个配置。</p></div>
+    <div class="note-card"><b>其他模型与量化</b><p>Qwen3.8-27B IQ4_XS 的结论不外推到其他模型、其他量化或其他 llama.cpp 构建；MoE 也未在本报告复测。</p></div>
+  </div>
+</section>
+
+<section id="s-close">
+  <div class="kicker">07 / Closing</div>
+  <h2>一句话带走</h2>
+  <div class="callout dark">
+    <p><strong>N1X 的价值不在“跑分超过谁”，而在“把 64 GiB 统一内存、140 W 和一套完整的 RTX 能力放进一个桌面小盒子”。</strong>如果你的工作负载是本地 27B 推理、长文档、视频生成或 ARM64 CUDA 开发，它是一台很合适的工作站；如果你要的是 4K 光追或 FP64 HPC，先等补测；高并发在线服务则不是它的强项。</p>
+    <p style="margin-bottom:0">所有数字都带口径；所有结论都能回到原始读数。这比“跑分多少”更重要。</p>
+  </div>
+  <p class="small">继续阅读：<a href="index.html">总览</a> · <a href="spec.html">01 参数</a> · <a href="benchmark.html">03 基准</a> · <a href="memory.html">04 内存</a> · <a href="qwen.html">06 推理</a> · <a href="h3.html">07 视频</a> · <a href="evidence.html">08 证据</a>。</p>
+</section>
+
+<div class="page-nav">
+  <a href="evidence.html"><span class="label">上一份 · 08</span><b>← 原始读数与证据墙</b></a>
+  <a class="next" href="index.html"><span class="label">回到 · 总览</span><b>N1X 全景评测首页 →</b></a>
+</div>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div>
+      <p><b>N1X 全景评测</b><br>09 总评与选型建议</p>
+      <p>本页是跨报告综合，不新增实测。所有结论均指向具体报告；未验证项已单列，不从现有数据外推。</p>
+      <p class="small">不构成 NVIDIA / ASUS 官方认证。测试结果仅代表本机在 2026-11-25 – 11-26 的状态。</p>
+      <div class="foot-links"><a href="index.html">总览</a><a href="spec.html">参数</a><a href="benchmark.html">基准</a><a href="memory.html">内存</a><a href="qwen.html">推理</a><a href="h3.html">视频</a><a href="evidence.html">证据</a></div>
+    </div>
+    <div class="src-list">
+      <p><b>相关页面与来源</b></p>
+      <p><a href="spec.html#compare">01 · 28 项官方规格核对</a><br>
+      <a href="benchmark.html#s-conclusion">03 · GPU 分口径定位</a><br>
+      <a href="memory.html#advice">04 · 内存规划口径</a><br>
+      <a href="qwen.html#discussion">06 · 模型适用场景</a><br>
+      <a href="evidence.html#s-levels">07 · 证据等级</a></p>
+    </div>
+  </div>
+</footer>
+<script src="assets/site.js"></script>
+</body>
+</html>

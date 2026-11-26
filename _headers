@@ -1,0 +1,12 @@
+# Cache policy for Cloudflare Pages / Netlify (Netlify-style _headers).
+# GitHub Pages ignores this file; it has its own CDN but no custom headers.
+
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+
+/*.html
+  Cache-Control: no-cache
+
+/assets/*
+  Cache-Control: public, max-age=2592000

@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>06 Qwen3.8-27B IQ4_XS 本地推理性能与质量 · N1X 全景评测</title>
+<meta name="description" content="Qwen3.8-27B IQ4_XS 在 RTX Spark N1X 上的短/长上下文、MTP、prompt cache、并发、热稳态与 40 题质量实测。">
+<link rel="stylesheet" href="assets/site.css">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+<a class="skip-link" href="#main">跳到正文</a>
+<div class="progress-bar" aria-hidden="true"></div>
+
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="index.html"><span class="mark">N1X</span><span>N1X 全景评测<small>ASUS ProArt GR1X · 2026</small></span></a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">目录</button>
+    <nav class="nav" id="site-nav" aria-label="站点导航">
+      <a href="index.html">总览</a>
+      <a href="spec.html">参数</a>
+      <a href="nvidia-app.html">配置</a>
+      <a href="benchmark.html">基准</a>
+      <a href="memory.html">内存</a>
+      <a href="memory-story.html">快读</a>
+      <a href="qwen.html" class="active">推理</a>
+      <a href="h3.html">视频</a>
+      <a href="evidence.html">证据</a>
+      <a href="verdict.html">总评</a>
+    </nav>
+  </div>
+</header>
+
+<header class="hero compact">
+  <div class="wrap">
+    <div class="crumbs"><a href="index.html">总览</a><span class="sep">/</span><span>06 Qwen3.8-27B 本地推理</span></div>
+    <div class="eyebrow">06 / End-to-end LLM · 2026-11-25</div>
+    <h1>Qwen3.8-27B：<span>这台机器到底能跑多快</span></h1>
+    <p class="sub">IQ4_XS · llama.cpp b12711 · 98K 上下文 · 40 题质量抽测</p>
+    <p class="lede">前面的带宽与容量，最终要落到一个真实模型上。同一台机器、同一份权重、同一套推理栈，六组测试：短 / 长上下文、MTP、prompt cache、并发、热稳态、质量。</p>
+    <p class="page-q"><b>本页回答：</b>27B 级模型在这台机器上的真实 tok/s、并发上限与质量。</p>
+    <div class="meta">
+      <span>Windows 11 ARM64</span><span>CUDA 13.5</span><span>llama.cpp b12711</span><span>性能档 3–5 次 · 并发/质量各 1 次</span>
+    </div>
+    <div class="roles"><span class="role-pill">端到端</span><span class="role-pill alt">实测</span><span class="role-pill gray">单机 / 单模型 / 单量化</span></div>
+  </div>
+</header>
+
+<nav class="toc" aria-label="本页目录">
+  <div class="wrap">
+    <a href="#s-summary">00 摘要</a><a href="#s-config">01 对象与配置</a><a href="#s-method">02 方法</a>
+    <a href="#results">03 结果</a><a href="#s-decode">3.1 单请求</a><a href="#s-mtp">3.2 MTP</a>
+    <a href="#s-context">3.3 上下文</a><a href="#s-cache">3.4 prompt cache</a><a href="#s-concurrency">3.5 并发</a>
+    <a href="#thermal">3.6 热稳态</a><a href="#s-quality">3.7 质量</a><a href="#discussion">04 讨论</a><a href="#s-limits">05 复现与局限</a>
+  </div>
+</nav>
+
+<main class="wrap" id="main">
+
+<section id="s-summary">
+  <div class="kicker">00 / Executive summary</div>
+  <h2>27B IQ4_XS 可以稳定运行，甜点是 1–2 个并发用户</h2>
+  <div class="callout">
+    <blockquote style="margin:0;border:0;padding:0;background:none;font-size:16px;color:#284a00"><p style="margin:0"><b>结论：</b>在 Windows 可见 32.2 GiB（物理 64 GiB 统一内存）的 RTX Spark N1X 上，Qwen3.8-27B 的 IQ4_XS 量化可以稳定运行：短上下文解码 36.6 tok/s，89K 长上下文 19.3 tok/s；开启 prompt cache 后，同一上下文的第二轮首 token 从 36.9 s 降到 0.22 s。这台机器适合 1–2 个并发用户，长文档适合批处理式使用。</p></blockquote>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>指标</th><th>结果</th><th>条件</th></tr></thead>
+      <tbody>
+        <tr><td class="dim">短上下文解码</td><td class="num"><b>36.6 tok/s</b>（n=5，95% CI ±0.34）</td><td>8K ctx，994 token prompt，MTP 开</td></tr>
+        <tr><td class="dim">长上下文解码</td><td class="num"><b>30.2 tok/s</b>（32K）/ <b>19.3 tok/s</b>（89K）</td><td>98K ctx，MTP 开</td></tr>
+        <tr><td class="dim">首 token 延迟</td><td class="num">1.2 s / 37 s / 123 s</td><td>1K / 32K / 89K prompt</td></tr>
+        <tr><td class="dim">prompt cache 收益</td><td class="num"><b>×7.5 / ×169 / ×99</b></td><td>1K / 32K / 32K+追问</td></tr>
+        <tr><td class="dim">并发扩展</td><td class="num">2 路 1.45×、4 路 1.74×、8 路 <b>2.07×</b></td><td>每请求约 23 token</td></tr>
+        <tr><td class="dim">持续负载</td><td class="num">32K 76.5 °C / 89K 77.2 °C 平台，无持续降频</td><td>10–13.5 分钟</td></tr>
+        <tr><td class="dim">质量抽测</td><td class="num"><b>92.5 / 100</b>（思考关）、<b>95.0</b>（思考开，慢 4.4×）</td><td>40 题、6 维度、规则判分</td></tr>
+        <tr><td class="dim">峰值显存</td><td class="num">18.3 GiB（重复实验）/ 18.4 GiB（持续负载）</td><td>共 30.5 GiB</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small">本报告在同一台机器、同一份模型权重、同一套推理栈上，完成了六组测试。所有性能数字均来自服务端 <code>timings</code> 与 0.5 s 粒度的 GPU 采样，每档重复 3–5 次。</p>
+</section>
+
+<section id="s-config">
+  <div class="kicker">01 / Setup</div>
+  <h2>测试对象与配置</h2>
+  <div class="grid-2">
+    <div class="table-wrap" style="margin-top:0">
+      <table>
+        <thead><tr><th>项目</th><th>配置</th></tr></thead>
+        <tbody>
+          <tr><td class="dim">GPU</td><td>NVIDIA RTX Spark N1X，6144 核 Blackwell，Compute Capability 12.1</td></tr>
+          <tr><td class="dim">显存</td><td>专用 FB 31,232 MiB（30.5 GiB）；CUDA 可寻址配额 45.92 GiB；与系统内存同一物理池（统一内存）</td></tr>
+          <tr><td class="dim">CPU</td><td>Arm 20 核</td></tr>
+          <tr><td class="dim">系统可见内存</td><td>32.2 GiB（OS 口径）</td></tr>
+          <tr><td class="dim">物理统一内存</td><td>64 GiB（SMBIOS 68,719,476,736 B；厂商标称 64 GB）</td></tr>
+          <tr><td class="dim">操作系统</td><td>Windows 11 ARM64</td></tr>
+          <tr><td class="dim">驱动 / CUDA</td><td>621.40 / CUDA 13.5</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="table-wrap" style="margin-top:0">
+      <table>
+        <thead><tr><th>项目</th><th>配置</th></tr></thead>
+        <tbody>
+          <tr><td class="dim">推理引擎</td><td>llama.cpp b12711（<code>b12711-f20c5907c</code>），Windows ARM64 + CUDA 13.5</td></tr>
+          <tr><td class="dim">模型</td><td>Qwen3.8-27B，GGUF，IQ4_XS（4.25 bpw），27.32B 参数</td></tr>
+          <tr><td class="dim">权重文件</td><td>14,352,911,264 B（13.4 GiB）</td></tr>
+          <tr><td class="dim">训练上下文</td><td>262,144 tokens</td></tr>
+          <tr><td class="dim">推理配置</td><td>单 slot、KV cache q8_0、<code>-ngl 999</code>（全部层卸载到 GPU）</td></tr>
+          <tr><td class="dim">投机解码</td><td>MTP，草稿长度 3（<code>--spec-type draft-mtp --spec-draft-n-max 3</code>）</td></tr>
+          <tr><td class="dim">服务端点</td><td>OpenAI 兼容 <code>/v1</code>，模型别名 <code>qwen3.8-27b</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <p class="small">测试机处于日常使用状态：桌面环境与若干常驻应用未关闭，GPU 空闲基线约 0.6 GiB，空闲利用率 2–4%。测试期间未做进程隔离、CPU 亲和或独占显存设置，因此结果更接近“真实使用”而非实验室理想值。</p>
+
+  <h3>“统一内存”对测试意味着什么</h3>
+  <p>物理上，显存与系统内存共享同一 64 GiB 池；对这个推理进程而言，热工作集落在 30.5 GiB 专用 FB 内，CUDA 配额为 45.92 GiB。权重固定占用 13.4 GiB；98K 上下文的 KV 池整块预留约 4.7 GiB（32K 实际使用约 1.6 GiB），加运行时开销合计约 4.8 GiB。按全部实测的最高值 18.4 GiB 计算，30.5 GiB FB 内余量约 12.1 GiB（OS 侧另有 32.2 GiB 可见额度，二者不是同一本账）。</p>
+  <div class="callout">
+    <p><strong>这决定了选型逻辑：</strong>不是“模型能否装下”（27B 一定装得下），而是“装下之后还剩多少给系统”。</p>
+  </div>
+</section>
+
+<section id="s-method">
+  <div class="kicker">02 / Method</div>
+  <h2>工作负载、测量口径与质量评分</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>测试项</th><th>prompt 长度</th><th>上下文</th><th>每档重复</th><th>说明</th></tr></thead>
+      <tbody>
+        <tr><td class="dim">短上下文</td><td class="num">994 tokens</td><td class="num">8K</td><td class="num">5</td><td>MTP 开 / 关各一组</td></tr>
+        <tr><td class="dim">长上下文</td><td class="num">32,018 / 89,123 tokens</td><td class="num">98K</td><td class="num">5 / 3</td><td>MTP 开</td></tr>
+        <tr><td class="dim">prompt cache</td><td class="num">994 / 32,018 / 32K+追问</td><td class="num">98K</td><td class="num">5</td><td>冷启动 vs 缓存命中</td></tr>
+        <tr><td class="dim">并发</td><td class="num">约 256 tokens</td><td class="num">32K</td><td class="num">每档 1 次</td><td>1/2/4/8 路，4×c 个请求</td></tr>
+        <tr><td class="dim">持续负载</td><td class="num">32K / 89K</td><td class="num">98K</td><td class="num">10–13.5 分钟</td><td>完整预填充循环</td></tr>
+        <tr><td class="dim">质量</td><td class="num">40 题</td><td>—</td><td class="num">逻辑关闭 / 开启思考各 1 次</td><td>规则判分</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="grid-2">
+    <div>
+      <h3 style="margin-top:0">测量口径</h3>
+      <ul class="small" style="line-height:1.9">
+        <li><b>解码 / 预填充吞吐：</b>取服务端 <code>timings.predicted_per_second</code> 与 <code>prompt_per_second</code>，不含网络与排队。</li>
+        <li><b>首 token（TTFT）：</b>流式请求下客户端实测到第一个内容块的时间；服务端 <code>prompt_ms</code> 作为纯预填充下界同时记录。</li>
+        <li><b>GPU 采样：</b>独立线程每 0.5 s 调一次 <code>nvidia-smi</code>，记录显存、温度、利用率、功耗；实测采样间隔中位 0.68 s。</li>
+        <li><b>重复与统计：</b>每个性能档位重复 3–5 次，<b>每次重复都重启服务</b>，统计量包含跨启动方差；性能档给出均值与样本标准差，95% 置信区间仅在短上下文给出；并发与质量各 1 次。</li>
+        <li><b>有效性：</b>非缓存测试校验 <code>timings</code> 存在、<code>cache_n=0</code>；3.4 记录 <code>cache_n</code> 命中数。</li>
+      </ul>
+      <p class="small">固定参数（<b>除 3.4 / 3.5 外</b>）：<code>temperature=0</code>、<code>top_k=1</code>、<code>seed=1234</code>、<code>n_predict=128</code>、<code>batch-size 4096</code>、<code>ubatch-size 512</code>、<code>--parallel 1</code>、请求级 <code>cache_prompt=false</code>。prompt 由 12 段互不相同的技术文本拼接并追加提问，用 <code>/tokenize</code> 校准长度。</p>
+      <div class="table-wrap compact" style="margin-top:10px">
+        <table><thead><tr><th>测试组</th><th>slot</th><th>cache_prompt</th><th>cache_n 校验</th></tr></thead>
+        <tbody>
+          <tr><td class="dim">3.1–3.3、3.6 性能档</td><td class="num">1</td><td>false</td><td>= 0</td></tr>
+          <tr><td class="dim">3.4 prompt cache</td><td class="num">1</td><td>true</td><td>&gt; 0（记录命中数）</td></tr>
+          <tr><td class="dim">3.5 并发</td><td class="num">8</td><td>false</td><td>= 0</td></tr>
+        </tbody></table>
+      </div>
+      <p class="small">并发测试实际使用 <code>--parallel 8</code>；原始配置见 <code>concurrency-8.json</code> 的 <code>config.parallel</code>（原始日志未随站点发布）。</p>
+        </tbody></table>
+      </div>
+    </div>
+    <div>
+      <h3 style="margin-top:0">质量评分方案</h3>
+      <p class="small">40 道题、6 个维度、全部由脚本自动判分（不依赖人工或模型裁判）。</p>
+      <div class="table-wrap compact" style="margin-top:0">
+        <table>
+          <thead><tr><th>维度</th><th>权重</th><th>题量</th><th>判分方式</th></tr></thead>
+          <tbody>
+            <tr><td class="dim">数值推理</td><td class="num">20</td><td class="num">8</td><td>最后一个数字与标准答案精确比对</td></tr>
+            <tr><td class="dim">代码正确性</td><td class="num">20</td><td class="num">8</td><td>代码块在子进程跑断言（8 s 超时）</td></tr>
+            <tr><td class="dim">结构化输出</td><td class="num">15</td><td class="num">6</td><td>JSON 可解析 + 字段/类型/值全对</td></tr>
+            <tr><td class="dim">指令遵循</td><td class="num">15</td><td class="num">6</td><td>要点数、行数、字数、禁用词、纯文本</td></tr>
+            <tr><td class="dim">信息抽取</td><td class="num">15</td><td class="num">6</td><td>关键字段精确匹配；未提及必须输出 null</td></tr>
+            <tr><td class="dim">中文写作</td><td class="num">15</td><td class="num">6</td><td>结构约束：必含事实词、字数区间、条目数</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="small">总分 = Σ（维度通过率 × 权重）。写作维度只检查结构与事实覆盖，不评价文采。</p>
+    </div>
+  </div>
+</section>
+
+<section id="results">
+  <div class="kicker">03 / Results</div>
+  <h2>六组结果：短上下文快，长上下文被带宽按住</h2>
+  <p class="lead">先看单请求，再看 MTP 与上下文的影响；然后把 prompt cache、并发、热稳态和质量分开。每一节都给出“读法”，避免只看平均值。</p>
+
+  <h3 id="s-decode" style="scroll-margin-top:120px">3.1 单请求性能</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>配置</th><th>prompt</th><th>预填充 tok/s</th><th>首 token</th><th>解码 tok/s</th><th>峰值显存</th><th>峰值温度</th></tr></thead>
+      <tbody>
+        <tr><td class="dim">短上下文 · MTP 开</td><td class="num">994</td><td class="num">815 ± 10</td><td class="num">1,223 ms</td><td class="num"><b>36.60 ± 0.27</b>（n=5）</td><td class="num">14.4 GiB</td><td class="num">64.9 °C</td></tr>
+        <tr><td class="dim">短上下文 · MTP 关</td><td class="num">994</td><td class="num">841 ± 45</td><td class="num">1,202 ms</td><td class="num"><b>16.94 ± 0.05</b>（n=5）</td><td class="num">13.8 GiB</td><td class="num">65.9 °C</td></tr>
+        <tr><td class="dim">长上下文 32K</td><td class="num">32,018</td><td class="num">862 ± 14</td><td class="num">37,253 ms</td><td class="num"><b>30.21 ± 0.41</b>（n=5）</td><td class="num">18.3 GiB</td><td class="num">80.9 °C</td></tr>
+        <tr><td class="dim">长上下文 89K</td><td class="num">89,123</td><td class="num">726 ± 8</td><td class="num">122,846 ms</td><td class="num"><b>19.27 ± 0.10</b>（n=3）</td><td class="num">18.1 GiB</td><td class="num">84.0 °C</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <figure>
+    <img src="assets/img/qwen/fig-decode.webp" alt="Qwen3.8-27B 解码吞吐对比图" width="1440" height="660" loading="lazy" decoding="async">
+    <figcaption>图 1　解码吞吐：上下文长度与投机解码的影响。红色虚线是 NVIDIA 官方同配方参考值 31.0 tok/s；32K 与它基本重合，89K 低约 38%。误差棒为重复实验的样本标准差。</figcaption>
+  </figure>
+  <p><b>读法：</b>前两根柱子的落差是投机解码的收益（×2.16），后两根是上下文长度的代价（−36%）。32K 与官方参考值 31.0 tok/s 基本重合，说明本机在同配方下没有“跑偏”；89K 低约 38%，主因是解码阶段每步都要读取更长的 KV cache，以及 MTP 接受率下降。</p>
+  <figure>
+    <img src="assets/img/qwen/fig-prefill.webp" alt="预填充吞吐与首 token 延迟图" width="1500" height="620" loading="lazy" decoding="async">
+    <figcaption>图 2　预填充吞吐与首 token 延迟随 prompt 长度的变化。</figcaption>
+  </figure>
+  <p><b>读法：</b>整体预填充吞吐随长度只下降约 16%（862 → 726 tok/s 均值）；请求内部前段更快、末段更慢，具体斜率未单独统计。首 token 延迟近似与输入长度成正比：1.2 s / 37 s / 123 s。</p>
+
+  <h3 id="s-mtp" style="scroll-margin-top:120px">3.2 投机解码（MTP）的收益</h3>
+  <p>同一 prompt、同一上下文、<code>cache_n=0</code>，仅切换 MTP：解码 <b>36.60 → 16.94 tok/s（×2.16）</b>，显存代价约 0.5–0.6 GiB。两次测量跨启动的离散度分别为 0.7% 与 0.3%，收益稳定。</p>
+  <p>MTP 对预填充几乎无影响（815 vs 841 tok/s，差 3%，在噪声内）。服务端日志给出的草稿接受率为：1K 0.705 / 0.731、32K 0.765、89K 0.629，平均接受长度 3.26 → 2.89——<b>上下文越长，草稿越难命中</b>，这也是长上下文解码下降的原因之一。</p>
+
+  <h3 id="s-context" style="scroll-margin-top:120px">3.3 上下文长度的影响</h3>
+  <div class="cards">
+    <div class="card"><b>−16%</b><span>预填充：862 → 726 tok/s</span><span class="tool">32K → 89K</span></div>
+    <div class="card"><b>×3.3</b><span>首 token：37.3 → 122.8 s</span><span class="tool">32K → 89K</span></div>
+    <div class="card"><b>−36%</b><span>解码：30.21 → 19.27 tok/s</span><span class="tool">32K → 89K</span></div>
+    <div class="card"><b>0.629</b><span>89K 草稿接受率</span><span class="tool">32K 为 0.765</span></div>
+  </div>
+  <p><b>上下文变长不只拖慢第一个 token，还让之后每一个 token 都变慢。</b>原因是解码阶段每生成一个 token 都要额外读取整段 KV cache；同时 MTP 接受率随长度下降。这一现象在“只看平均值”的 benchmark 里容易被掩盖。</p>
+
+  <h3 id="s-cache" style="scroll-margin-top:120px">3.4 prompt cache：第二轮首 token 回到 0.4 s 以内</h3>
+  <p>真实对话中，用户每轮只追加一句话，前文不变。prompt cache 让第二轮只预填充新增部分：</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>场景</th><th>无缓存</th><th>缓存命中</th><th>命中 token</th><th>加速</th></tr></thead>
+      <tbody>
+        <tr><td class="dim">1K prompt</td><td class="num">1,303 ± 27 ms</td><td class="num"><b>175 ± 14 ms</b></td><td class="num">990 / 994</td><td class="num">×7.46 ± 0.55</td></tr>
+        <tr><td class="dim">32K prompt</td><td class="num">36,899 ± 55 ms</td><td class="num"><b>218 ± 17 ms</b></td><td class="num">32,014 / 32,018</td><td class="num">×169 ± 11</td></tr>
+        <tr><td class="dim">32K + 追问（多轮）</td><td class="num">36,940 ± 78 ms</td><td class="num"><b>374 ± 15 ms</b></td><td class="num">32,014 / 32,034</td><td class="num">×98.9 ± 3.2</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <figure>
+    <img src="assets/img/qwen/fig-cache.webp" alt="prompt cache 收益对数柱状图" width="1400" height="640" loading="lazy" decoding="async">
+    <figcaption>图 3　prompt cache 收益（n=5，误差棒为 95% CI）。纵轴为对数刻度，否则 37 秒与 0.2 秒无法同框。</figcaption>
+  </figure>
+  <p><b>读法：</b>关键在绝对值——命中后首 token 都在 0.4 s 以内，与上下文长度关系不大。缓存只加速预填充，不加速解码（命中后解码仍约 25.5 tok/s）；倍率对分母（冷启动抖动）敏感，应作量级参考。</p>
+
+  <h3 id="s-concurrency" style="scroll-margin-top:120px">3.5 并发：8 路只有 2.07×</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>并发</th><th>聚合吞吐 tok/s</th><th>单请求 tok/s</th><th>首 token p50 / p95</th><th>扩展效率</th></tr></thead>
+      <tbody>
+        <tr><td class="num">1</td><td class="num">23.5</td><td class="num">37.0</td><td class="num">383 / 390 ms</td><td class="num">1.00</td></tr>
+        <tr><td class="num">2</td><td class="num">34.1</td><td class="num">34.0</td><td class="num">665 / 700 ms</td><td class="num">0.73</td></tr>
+        <tr><td class="num">4</td><td class="num">41.0</td><td class="num">19.2</td><td class="num">908 / 1,375 ms</td><td class="num">0.44</td></tr>
+        <tr><td class="num">8</td><td class="num"><b>48.6</b></td><td class="num"><b>12.8</b></td><td class="num">1,819 / 2,667 ms</td><td class="num"><b>0.26</b></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <figure>
+    <img src="assets/img/qwen/fig-concurrency.webp" alt="并发聚合吞吐与单请求退化图" width="1500" height="600" loading="lazy" decoding="async">
+    <figcaption>图 4　并发：聚合吞吐、单请求退化与尾延迟。</figcaption>
+  </figure>
+  <p><b>读法：</b>8 路并发只把聚合吞吐推到 2.07 倍，单请求解码下降 65%，首 token 中位数涨到 1.8 s。这是典型的带宽争用与排队：每请求约 23 token（模型提前输出 EOS），但四档口径一致，扩展效率仍然可比。</p>
+  <p class="small">口径：聚合吞吐 = 窗口内全部请求生成 token 总数 ÷ 墙钟（含首 token 与预填充）；单请求 = 服务端 <code>timings</code> 的纯解码速率。两者分母不同，不能直接相除；2.07× 的分母是 1 路聚合 <b>23.5 tok/s</b>，不是 37.0。</p>
+  <div class="callout amber">
+    <p><strong>结论：适合 1–2 个并发用户。</strong>更高并发下每个用户的等待都显著变长，增加并发不如换用激活参数更少的 MoE 模型。</p>
+  </div>
+
+  <h3 id="thermal" style="scroll-margin-top:120px">3.6 持续负载与热行为</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>负载</th><th>时长 / 轮数</th><th>温度（均值 / 峰值）</th><th>SM 时钟均值（窗口最低）</th><th>解码（前 3 → 后 3 轮）</th></tr></thead>
+      <tbody>
+        <tr><td class="dim">32K prompt</td><td class="num">614 s / 14 轮</td><td class="num">76.5 / 81.5 °C</td><td class="num">2,405 MHz（1,683）</td><td class="num">33.94 → 34.39 tok/s</td></tr>
+        <tr><td class="dim">89K prompt</td><td class="num">809 s / 6 轮</td><td class="num">77.2 / 83.4 °C</td><td class="num">2,411 MHz（1,475）</td><td class="num">21.91 → 22.07 tok/s</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <figure>
+    <img src="assets/img/qwen/fig-thermal.webp" alt="持续负载温度与吞吐曲线" width="1480" height="840" loading="lazy" decoding="async">
+    <figcaption>图 5　持续负载：32K 与 89K 上下文的温度与吞吐。</figcaption>
+  </figure>
+  <p><b>读法：</b>两条温度曲线在 3–4 分钟后进入平台，之后分别在 65.8–81.5 °C（32K）与 62.0–83.4 °C（89K）之间波动，没有单调爬升；解码吞吐不降反微升。窗口内出现过零星的低频采样（最低 1,683 / 1,475 MHz），多出现在高利用率时刻且下一采样即恢复——证据支持“<b>10–13.5 分钟内未出现持续降频</b>”，不支持“任何时刻都没有瞬时降频”。</p>
+  <div class="callout blue">
+    <p><strong>另一个值得注意的现象：</strong>持续负载稳态比“每轮重启”的重复实验更快（32K 30.21 → 33.9–34.4，89K 19.27 → 22.0，约 +14%），因为机器已热透、时钟稳定。跨启动与长时间稳态是两套口径。</p>
+  </div>
+
+  <h3 id="s-quality" style="scroll-margin-top:120px">3.7 质量：92.5 / 95.0，失分在约束类任务</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>维度</th><th>权重</th><th>思考关</th><th>思考开</th></tr></thead>
+      <tbody>
+        <tr><td class="dim">数值推理</td><td class="num">20</td><td class="num">8/8</td><td class="num">8/8</td></tr>
+        <tr><td class="dim">代码正确性</td><td class="num">20</td><td class="num">8/8</td><td class="num">8/8</td></tr>
+        <tr><td class="dim">结构化输出</td><td class="num">15</td><td class="num">6/6</td><td class="num">6/6</td></tr>
+        <tr><td class="dim">指令遵循</td><td class="num">15</td><td class="num">5/6</td><td class="num">6/6</td></tr>
+        <tr><td class="dim">信息抽取</td><td class="num">15</td><td class="num">6/6</td><td class="num">6/6</td></tr>
+        <tr><td class="dim">中文写作</td><td class="num">15</td><td class="num">4/6</td><td class="num">4/6</td></tr>
+        <tr><td class="dim"><b>合计</b></td><td class="num"><b>100</b></td><td class="num"><b>92.5</b>（46.7 s）</td><td class="num"><b>95.0</b>（203.6 s）</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <figure>
+    <img src="assets/img/qwen/fig-quality.webp" alt="质量评测六维度通过率图" width="1400" height="580" loading="lazy" decoding="async">
+    <figcaption>图 6　质量评测：六个维度的通过率。</figcaption>
+  </figure>
+  <p><b>读法：</b>数学、代码、结构化输出、信息抽取四个维度满分；失分集中在“约束类”任务——字数上限被超出、要求出现的词用了近义表达。这类失败属于“不严格执行指令”，而非能力不足。</p>
+  <p>思考模式把指令遵循补到 6/6（总分 95.0），但耗时 4.4 倍，且两道写作题因思考耗尽 token 预算而返回空内容。<b>短问答建议关闭思考，复杂推理再开启。</b></p>
+</section>
+
+<section id="discussion">
+  <div class="kicker">04 / Discussion</div>
+  <h2>解码为什么受带宽限制</h2>
+  <div class="grid-2">
+    <div>
+      <p>解码每一步都要完整读取一遍权重。按 13.37 GiB 权重、16.94 tok/s 粗算，关闭 MTP 时等效权重读取速率约 <b>227 GiB/s（≈243 GB/s）</b>，已接近该平台 LPDDR5X 的理论带宽量级（约 273 GB/s，公开规格）。<b>17 tok/s 更像是被内存带宽按住，而不是算力不足。</b></p>
+      <p>投机解码通过“一次前向验证多个候选 token”摊薄权重读取，因此能把解码提到 36.6 tok/s；但它无法改变每 token 仍需读取 KV cache 的事实，所以长上下文下收益递减。</p>
+      <h3>显存容量不是瓶颈，带宽与上下文才是</h3>
+      <p>全部实测峰值 18.3–18.4 GiB，占 30.5 GiB 专用 FB 的 60%，FB 内仍余约 12 GiB。这意味着 27B 模型在这台物理 64 GiB、Windows 可见 32.2 GiB 的机器上“装得下、也留得住余量”；真正决定体验的是上下文长度带来的带宽账单，以及并发时的争用。</p>
+    </div>
+    <div class="callout" style="margin-top:0">
+      <p><strong>适用场景建议</strong></p>
+      <p><b>日常对话、代码辅助、agent 循环：</b>8K 上下文，开启 MTP。解码 36.6 tok/s、显存 14.4 GiB，余量充足。</p>
+      <p><b>长文档阅读与总结：</b>接受“两分钟首 token”的 89K 批处理模式；交互式追问依赖 prompt cache，第二轮首 token 可回到 0.4 s 以内。</p>
+      <p><b>多用户：</b>1–2 路并发是甜点；再往上单请求体验下降明显，优先考虑 MoE 模型而非堆并发。</p>
+      <p><b>长时间运行：</b>10–13.5 分钟持续负载温度稳定在 77–83 °C、无持续降频；更长（30 分钟以上）的热漂移未验证。</p>
+    </div>
+  </div>
+</section>
+
+<section id="s-limits">
+  <div class="kicker">05 / Reproduce & limits</div>
+  <h2>复现要点与局限</h2>
+  <div class="grid-2">
+    <div>
+      <h3 style="margin-top:0">启动参数（长上下文）</h3>
+      <pre>llama-server -m Qwen3.8-27B-UD-IQ4_XS.gguf --alias qwen3.8-27b \
+  --host 127.0.0.1 --port 8080 --ctx-size 98304 \
+  --batch-size 4096 --ubatch-size 512 --parallel 1 -ngl 999 \
+  --cache-type-k q8_0 --cache-type-v q8_0 --perf --no-cache-prompt \
+  --spec-type draft-mtp --spec-draft-n-max 3</pre>
+      <ul class="small" style="line-height:1.9">
+        <li>短上下文把 <code>--ctx-size</code> 改为 8192；关闭 MTP 时去掉两个 <code>--spec-*</code> 参数；测试 prompt cache 时去掉 <code>--no-cache-prompt</code>。</li>
+        <li>每个性能档位至少重复 3 次、每次重启服务；请求级 <code>cache_prompt=false</code>，并校验 <code>timings.cache_n=0</code>。</li>
+        <li>CUDA 运行时 DLL 与可执行文件同目录。</li>
+      </ul>
+    </div>
+    <div>
+      <h3 style="margin-top:0">局限</h3>
+      <ul class="small" style="line-height:1.9">
+        <li><b>单机、单模型、单量化：</b>结论不外推到其他硬件或其他 IQ4_XS 构建。</li>
+        <li><b>非隔离环境：</b>测试机处于日常使用状态，后台应用与桌面合成会占用带宽与显存。</li>
+        <li><b>样本量有限：</b>性能档位 3–5 次、并发每档 1 次、持续负载 6–14 轮；热漂移只覆盖约 13.5 分钟。</li>
+        <li><b>质量为规则抽测：</b>40 题、6 维度，写作维度只查结构不评文采，不能与 MMLU / HumanEval 类分数换算。</li>
+        <li><b>未测长输出并发：</b>并发测试每请求仅约 23 token，长输出场景的排队与显存压力未覆盖。</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>资产来源与参考</h3>
+  <div class="table-wrap compact">
+    <table>
+      <thead><tr><th>项目</th><th>来源</th></tr></thead>
+      <tbody>
+        <tr><td>模型</td><td>Hugging Face <code>unsloth/Qwen3.8-27B-GGUF</code>，IQ4_XS，14,352,911,264 B，SHA-256 <code>4b194b34…b4b0a38</code></td></tr>
+        <tr><td>推理引擎</td><td><code>ggml-org/llama.cpp</code> release <code>b12711</code>（prerelease），Windows ARM64 CUDA 13.5</td></tr>
+        <tr><td>官方配方参考</td><td><a href="https://nvidia.github.io/local-ai-inference-recipes/hardware/rtx-spark/index.html">NVIDIA Local AI Inference Recipes · RTX Spark</a>（27B IQ4_XS：解码 31.02 tok/s、预填充 393 tok/s、峰值 20 GB、ctx 98304）</td></tr>
+        <tr><td>官方选型参考</td><td><a href="https://build.nvidia.com/rtx-spark/running-llamacpp">build.nvidia.com/rtx-spark/running-llamacpp</a>（24–48 GB 档推荐 Qwen3.8-27B）</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small">完整版下载：<a href="assets/downloads/Qwen3.8-27B-RTX-Spark-测试报告.pdf">Qwen3.8-27B IQ4_XS 本地推理性能与质量测试报告（PDF，1.1 MB）</a>。原始数据（逐次 <code>timings</code>、0.5 s GPU 采样、逐题质量输出）保留在作者本地，未随站点发布。</p>
+</section>
+
+<div class="page-nav">
+  <a href="memory-story.html"><span class="label">上一份 · 05</span><b>← 快读：两种内存命运</b></a>
+  <a class="next" href="h3.html"><span class="label">下一份 · 07</span><b>MiniMax H3 视频生成 →</b></a>
+</div>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div>
+      <p><b>N1X 全景评测</b><br>06 Qwen3.8-27B IQ4_XS 本地推理性能与质量测试报告</p>
+      <p>单机、单模型、单量化；测试机处于日常使用状态，未做进程隔离。性能数字来自服务端 timings 与 0.5 s GPU 采样，质量分为 40 题规则抽测。</p>
+      <p class="small">不构成 NVIDIA / 阿里云官方认证。结果仅代表本机在 2026-11-25 的配置与软件栈。</p>
+      <div class="foot-links"><a href="index.html">总览</a><a href="memory.html">内存</a><a href="benchmark.html">GPU 基准</a><a href="verdict.html">总评</a></div>
+    </div>
+    <div class="src-list">
+      <p><b>相关页面与来源</b></p>
+      <p><a href="benchmark.html#s-bandwidth">03 GPU 基准 · 带宽与 LLM 上限</a><br>
+      <a href="memory.html#advice">04 内存报告 · 规划口径</a><br>
+      <a href="h3.html#s-speed">07 视频报告 · H3 速度实测</a><br>
+      <a href="verdict.html#budget">09 总评 · 模型与并发建议</a><br>
+      <a href="evidence.html">08 证据墙 · 原始读数</a></p>
+    </div>
+  </div>
+</footer>
+<script src="assets/site.js"></script>
+</body>
+</html>

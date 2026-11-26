@@ -1,0 +1,620 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>02 NVIDIA App 本机配置图文报告 · N1X 全景评测</title>
+<meta name="description" content="ASUS GR1X 上 NVIDIA App 11.0.10.136 的 18 张原生截图与逐页读数：驱动、显存划分、显示链路、性能传感器与图形设置。">
+<link rel="stylesheet" href="assets/site.css">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+<a class="skip-link" href="#main">跳到正文</a>
+<div class="progress-bar" aria-hidden="true"></div>
+
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="index.html"><span class="mark">N1X</span><span>N1X 全景评测<small>ASUS ProArt GR1X · 2026</small></span></a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">目录</button>
+    <nav class="nav" id="site-nav" aria-label="站点导航">
+      <a href="index.html">总览</a>
+      <a href="spec.html">参数</a>
+      <a href="nvidia-app.html" class="active">配置</a>
+      <a href="benchmark.html">基准</a>
+      <a href="memory.html">内存</a>
+      <a href="memory-story.html">快读</a>
+      <a href="qwen.html">推理</a>
+      <a href="h3.html">视频</a>
+      <a href="evidence.html">证据</a>
+      <a href="verdict.html">总评</a>
+    </nav>
+  </div>
+</header>
+
+<header class="hero compact">
+  <div class="wrap">
+    <div class="crumbs"><a href="index.html">总览</a><span class="sep">/</span><span>02 配置快照</span></div>
+    <div class="eyebrow">02 / GUI baseline · 2026-11-26</div>
+    <h1>NVIDIA App：<span>把配置页逐项截图</span></h1>
+    <p class="sub">9 个应用页面（含子项共 18 张） · 一次驱动侧的独立核对</p>
+    <p class="lede">参数报告用 API 和命令行确认能力，这一份用 NVIDIA App 的界面读数做旁证。两者不是重复，而是两个视角：一个看驱动枚举，一个看应用呈现。所有截图取自同一会话，窗口最大化、100% 缩放。</p>
+    <p class="page-q"><b>本页回答：</b>应用看到的机器，与命令行一致吗；18 张截图能提供哪些旁证。</p>
+    <div class="meta">
+      <span>NVIDIA App 11.0.10.136</span>
+      <span>Game Ready 621.40（2026-11-24）</span>
+      <span>TF2415 · 1920×1080 · 60 Hz</span>
+      <span>采集 12:45:57 – 12:50:05</span>
+    </div>
+    <div class="roles"><span class="role-pill">配置快照</span><span class="role-pill alt">GUI 旁证</span><span class="role-pill gray">非性能测试</span></div>
+  </div>
+</header>
+
+<nav class="toc" aria-label="本页目录">
+  <div class="wrap">
+    <a href="#s-summary">00 摘要</a><a href="#s-quick">01 配置速览</a><a href="#s-rig">02 我的装备</a>
+    <a href="#s-display">03 显示器</a><a href="#s-video">04 视频</a><a href="#s-perf">05 性能</a>
+    <a href="#s-advanced">06 高级</a><a href="#s-graphics">07 图形</a><a href="#s-driver">08 驱动</a>
+    <a href="#s-settings">09 设置</a><a href="#s-cross">10 交叉核对</a><a href="#s-appendix">附录</a>
+  </div>
+</nav>
+
+<main class="wrap" id="main">
+
+<section id="s-summary">
+  <div class="kicker">00 / Executive summary</div>
+  <h2>这一份报告回答什么：应用看到的机器，与命令行一致吗？</h2>
+  <p class="lead">NVIDIA App 不显示 CUDA 版本，也不做性能测试；它的价值是把你平时在设置页里能看到的东西固定下来。以下五点是本页最值得带走的结论。</p>
+  <div class="callout">
+    <ul class="checklist">
+      <li><span class="ck">✓</span><div><b>驱动与平台一致</b> 我的装备页与驱动程序页都报 621.40（2026-11-24）；系统为 Windows 11 专业版 10.0.28000。<span class="tiny">与 nvidia-smi 的 621.40 / KMD 621.40 / CUDA UMD 13.5 对得上</span></div></li>
+      <li><span class="ck">✓</span><div><b>专用显存两处互证</b> 详情页“专用视频内存 31232 MB”与高级页“专用 GPU 显存 30.50 GB”完全一致（31,232 MiB ÷ 1024 = 30.50 GiB）。<span class="tiny">这是本站内存部分反复使用的 30.50 GiB 分区口径</span></div></li>
+      <li><span class="ck">✓</span><div><b>图形内存是一组划分</b> 专用 31,232 MB + 共享 16,477 MB = 全部可用 47,709 MB。三者是划分关系，不可与整机 64.0 GB 相加。<span class="tiny">47,709 MB 也不是 47.7 GB 的物理内存</span></div></li>
+      <li><span class="ck">✓</span><div><b>显示链路是 HDMI 电视型</b> TF2415 以 HDMI - HDTV 接入，1080p / 60 Hz / 8 bpc / 全范围；G-SYNC 与 Surround 均不可用。<span class="tiny">缩放预览里的 75 Hz 是下拉框选中项，不是实际输出</span></div></li>
+      <li><span class="ck">✓</span><div><b>图形设置全是默认</b> 17 项驱动设置全部为出厂默认或“使用 3D 应用程序设置”；程序列表 0/0，没有为任何游戏建立单独配置。<span class="tiny">这与“这台机器主要不是拿来打游戏”的定位一致</span></div></li>
+    </ul>
+  </div>
+  <div class="callout amber">
+    <p><strong>边界：</strong>本报告不测帧率、不测算力、不做驱动对比。性能页读数是 12:48:26 的瞬时值，重开页面会变；引用时应写明“某一时刻”，不能当固定配置。</p>
+  </div>
+</section>
+
+<section id="s-quick">
+  <div class="kicker">01 / At a glance</div>
+  <h2>配置速览：应用内读数</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>类别</th><th>项目</th><th>应用内读数</th></tr></thead>
+      <tbody>
+        <tr><td class="dim">硬件</td><td>处理器</td><td>NVIDIA RTX Spark N1X</td></tr>
+        <tr><td class="dim">硬件</td><td>显卡</td><td>NVIDIA RTX Spark N1X（6144-core Blackwell RTX GPU）</td></tr>
+        <tr><td class="dim">硬件</td><td>内存</td><td>64.0 GB（即 64 GiB）</td></tr>
+        <tr><td class="dim">硬件</td><td>存储</td><td>SSD - 1.9 TB（2 TB 厂商标称 ≈ 1.86 TiB）</td></tr>
+        <tr><td class="dim">硬件</td><td>显示</td><td>TF2415，1920 × 1080（本机），60 Hz，32 位色深，HDCP 支持</td></tr>
+        <tr><td class="dim">硬件</td><td>专用视频内存</td><td>31232 MB（高级页显示为 30.50 GB）</td></tr>
+        <tr><td class="dim">硬件</td><td>共享系统内存</td><td>16477 MB</td></tr>
+        <tr><td class="dim">硬件</td><td>全部可用的图形内存</td><td>47709 MB</td></tr>
+        <tr><td class="dim">软件</td><td>操作系统</td><td>Microsoft Windows 11 专业版，版本 10.0.28000</td></tr>
+        <tr><td class="dim">软件</td><td>图形接口</td><td>DirectX 12 运行时，Direct3D 功能级别 12_1</td></tr>
+        <tr><td class="dim">软件</td><td>显卡驱动</td><td>Game Ready 驱动程序 621.40（2026-11-24）</td></tr>
+        <tr><td class="dim">软件</td><td>NVIDIA App</td><td>11.0.10.136（© 2026 NVIDIA Corporation）</td></tr>
+        <tr><td class="dim">软件</td><td>视频 BIOS</td><td>9a.0b.37.00.04</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small">说明：上表“专用视频内存”与“共享系统内存”是统一内存架构下的两种划分口径，二者相加正好等于“全部可用的图形内存”（31232 + 16477 = 47709 MB），不可与整机 64.0 GB 相加或混用。</p>
+</section>
+
+<section id="s-rig">
+  <div class="kicker">02 / My Rig</div>
+  <h2>系统 › 我的装备：整机配置总览</h2>
+  <p class="lead">页面按六组给出整机配置；其中“显卡和显示器”一组同时列出 GPU 型号与所接显示器的分辨率、刷新率、色深与 HDCP 状态。</p>
+  <figure>
+    <img src="assets/img/nvapp/fig01_myrig.webp" alt="NVIDIA App 系统 我的装备 页面截图" width="1464" height="727" loading="lazy" decoding="async">
+    <figcaption>图 1　系统 › 我的装备：装备详细信息总览（应用左侧导航位于“系统”项）。</figcaption>
+  </figure>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>分组</th><th>属性</th><th>读数</th></tr></thead>
+      <tbody>
+        <tr><td class="dim">操作系统</td><td>系统版本</td><td>Microsoft Windows 11 专业版，版本 10.0.28000</td></tr>
+        <tr><td class="dim">驱动程序</td><td>版本与日期</td><td>Game Ready 驱动程序 - 621.40 - Tue Nov 24, 2026</td></tr>
+        <tr><td class="dim">CPU</td><td>型号</td><td>NVIDIA RTX Spark N1X</td></tr>
+        <tr><td class="dim">内存</td><td>容量</td><td>64.0 GB</td></tr>
+        <tr><td class="dim">存储</td><td>类型与容量</td><td>SSD - 1.9 TB</td></tr>
+        <tr><td class="dim">显卡和显示器</td><td>GPU</td><td>NVIDIA RTX Spark N1X（6144-core Blackwell RTX GPU）</td></tr>
+        <tr><td class="dim">显卡和显示器</td><td>显示器 1</td><td>TF2415：1080p, 1920 × 1080（本机）｜60 Hz｜最高（32 位）｜HDCP</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small">从这一页可以确认机器形态：CPU 与 GPU 同属 NVIDIA RTX Spark N1X 平台（SoC 级统一封装），应用将处理器与显卡分别以同一型号名报告；显示器以 HDMI 接入，为单屏配置。</p>
+
+  <h3>详情弹窗 · 系统信息与显卡（上半）</h3>
+  <figure>
+    <img src="assets/img/nvapp/fig02_myrig_details_system.webp" alt="我的装备详情 系统信息截图" width="1464" height="1032" loading="lazy" decoding="async">
+    <figcaption>图 2　我的装备：详情 —— 系统信息 6 项与显卡分组的开头（Direct3D 功能级别、CUDA 核心、图形时钟、Resizable BAR、内存数据速率）。</figcaption>
+  </figure>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>分组</th><th>属性</th><th>读数</th></tr></thead>
+      <tbody>
+        <tr><td class="dim">系统信息</td><td>操作系统</td><td>Microsoft Windows 11 专业版，版本 10.0.28000</td></tr>
+        <tr><td class="dim">系统信息</td><td>DirectX 运行时版本</td><td>DirectX 12</td></tr>
+        <tr><td class="dim">系统信息</td><td>驱动程序</td><td>Game Ready 驱动程序 - 621.40 - Tue Nov 24, 2026</td></tr>
+        <tr><td class="dim">系统信息</td><td>CPU</td><td>NVIDIA RTX Spark N1X</td></tr>
+        <tr><td class="dim">系统信息</td><td>内存</td><td>64.0 GB</td></tr>
+        <tr><td class="dim">系统信息</td><td>存储</td><td>SSD - 1.9 TB</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>详情弹窗 · 显卡参数（中段）</h3>
+  <figure>
+    <img src="assets/img/nvapp/fig03_myrig_details_gpu.webp" alt="我的装备详情 显卡与显存截图" width="1464" height="1032" loading="lazy" decoding="async">
+    <figcaption>图 3　我的装备：详情 —— 显卡分组中段（显存划分、视频 BIOS、设备 ID、部件编号、IRQ、总线）。</figcaption>
+  </figure>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>属性</th><th>读数</th><th>说明</th></tr></thead>
+      <tbody>
+        <tr><td class="dim">GPU</td><td>NVIDIA RTX Spark N1X（6144-core Blackwell RTX GPU）</td><td>应用以核心数标注型号</td></tr>
+        <tr><td class="dim">Direct3D 功能级别</td><td>12_1</td><td>应用报告值；dxdiag 报 12_2，两套口径</td></tr>
+        <tr><td class="dim">CUDA 核心</td><td>6144</td><td>与型号中的 6144-core 一致</td></tr>
+        <tr><td class="dim">图形时钟</td><td>2431 MHz</td><td>标称图形时钟</td></tr>
+        <tr><td class="dim">Resizable BAR</td><td>否</td><td>统一内存平台上通常不适用或未启用</td></tr>
+        <tr><td class="dim">内存数据速率</td><td>0.81 Gbps</td><td>驱动报告字段，不可与 VRAM 频率 9400 MHz 互算</td></tr>
+        <tr><td class="dim">内存接口</td><td>N/A</td><td>统一内存架构下不适用，不是“未检测到”</td></tr>
+        <tr><td class="dim">内存带宽</td><td>N/A</td><td>同上</td></tr>
+        <tr><td class="dim">全部可用的图形内存</td><td>47709 MB</td><td>= 专用 31232 + 共享 16477</td></tr>
+        <tr><td class="dim">系统视频内存</td><td>N/A</td><td>—</td></tr>
+        <tr><td class="dim">共享系统内存</td><td>16477 MB</td><td>可从系统内存借用</td></tr>
+        <tr><td class="dim">专用视频内存</td><td>31232 MB</td><td>即 30.50 GiB</td></tr>
+        <tr><td class="dim">视频 BIOS 版本</td><td>9a.0b.37.00.04</td><td>—</td></tr>
+        <tr><td class="dim">设备 ID</td><td>10DE 2E13 894C1043</td><td>厂商 10DE（NVIDIA），子系统 1043（ASUS）</td></tr>
+        <tr><td class="dim">部件编号</td><td>4242 0010</td><td>—</td></tr>
+        <tr><td class="dim">IRQ</td><td>未使用</td><td>走 MSI 中断</td></tr>
+        <tr><td class="dim">总线</td><td>PCI Express x1</td><td>应用原样报告；与 nvidia-smi 的 1×Gen1 当前读数同源</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="notes">
+    <div class="note-card"><span class="tag">内存接口</span><b>N/A 不是缺失</b><p>统一内存架构没有独立显存的位宽与带宽字段；应用填 N/A 属于如实反映。真正的带宽要看本机微基准，不是这一页。</p></div>
+    <div class="note-card"><span class="tag">显存</span><b>三档口径</b><p>专用 31232 MB、共享 16477 MB、合计 47709 MB。三者是划分关系而非并列关系，引用时应写明口径。</p></div>
+    <div class="note-card"><span class="tag">总线</span><b>PCIe x1 是链路读数</b><p>这是 SoC 内部呈现给驱动的链路信息；官方规格为 PCIe Gen5，设备/主机最大 Gen5。不宜据此推断外接插槽形态。</p></div>
+  </div>
+
+  <h3>详情弹窗 · 显示参数（下段）</h3>
+  <figure>
+    <img src="assets/img/nvapp/fig04_myrig_details_display.webp" alt="我的装备详情 显示参数截图" width="1464" height="1032" loading="lazy" decoding="async">
+    <figcaption>图 4　我的装备：详情 —— 显示分组（显示器编号、分辨率、刷新率、色深、HDCP）。</figcaption>
+  </figure>
+  <div class="table-wrap compact">
+    <table>
+      <thead><tr><th>属性</th><th>读数</th></tr></thead>
+      <tbody>
+        <tr><td class="dim">显示（1）</td><td>TF2415</td></tr>
+        <tr><td class="dim">分辨率</td><td>1080p, 1920 × 1080（本机）</td></tr>
+        <tr><td class="dim">刷新率</td><td>60 Hz</td></tr>
+        <tr><td class="dim">桌面颜色深度</td><td>最高（32 位）</td></tr>
+        <tr><td class="dim">HDCP</td><td>支持</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small">“（本机）”标记表示该分辨率为显示器的原生分辨率，当前即以原生分辨率运行；桌面色深 32 位，HDCP 链路已建立，可正常播放受保护内容。</p>
+</section>
+
+<section id="s-display">
+  <div class="kicker">03 / Display</div>
+  <h2>系统 › 显示器：一条 HDMI 电视型链路</h2>
+  <p class="lead">“显示器”页把与显示输出相关的全部可调项集中在一处，分为“G-SYNC 及 Surround”与“显示设置”（显示器布局 + 四个可展开项）。</p>
+
+  <div class="gallery">
+    <figure>
+      <img src="assets/img/nvapp/fig05_display_gsync.webp" alt="G-SYNC 及 Surround 页面截图" width="1464" height="1032" loading="lazy" decoding="async" srcset="assets/img/nvapp/fig05_display_gsync-1058.webp 1058w, assets/img/nvapp/fig05_display_gsync.webp 1464w" sizes="(max-width:620px) 92vw, (max-width:900px) 46vw, 529px" data-full="assets/img/nvapp/fig05_display_gsync.webp">
+      <figcaption>图 5　系统 › 显示器 —— G-SYNC 及 Surround 展开：两项均为“不可用”。</figcaption>
+    </figure>
+    <figure>
+      <img src="assets/img/nvapp/fig06_display_attributes.webp" alt="显示器属性页面截图" width="1464" height="1032" loading="lazy" decoding="async" srcset="assets/img/nvapp/fig06_display_attributes-1058.webp 1058w, assets/img/nvapp/fig06_display_attributes.webp 1464w" sizes="(max-width:620px) 92vw, (max-width:900px) 46vw, 529px" data-full="assets/img/nvapp/fig06_display_attributes.webp">
+      <figcaption>图 6　系统 › 显示器 —— 显示器属性：TF2415（连接器、HDCP、分辨率、刷新率、方向）。</figcaption>
+    </figure>
+  </div>
+  <div class="grid-2">
+    <div class="table-wrap compact">
+      <table>
+        <thead><tr><th>G-SYNC / Surround</th><th>状态</th></tr></thead>
+        <tbody>
+          <tr><td class="dim">G-SYNC</td><td><span class="badge no">不可用</span></td></tr>
+          <tr><td class="dim">Surround</td><td><span class="badge no">不可用</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="table-wrap compact">
+      <table>
+        <thead><tr><th>显示器属性</th><th>读数</th></tr></thead>
+        <tbody>
+          <tr><td class="dim">连接器</td><td>HDMI - HDTV</td></tr>
+          <tr><td class="dim">HDCP 状态</td><td>支持</td></tr>
+          <tr><td class="dim">分辨率</td><td>1080p, 1920 × 1080（本机）</td></tr>
+          <tr><td class="dim">刷新率</td><td>60 Hz</td></tr>
+          <tr><td class="dim">方向</td><td>横向（当前选中）</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <p class="small">连接器被识别为“HDMI - HDTV”，即把该显示器按电视类设备处理，这与 G-SYNC 不可用的结论相互印证；分辨率与刷新率均可通过下拉框调整，当前为原生 1080p / 60 Hz。</p>
+
+  <div class="gallery">
+    <figure>
+      <img src="assets/img/nvapp/fig07_display_scaling.webp" alt="缩放设置页面截图" width="1464" height="1032" loading="lazy" decoding="async" srcset="assets/img/nvapp/fig07_display_scaling-1058.webp 1058w, assets/img/nvapp/fig07_display_scaling.webp 1464w" sizes="(max-width:620px) 92vw, (max-width:900px) 46vw, 529px" data-full="assets/img/nvapp/fig07_display_scaling.webp">
+      <figcaption>图 7　系统 › 显示器 —— 缩放：模式、缩放设备、覆盖选项与预览。</figcaption>
+    </figure>
+    <figure>
+      <img src="assets/img/nvapp/fig08_display_color.webp" alt="颜色设置上半截图" width="1464" height="1002" loading="lazy" decoding="async" srcset="assets/img/nvapp/fig08_display_color-1058.webp 1058w, assets/img/nvapp/fig08_display_color.webp 1464w" sizes="(max-width:620px) 92vw, (max-width:900px) 46vw, 529px" data-full="assets/img/nvapp/fig08_display_color.webp">
+      <figcaption>图 8　系统 › 显示器 —— 颜色：输出颜色设置、格式、深度、动态范围、准确度模式、色彩通道。</figcaption>
+    </figure>
+  </div>
+  <div class="grid-2">
+    <div class="table-wrap compact">
+      <table>
+        <thead><tr><th>缩放</th><th>当前值</th></tr></thead>
+        <tbody>
+          <tr><td class="dim">模式</td><td>纵横比</td></tr>
+          <tr><td class="dim">缩放设备</td><td>显示器</td></tr>
+          <tr><td class="dim">覆盖游戏/程序设置</td><td>未勾选</td></tr>
+          <tr><td class="dim">预览</td><td>1920 × 1080（本机），75 Hz</td></tr>
+          <tr><td class="dim">本机分辨率</td><td>1920 × 1080</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="table-wrap compact">
+      <table>
+        <thead><tr><th>颜色</th><th>读数</th></tr></thead>
+        <tbody>
+          <tr><td class="dim">输出颜色格式</td><td>RGB</td></tr>
+          <tr><td class="dim">输出颜色深度</td><td>8 bpc</td></tr>
+          <tr><td class="dim">桌面颜色深度</td><td>最高（32 位）</td></tr>
+          <tr><td class="dim">输出动态范围</td><td>全屏</td></tr>
+          <tr><td class="dim">色彩准确度模式</td><td>准确</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="callout blue">
+    <p><strong>预览区的 75 Hz 不是实际输出。</strong>它是预览下拉框的选中项，独立于实际输出；实际输出仍为 60 Hz（见图 1、图 6）。这类“页面里同时出现两个刷新率”的地方，引用时必须写明是哪一个。</p>
+  </div>
+
+  <figure>
+    <img src="assets/img/nvapp/fig09_display_color_bottom.webp" alt="颜色调节下半截图" width="1464" height="1032" loading="lazy" decoding="async">
+    <figcaption>图 9　系统 › 显示器 —— 颜色：亮度、对比度、灰度、数字亮丽四项滑杆。</figcaption>
+  </figure>
+  <div class="table-wrap compact">
+    <table>
+      <thead><tr><th>属性</th><th>当前值</th><th>范围</th></tr></thead>
+      <tbody>
+        <tr><td class="dim">亮度</td><td>100</td><td>0–100</td></tr>
+        <tr><td class="dim">对比度</td><td>100</td><td>0–100</td></tr>
+        <tr><td class="dim">灰度</td><td>1</td><td>0.50–2.00</td></tr>
+        <tr><td class="dim">数字亮丽（%）</td><td>50</td><td>0–100</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small">四项均为默认状态，未做人工偏色调整；数字亮丽 50% 为应用的中性默认值。</p>
+</section>
+
+<section id="s-video">
+  <div class="kicker">04 / Video</div>
+  <h2>系统 › 视频：RTX 视频增强</h2>
+  <figure>
+    <img src="assets/img/nvapp/fig10_video.webp" alt="RTX 视频增强页面截图" width="1464" height="422" loading="lazy" decoding="async">
+    <figcaption>图 10　系统 › 视频 —— RTX 视频增强：超分辨率与 HDR 状态。</figcaption>
+  </figure>
+  <div class="table-wrap compact">
+    <table>
+      <thead><tr><th>属性</th><th>读数</th></tr></thead>
+      <tbody>
+        <tr><td class="dim">超分辨率</td><td>开，质量：自动，状态：未激活</td></tr>
+        <tr><td class="dim">HDR</td><td>已禁用</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small">超分辨率已开启但状态为“未激活”，通常是因为当前没有正在播放的适用视频；该功能在浏览器或播放器中播放视频时才会进入激活状态。HDR 处于禁用状态，与显示器通过 HDMI 接入且系统未开启 HDR 的模式一致。</p>
+</section>
+
+<section id="s-perf">
+  <div class="kicker">05 / Performance</div>
+  <h2>系统 › 性能：十项瞬时读数</h2>
+  <p class="lead">这是整份报告中唯一的动态页面：下表是 12:48:26 这一时刻的瞬时值，重开页面数值会变化，不能当作固定配置项引用。</p>
+  <figure>
+    <img src="assets/img/nvapp/fig11_performance.webp" alt="NVIDIA App 性能统计页面截图" width="1464" height="412" loading="lazy" decoding="async">
+    <figcaption>图 11　系统 › 性能 —— 统计数据：10 项 GPU / CPU 实时读数（采集于 2026-11-26 12:48:26）。</figcaption>
+  </figure>
+  <div class="grid-2">
+    <div class="table-wrap compact">
+      <table>
+        <thead><tr><th>传感器</th><th>读数</th></tr></thead>
+        <tbody>
+          <tr><td class="dim">GPU 频率</td><td class="num">2216 MHz</td></tr>
+          <tr><td class="dim">GPU 功率</td><td class="num">3 W</td></tr>
+          <tr><td class="dim">GPU 温度</td><td class="num">36 °C</td></tr>
+          <tr><td class="dim">GPU 电压</td><td class="num">0.65 V</td></tr>
+          <tr><td class="dim">VRAM 频率</td><td class="num">9400 MHz</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="table-wrap compact">
+      <table>
+        <thead><tr><th>传感器</th><th>读数</th></tr></thead>
+        <tbody>
+          <tr><td class="dim">GPU 利用率</td><td class="num">1%</td></tr>
+          <tr><td class="dim">CPU 频率</td><td class="num">2037 MHz</td></tr>
+          <tr><td class="dim">CPU 功耗</td><td class="num">6.366 W</td></tr>
+          <tr><td class="dim">CPU 温度</td><td class="num">43 °C</td></tr>
+          <tr><td class="dim">CPU 利用率</td><td class="num">34%</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <p class="small">读数反映的是桌面空闲状态——GPU 利用率 1%、功率 3 W、温度 36 °C，说明显卡处于低负载待机；CPU 利用率 34% 且频率 2037 MHz，属于桌面操作时的常见水平。注意：此页“VRAM 频率 9400 MHz”与详情页“内存数据速率 0.81 Gbps”是两套不同来源的字段，不可互相换算，也不宜直接对比。</p>
+  <p class="small" style="margin-bottom:0"><b>时钟字段口径：</b>App 的 <b>2216 MHz</b> 来自另一传感器 / 时钟域；nvidia-smi 同一时刻的 Graphics <b>221 MHz</b> 才是空闲读数；详情页“图形时钟 2431 MHz”是标称值，<b>3003 MHz</b> 是最大 Boost。不要用 2216 MHz 支撑“低功耗待机”。</p>
+</section>
+
+<section id="s-advanced">
+  <div class="kicker">06 / Advanced</div>
+  <h2>系统 › 高级：显存划分的第三个参照点</h2>
+  <figure>
+    <img src="assets/img/nvapp/fig12_advanced.webp" alt="NVIDIA App 高级设置页面截图" width="1464" height="742" loading="lazy" decoding="async">
+    <figcaption>图 12　系统 › 高级 —— GPU 应用优先级、专用 GPU 显存、开发者选项。</figcaption>
+  </figure>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>属性</th><th>读数</th></tr></thead>
+      <tbody>
+        <tr><td class="dim">GPU 应用优先级</td><td>默认（可选：前台优先 / 默认 / 后台优先 / 自定义）</td></tr>
+        <tr><td class="dim">后台应用 GPU 利用率</td><td class="num">20%</td></tr>
+        <tr><td class="dim">前台应用 GPU 利用率</td><td class="num">80%</td></tr>
+        <tr><td class="dim">专用 GPU 显存（GB）</td><td class="num">30.50</td></tr>
+        <tr><td class="dim">管理 GPU 性能计数器</td><td>仅限管理员使用（推荐）</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout">
+    <p><strong>30.50 GB 与 31232 MB 是同一个数。</strong>31,232 MiB ÷ 1024 = 30.50 GiB。应用把 GiB 标成 GB，是常见的界面写法；本站统一写 30.50 GiB，以免与十进制 GB 混淆。</p>
+  </div>
+</section>
+
+<section id="s-graphics">
+  <div class="kicker">07 / Graphics</div>
+  <h2>图形：17 项驱动设置全是默认</h2>
+  <div class="gallery">
+    <figure>
+      <img src="assets/img/nvapp/fig13_graphics_global.webp" alt="图形全局设置顶部截图" width="1920" height="1032" loading="lazy" decoding="async" srcset="assets/img/nvapp/fig13_graphics_global-1058.webp 1058w, assets/img/nvapp/fig13_graphics_global.webp 1920w" sizes="(max-width:620px) 92vw, (max-width:900px) 46vw, 529px" data-full="assets/img/nvapp/fig13_graphics_global.webp">
+      <figcaption>图 13　图形 › 全局设置 —— “驱动程序设置”列表顶部（含“恢复”按钮与 DLSS 优设三项）。</figcaption>
+    </figure>
+    <figure>
+      <img src="assets/img/nvapp/fig14_graphics_global_bottom.webp" alt="图形全局设置底部截图" width="1920" height="1032" loading="lazy" decoding="async" srcset="assets/img/nvapp/fig14_graphics_global_bottom-1058.webp 1058w, assets/img/nvapp/fig14_graphics_global_bottom.webp 1920w" sizes="(max-width:620px) 92vw, (max-width:900px) 46vw, 529px" data-full="assets/img/nvapp/fig14_graphics_global_bottom.webp">
+      <figcaption>图 14　图形 › 全局设置 —— 滚动至列表底部，17 项驱动设置与“显示旧版设置”入口。</figcaption>
+    </figure>
+  </div>
+  <div class="table-wrap compact">
+    <table>
+      <thead><tr><th>设置项</th><th>当前值</th></tr></thead>
+      <tbody>
+        <tr><td class="dim">DLSS 优设 - 模型预设</td><td>使用 3D 应用程序设置</td></tr>
+        <tr><td class="dim">DLSS 优设 - 帧生成模式</td><td>使用 3D 应用程序设置</td></tr>
+        <tr><td class="dim">DLSS 优设 - 超分辨率模式</td><td>使用 3D 应用程序设置</td></tr>
+        <tr><td class="dim">AI 插帧</td><td>关</td></tr>
+        <tr><td class="dim">低延迟模式</td><td>关</td></tr>
+        <tr><td class="dim">CUDA 内存回退</td><td>驱动程序默认值</td></tr>
+        <tr><td class="dim">DSR - 因数</td><td>关</td></tr>
+        <tr><td class="dim">GPU 应用程序分配</td><td>NVIDIA RTX Spark N1X（6144-core Blackwell RTX GPU）</td></tr>
+        <tr><td class="dim">OpenGL GDI 兼容性</td><td>自动</td></tr>
+        <tr><td class="dim">RTX 动态亮丽</td><td>关</td></tr>
+        <tr><td class="dim">Vulkan/OpenGL 现行方法</td><td>自动</td></tr>
+        <tr><td class="dim">图像缩放</td><td>关</td></tr>
+        <tr><td class="dim">垂直同步</td><td>使用 3D 应用程序设置</td></tr>
+        <tr><td class="dim">最高帧率设置</td><td>关</td></tr>
+        <tr><td class="dim">电源管理模式</td><td>正常</td></tr>
+        <tr><td class="dim">着色器缓存</td><td>默认</td></tr>
+        <tr><td class="dim">虚拟现实 - 可变速率超级采样</td><td>关</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small">全部 17 项均为出厂默认或“交由 3D 应用程序决定”的状态，没有任何一项被手工改写；这与驱动页显示的已安装版本、图形页没有任何已配置程序（0/0）相互吻合。</p>
+
+  <div class="grid-2">
+    <figure style="margin-top:0">
+      <img src="assets/img/nvapp/fig15_graphics_program.webp" alt="图形程序设置页面截图" width="1464" height="1032" loading="lazy" decoding="async" srcset="assets/img/nvapp/fig15_graphics_program-1058.webp 1058w, assets/img/nvapp/fig15_graphics_program.webp 1464w" sizes="(max-width:620px) 92vw, (max-width:900px) 46vw, 529px" data-full="assets/img/nvapp/fig15_graphics_program.webp">
+      <figcaption>图 15　图形 › 程序设置 —— 程序列表为空（0/0 程序）。</figcaption>
+    </figure>
+    <div class="callout amber" style="margin-top:0">
+      <p><strong>程序列表 0/0 说明什么。</strong>本机尚未在 NVIDIA App 中为任何游戏或应用建立单独的优化配置，所有程序都套用全局设置。</p>
+      <p>这并不等于“不能跑游戏”，只说明应用侧没有做过逐程序调优。本站也没有做游戏帧率测试，因此不对游戏性能下结论。</p>
+      <p class="small" style="margin-bottom:0">如果要评测游戏，需要在支持 DLSS 的作品里做帧生成/超分对照，而不是看这一页。</p>
+    </div>
+  </div>
+</section>
+
+<section id="s-driver">
+  <div class="kicker">08 / Driver</div>
+  <h2>驱动程序：621.40，2026-11-24</h2>
+  <figure>
+    <img src="assets/img/nvapp/fig16_drivers.webp" alt="NVIDIA App 驱动程序页面截图" width="1920" height="1032" loading="lazy" decoding="async">
+    <figcaption>图 16　驱动程序 —— 已安装 RTX Spark Game Ready 驱动程序 621.40，发布日期 2026-11-24。</figcaption>
+  </figure>
+  <div class="table-wrap compact">
+    <table>
+      <thead><tr><th>属性</th><th>读数</th></tr></thead>
+      <tbody>
+        <tr><td class="dim">已安装驱动</td><td>RTX Spark Game Ready 驱动程序</td></tr>
+        <tr><td class="dim">版本</td><td>621.40</td></tr>
+        <tr><td class="dim">发布日期</td><td>Tue Nov 24, 2026</td></tr>
+        <tr><td class="dim">更新通道</td><td>Game Ready 驱动程序</td></tr>
+        <tr><td class="dim">操作</td><td>重新安装（页面未提供升级按钮，当前已安装即为该版本）</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>页面下方的更新说明列出了该版本的主要变更：</p>
+  <ul>
+    <li><b>新增：</b>《神力科莎：拉力》的 DLSS 4.5 动态多帧生成更新；《战锤 40K：战争黎明 4》支持 DLSS 4.5 超分辨率；《燕云十六声》的 DLSS 5 3D 引导神经网络渲染。</li>
+    <li><b>修复：</b>后台可能会对 nvlog.nvlgstg 文件产生过量写入的问题；特定场景下可能出现画面损坏的问题；Chaos Vantage 中 NVIDIA OptiX 降噪器在高分辨率下可能失效的问题；ASUS ProArt P16 上 Netflix 视频全屏播放数分钟后画面可能黑屏的问题。</li>
+  </ul>
+  <p class="small">更新说明是驱动发布内容，不代表本机实际运行过这些游戏或功能。本站对 DLSS 的结论只到“运行时存在 + API 可用”，没有做游戏内帧率实测。</p>
+</section>
+
+<section id="s-settings">
+  <div class="kicker">09 / Settings</div>
+  <h2>设置：应用功能与版本</h2>
+  <div class="gallery">
+    <figure>
+      <img src="assets/img/nvapp/fig17_settings_features.webp" alt="设置功能页面截图" width="1464" height="1032" loading="lazy" decoding="async" srcset="assets/img/nvapp/fig17_settings_features-1058.webp 1058w, assets/img/nvapp/fig17_settings_features.webp 1464w" sizes="(max-width:620px) 92vw, (max-width:900px) 46vw, 529px" data-full="assets/img/nvapp/fig17_settings_features.webp">
+      <figcaption>图 17　设置 › 功能 —— 浮窗、驱动更新、游戏扫描、智能体连接等开关。</figcaption>
+    </figure>
+    <figure>
+      <img src="assets/img/nvapp/fig18_settings_about.webp" alt="设置关于页面截图" width="1464" height="987" loading="lazy" decoding="async" srcset="assets/img/nvapp/fig18_settings_about-1058.webp 1058w, assets/img/nvapp/fig18_settings_about.webp 1464w" sizes="(max-width:620px) 92vw, (max-width:900px) 46vw, 529px" data-full="assets/img/nvapp/fig18_settings_about.webp">
+      <figcaption>图 18　设置 › 关于 —— NVIDIA App 版本 11.0.10.136。</figcaption>
+    </figure>
+  </div>
+  <div class="table-wrap compact">
+    <table>
+      <thead><tr><th>分组</th><th>项目</th><th>状态</th></tr></thead>
+      <tbody>
+        <tr><td class="dim">浮窗</td><td>NVIDIA 信息浮窗</td><td>关</td></tr>
+        <tr><td class="dim">浮窗</td><td>游戏滤镜及照片模式</td><td>关</td></tr>
+        <tr><td class="dim">驱动程序</td><td>自动下载驱动并让我选择安装时间</td><td>关</td></tr>
+        <tr><td class="dim">游戏和应用程序</td><td>已扫描程序数</td><td>0（最后一次扫描：1 小时之前）</td></tr>
+        <tr><td class="dim">游戏和应用程序</td><td>扫描位置</td><td>2 处</td></tr>
+        <tr><td class="dim">游戏和应用程序</td><td>自动优化新添加的游戏及应用程序</td><td>开</td></tr>
+        <tr><td class="dim">连接智能体和应用</td><td>允许 AI 智能体控制 NVIDIA App</td><td>开</td></tr>
+        <tr><td class="dim">连接智能体和应用</td><td>Connect your Agent / Advanced Details</td><td>提供 MCP 服务器接入入口</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small">驱动自动下载处于关闭状态，因此本机驱动升级需手动触发；游戏扫描位置配置了 2 处但未扫到任何可优化程序，与图 15 的空列表一致。“允许 AI 智能体控制 NVIDIA App”为开启状态，应用因此对外提供 MCP 服务器，允许外部智能体读取与操作其界面。</p>
+</section>
+
+<section id="s-cross">
+  <div class="kicker">10 / Cross-check</div>
+  <h2>交叉核对：应用内部、系统侧、三个易误读点</h2>
+  <h3>10.1 内部一致性核对</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>核对项</th><th>来源 A</th><th>来源 B</th><th>结论</th></tr></thead>
+      <tbody>
+        <tr><td class="dim">驱动版本</td><td>我的装备：621.40</td><td>驱动程序页：621.40（2026-11-24）</td><td><span class="badge ok">一致</span></td></tr>
+        <tr><td class="dim">专用显存</td><td>详情页：31232 MB</td><td>高级页：30.50 GB</td><td><span class="badge ok">一致</span></td></tr>
+        <tr><td class="dim">图形内存合计</td><td>详情页：47709 MB</td><td>31232 + 16477 = 47709 MB</td><td><span class="badge ok">一致</span></td></tr>
+        <tr><td class="dim">显示输出</td><td>我的装备：1080p / 60 Hz</td><td>显示器属性：1080p / 60 Hz</td><td><span class="badge ok">一致</span></td></tr>
+        <tr><td class="dim">CUDA 核心</td><td>型号标注 6144-core</td><td>CUDA 核心字段：6144</td><td><span class="badge ok">一致</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>10.2 与系统侧读数的一致性</h3>
+  <p>应用内不显示 CUDA 版本，用系统自带 <code>nvidia-smi</code> 做一次旁证（2026-11-25 12:13 采集）：驱动 621.40、KMD 621.40、CUDA UMD 13.5、专用显存 31232 MiB、总线 <code>0000000F:01:00.0</code>、WDDM 驱动模型。其中驱动版本与显存容量与应用内读数完全对得上；CUDA 13.5 是应用界面未展示、但确实随该驱动安装的组件版本。</p>
+  <div class="callout blue">
+    <p><strong>两个来源，同一台机器。</strong>NVIDIA App 是 GUI 侧读数，nvidia-smi 是驱动侧命令行读数；两者在驱动版本、专用显存、总线当前读数上一致。NVIDIA App 不显示 CUDA 版本，不能反过来用“应用里没有”证明“系统里没有”。</p>
+    <p class="small" style="margin-bottom:0"><b>版本字段提示：</b>01/07 的 DLSS 运行时表里出现的 “NVIDIA App 128.4.13.35” 是驱动侧 DLSS 覆盖 / 驱动管理组件版本，不是本页的 NVIDIA App 11.0.10.136；两者不要混为一个字段。</p>
+  </div>
+
+  <h3>10.3 三个容易误读的点</h3>
+  <div class="notes">
+    <div class="note-card"><b>64.0 GB 不是“可用内存”</b><p>应用报告的是整机物理内存容量，其中 31232 MB 被划为 GPU 专用视频内存、16477 MB 可在需要时共享给 GPU；Windows 任务管理器看到的可用容量会小于 64 GiB，两者不矛盾。</p></div>
+    <div class="note-card"><b>“内存接口 / 带宽 = N/A”不等于缺失</b><p>统一内存架构没有独立显存的位宽与带宽口径，应用填 N/A 属于如实反映。真正的带宽见 04 内存报告的 252 / 233 / 183 GB/s。</p></div>
+    <div class="note-card"><b>12_1 与 12_2 要注明来源</b><p>Direct3D 功能级别 12_1 是 NVIDIA App 的驱动侧报告值；Windows dxdiag 的 Feature Levels: 12_2 是另一个口径。两者引用时都要写明出处，不要混用成一个数字。</p></div>
+  </div>
+</section>
+
+<section id="s-appendix">
+  <div class="kicker">Appendix</div>
+  <h2>附录 A：详情弹窗原始文本导出</h2>
+  <p class="lead">在详情弹窗中点击“复制文本”，应用会输出以下纯文本（未做任何改写，仅去除首尾空行）。它可作为本页表格的原始对照。</p>
+  <pre>NVIDIA 系统信息报告创建于： 11/26/2026 12:46:32
+NVIDIA App 版本: 11.0.10.136
+操作系统: Microsoft Windows 11 专业版, 版本 10.0.28000
+DirectX 运行时版本: DirectX 12
+驱动程序: Game Ready 驱动程序 - 621.40 - Tue Nov 24, 2026
+CPU: NVIDIA RTX Spark N1X
+内存: 64.0 GB
+存储: SSD - 1.9 TB
+
+显卡
+GPU: NVIDIA RTX Spark N1X (6144-core Blackwell RTX GPU)
+Direct3D 功能级别: 12_1
+CUDA 核心: 6144
+图形时钟: 2431 MHz
+Resizable BAR: 否
+内存数据速率: 0.81 Gbps
+内存接口: N/A
+内存带宽: N/A
+全部可用的图形内存: 47709 MB
+系统视频内存: N/A
+共享系统内存: 16477 MB
+专用视频内存: 31232 MB
+视频 BIOS 版本: 9a.0b.37.00.04
+设备 ID: 10DE 2E13 894C1043
+部件编号: 4242 0010
+IRQ: 未使用
+总线: PCI Express x1
+
+显示 (1): TF2415
+分辨率: 1080p, 1920 x 1080 （本机）
+刷新率: 60 Hz
+桌面颜色深度: 最高（32 位）
+HDCP: 支持</pre>
+
+  <h3>附录 B　截图清单</h3>
+  <div class="table-wrap compact">
+    <table>
+      <thead><tr><th>编号</th><th>应用内位置</th><th>采集时间</th></tr></thead>
+      <tbody>
+        <tr><td>图 1</td><td>系统 › 我的装备</td><td>12:45:57</td></tr>
+        <tr><td>图 2</td><td>我的装备：详情（上：系统信息）</td><td>12:46:06</td></tr>
+        <tr><td>图 3</td><td>我的装备：详情（中：显卡/显存）</td><td>12:46:44</td></tr>
+        <tr><td>图 4</td><td>我的装备：详情（下：显示）</td><td>12:46:50</td></tr>
+        <tr><td>图 5</td><td>系统 › 显示器 › G-SYNC 及 Surround</td><td>12:47:09</td></tr>
+        <tr><td>图 6</td><td>系统 › 显示器 › 显示器属性：TF2415</td><td>12:47:27</td></tr>
+        <tr><td>图 7</td><td>系统 › 显示器 › 缩放</td><td>12:47:34</td></tr>
+        <tr><td>图 8</td><td>系统 › 显示器 › 颜色（上）</td><td>12:47:58</td></tr>
+        <tr><td>图 9</td><td>系统 › 显示器 › 颜色（下）</td><td>12:48:07</td></tr>
+        <tr><td>图 10</td><td>系统 › 视频</td><td>12:48:17</td></tr>
+        <tr><td>图 11</td><td>系统 › 性能</td><td>12:48:26</td></tr>
+        <tr><td>图 12</td><td>系统 › 高级</td><td>12:48:38</td></tr>
+        <tr><td>图 13</td><td>图形 › 全局设置（顶部）</td><td>12:49:16</td></tr>
+        <tr><td>图 14</td><td>图形 › 全局设置（底部）</td><td>12:49:26</td></tr>
+        <tr><td>图 15</td><td>图形 › 程序设置</td><td>12:49:04</td></tr>
+        <tr><td>图 16</td><td>驱动程序</td><td>12:49:35</td></tr>
+        <tr><td>图 17</td><td>设置 › 功能</td><td>12:49:49</td></tr>
+        <tr><td>图 18</td><td>设置 › 关于</td><td>12:50:05</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small">全部截图取自同一会话（窗口最大化、100% 显示缩放），除图 13 / 图 14 为同一列表的上下两屏外，其余各图分别对应应用内不同页面或不同展开项，无重复。采集顺序为“图形 › 程序设置 → 图形 › 全局设置”，故图 15 的时间早于图 13、图 14；正文按“全局设置 → 程序设置”的逻辑顺序编排。</p>
+  <p class="small">完整版下载：<a href="assets/downloads/NVIDIA-App-本机硬件与软件配置图文报告.pdf">NVIDIA App 本机硬件与软件配置图文报告（PDF，1.7 MB）</a></p>
+</section>
+
+<div class="page-nav">
+  <a href="spec.html"><span class="label">上一份 · 01</span><b>← 参数与能力报告</b></a>
+  <a class="next" href="benchmark.html"><span class="label">下一份 · 03</span><b>GPU 性能基准调研 →</b></a>
+</div>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div>
+      <p><b>N1X 全景评测</b><br>02 NVIDIA App 本机配置图文报告</p>
+      <p>本页全部信息来自 NVIDIA App 自身界面，未引入第三方工具读数作为正文依据；系统侧读数只作旁证，并已注明来源。应用版本与界面可能随更新变化。</p>
+      <p class="small">不构成 NVIDIA / ASUS 官方认证。截图与读数仅代表 2026-11-26 12:45–12:50 的本机状态。</p>
+      <div class="foot-links"><a href="index.html">总览</a><a href="spec.html">参数</a><a href="benchmark.html">基准</a><a href="memory.html">内存</a><a href="qwen.html">推理</a><a href="h3.html">视频</a><a href="verdict.html">总评</a></div>
+    </div>
+    <div class="src-list">
+      <p><b>相关页面与来源</b></p>
+      <p><a href="spec.html#identity">01 参数报告 · 身份判定</a><br>
+      <a href="memory.html#limits">04 内存报告 · 三个上限</a><br>
+      <a href="evidence.html#s-smiapp">08 证据墙 · NVIDIA App 截图</a><br>
+      <a href="verdict.html">09 总评与选型建议</a></p>
+    </div>
+  </div>
+</footer>
+<script src="assets/site.js"></script>
+</body>
+</html>

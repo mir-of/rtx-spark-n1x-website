@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RTX Spark N1X 全景评测 · ASUS ProArt GR1X</title>
+<meta name="description" content="ASUS ProArt GR1X（NVIDIA RTX Spark N1X）的规格、算力、内存与本地推理完整评测。九份报告组成一条证据链：官方规格、NVIDIA App、GPU 基准、内存实测与快读、Qwen3.8-27B 推理、MiniMax H3 视频生成、证据墙与总评。">
+<link rel="stylesheet" href="assets/site.css">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+<a class="skip-link" href="#main">跳到正文</a>
+<div class="progress-bar" aria-hidden="true"></div>
+
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="index.html"><span class="mark">N1X</span><span>N1X 全景评测<small>ASUS ProArt GR1X · 2026</small></span></a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">目录</button>
+    <nav class="nav" id="site-nav" aria-label="站点导航">
+      <a href="index.html" class="active">总览</a>
+      <a href="spec.html">参数</a>
+      <a href="nvidia-app.html">配置</a>
+      <a href="benchmark.html">基准</a>
+      <a href="memory.html">内存</a>
+      <a href="memory-story.html">快读</a>
+      <a href="qwen.html">推理</a>
+      <a href="h3.html">视频</a>
+      <a href="evidence.html">证据</a>
+      <a href="verdict.html">总评</a>
+    </nav>
+  </div>
+</header>
+
+<header class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <div class="eyebrow">Hardware dossier · 2026-11-26</div>
+      <h1>RTX Spark <span>N1X</span><br>全景评测</h1>
+      <p class="sub">ASUS ProArt GR1X · 规格、算力、内存与本地推理的完整测评</p>
+      <p class="lede">这不是九份报告的并列堆放。先用官方规格和 NVIDIA App 确认它是什么，再用 Geekbench 与精度实测把它放进桌面 GPU 天梯，接着拆开 64 GiB 统一内存（厂商标称 64 GB）的三个数字，然后用 Qwen3.8-27B 的真实 tok/s、长上下文、并发与质量，最后用 MiniMax H3 的 5s / 10s 视频生成，回答它能做什么、不能做什么。</p>
+    <p class="page-q"><b>本页回答：</b>这台机器是什么、九个维度上分别处在什么位置、后面的报告该怎么读。</p>
+      <div class="meta">
+        <span>Windows 11 Pro 26H1 · ARM64</span>
+        <span>Driver 621.40</span>
+        <span>CUDA UMD 13.5</span>
+        <span>采集 2026-11-25 – 11-26（UTC+8）</span>
+      </div>
+      <div class="hero-notes">
+        <span>9 份报告</span><span>28 项官方规格核对</span><span>6 会话内存扫描</span><span>3 + 3 次 Geekbench</span><span>40 题质量抽测</span>
+      </div>
+    </div>
+    <div class="chip" aria-label="48 个 SM 示意图">
+      <div class="chip-head"><span>Blackwell RTX</span><span>N1X</span></div>
+      <div class="sm-grid">
+        <i style="--o:0.35"></i><i style="--o:0.85"></i><i style="--o:0.64"></i><i style="--o:0.42"></i><i style="--o:0.92"></i><i style="--o:0.71"></i><i style="--o:0.49"></i><i style="--o:0.99"></i>
+        <i style="--o:0.78"></i><i style="--o:0.56"></i><i style="--o:0.35"></i><i style="--o:0.85"></i><i style="--o:0.64"></i><i style="--o:0.42"></i><i style="--o:0.92"></i><i style="--o:0.71"></i>
+        <i style="--o:0.49"></i><i style="--o:0.99"></i><i style="--o:0.78"></i><i style="--o:0.56"></i><i style="--o:0.35"></i><i style="--o:0.85"></i><i style="--o:0.64"></i><i style="--o:0.42"></i>
+        <i style="--o:0.92"></i><i style="--o:0.71"></i><i style="--o:0.49"></i><i style="--o:0.99"></i><i style="--o:0.78"></i><i style="--o:0.56"></i><i style="--o:0.35"></i><i style="--o:0.85"></i>
+        <i style="--o:0.64"></i><i style="--o:0.42"></i><i style="--o:0.92"></i><i style="--o:0.71"></i><i style="--o:0.49"></i><i style="--o:0.99"></i><i style="--o:0.78"></i><i style="--o:0.56"></i>
+        <i style="--o:0.35"></i><i style="--o:0.85"></i><i style="--o:0.64"></i><i style="--o:0.42"></i><i style="--o:0.92"></i><i style="--o:0.71"></i><i style="--o:0.49"></i><i style="--o:0.99"></i>
+      </div>
+      <div class="chip-foot"><b>48 SM</b><span>× 128 CUDA = 6,144</span></div>
+    </div>
+  </div>
+  <div class="wrap stat-grid">
+    <div class="stat"><b>6,144</b><span>CUDA 核心 · 48 SM</span></div>
+    <div class="stat"><b>20</b><span>CPU 核心 · 20 线程</span></div>
+    <div class="stat"><b>64 GiB</b><span>LPDDR5X 统一内存</span></div>
+    <div class="stat"><b>140 W</b><span>官方 SoC TDP</span></div>
+  </div>
+</header>
+
+<nav class="toc" aria-label="本页目录">
+  <div class="wrap">
+    <a href="#summary">00 导读</a><a href="#logic">01 阅读逻辑</a><a href="#map">02 报告地图</a>
+    <a href="#findings">03 核心结论</a><a href="#caliber">04 口径</a><a href="#raw">05 原始读数</a>
+  </div>
+</nav>
+
+<main class="wrap" id="main">
+
+<div class="kicker" style="margin:6px 0 10px">Key numbers / 先看四个数</div>
+<div class="kpi-band" style="margin-top:0;margin-bottom:6px">
+  <div class="kpi"><b>111,605</b><span>Geekbench 7 Vulkan 中位（n=3）</span><a href="benchmark.html#s-gb7">03 GPU 基准 →</a></div>
+  <div class="kpi"><b>252 GB/s</b><span>纯读带宽 · 理论峰值 273 的 92%</span><a href="benchmark.html#s-bandwidth">03 GPU 基准 →</a></div>
+  <div class="kpi"><b>45.92 GiB</b><span>CUDA 可寻址配额 · 最大单次 45.75</span><a href="memory.html#limits">04 内存实测 →</a></div>
+  <div class="kpi"><b>36.6 tok/s</b><span>Qwen3.8-27B 短上下文解码</span><a href="qwen.html#results">06 推理报告 →</a></div>
+</div>
+
+<section id="summary">
+  <div class="kicker">00 / Executive summary</div>
+  <h2>一句话：一台 140 W 的统一内存小型工作站，AI 是主场</h2>
+  <div class="callout">
+    <ul class="checklist">
+      <li><span class="ck">✓</span><div><b>身份成立</b> 官方桌面档 6144-core GPU + 20-core CPU，本机 48 SM / 6,144 CUDA / 20 线程完全对上；桌面档 NPU 为 “-”，本机也未枚举到 NPU。<span class="tiny">官方规格页 · nvidia-smi · CUDA 属性 · NVIDIA App 四方交叉</span></div></li>
+      <li><span class="ck">✓</span><div><b>官方能力成立</b> 第四代 RT Core、第五代 Tensor Core、DLSS 5（运行时与 API）、第九代 NVENC / 第六代 NVDEC 均可在本机复现；设备 / 主机最大 PCIe Gen5，当前链路 1×Gen1；计算能力 12.1，CUDA UMD 13.5；编码 7/7 通过，解码 6/7 通过（H.264 4:4:4 不在 NVDEC 色度范围）。<span class="tiny">dxdiag Feature Level 12_2 · Vulkan RT 扩展 · ffmpeg 原生 ARM64 实测</span></div></li>
+      <li><span class="ck">✓</span><div><b>性能位置清楚</b> Geekbench 7 Vulkan 中位 111,605，介于 RTX 4060 与 4060 Ti 之间；CUDA 中位 179,627；纯读带宽 252 GB/s；FP16 实测 58.9 TFLOPS。<span class="tiny">这是 GPGPU 综合分，不是游戏帧率</span></div></li>
+      <li><span class="ck">✓</span><div><b>内存是本站重点</b> 30.50 GiB 帧缓冲、45.92 GiB CUDA 配额、32.18 GiB 系统可见同时成立；最大单次分配 45.75 GiB；6 个独立会话跨过 30.5 GiB 边界未观察到断崖。<span class="tiny">真正的限制是驻留与提交，不是带宽</span></div></li>
+      <li><span class="ck">✓</span><div><b>端到端可用</b> Qwen3.8-27B IQ4_XS：短上下文 36.6 tok/s、32K 30.2、89K 19.3；prompt cache 32K 命中 ×169；8 路并发聚合 2.07×；40 题质量 92.5（思考关）/ 95.0（思考开）。<span class="tiny">适合 1–2 个并发用户；长文档适合批处理</span></div></li>
+      <li><span class="ck">✓</span><div><b>视频生成可用</b> MiniMax H3：5s @1344×768 原生 8 步 15m59s 可交付；10s @1344×768 需换 FreeVideo 管线，9m37s；三组峰值 30.33–30.38 GiB。<span class="tiny">07 视频报告 · A/B/C 三组 + D 基线</span></div></li>
+    </ul>
+  </div>
+  <div class="callout dark">
+    <p><strong>一句话定位。</strong> 它是一台 140 W、64 GiB 统一内存的 ARM64 小型工作站：本地 27B 级模型、长文档、视频生成、CUDA/ARM64 开发是主场；带宽敏感型 HPC 不是强项；4K 光追游戏与 FP64 密集型 HPC 尚待实测（后续补测）。</p>
+    <p class="small" style="color:#9fb59a;margin-bottom:0">下面所有数字都标注口径。官方规格、本机实测、项目推算、单次现场回显不会混在一起。</p>
+  </div>
+</section>
+
+<section id="logic">
+  <div class="kicker">01 / How to read</div>
+  <h2>先看身份，再看算力，然后拆内存，最后落到模型</h2>
+  <p class="lead">主线是六步：身份与能力 → 横向算力 → 内存机制 → 端到端 LLM → 视频生成 → 结论；02 / 05 / 08 分别是配置旁证、快读与证据索引。跳过任何一步，后面的数字都会失去上下文。</p>
+
+  <div class="chain" aria-label="阅读逻辑链">
+    <div class="chain-step"><div class="dot">01</div><div><b>身份与能力</b><span>官方规格 × 本机 28 项核对</span><a href="spec.html">参数报告 →</a></div></div>
+    <div class="chain-step"><div class="dot">03</div><div><b>横向算力</b><span>放进 3090 / 4090 / 5090 天梯</span><a href="benchmark.html">GPU 基准 →</a></div></div>
+    <div class="chain-step"><div class="dot">04</div><div><b>内存机制</b><span>三个数字与超配行为</span><a href="memory.html">内存实测 →</a></div></div>
+    <div class="chain-step"><div class="dot">06</div><div><b>端到端</b><span>27B 模型真实 tok/s</span><a href="qwen.html">推理报告 →</a></div></div>
+    <div class="chain-step"><div class="dot">07</div><div><b>视频生成</b><span>H3 5s / 10s 实测</span><a href="h3.html">视频报告 →</a></div></div>
+    <div class="chain-step"><div class="dot">09</div><div><b>结论</b><span>适合谁、怎么规划</span><a href="verdict.html">总评 →</a></div></div>
+  </div>
+
+  <div class="grid-2" style="margin-top:28px">
+    <div>
+      <h3 style="margin-top:0">为什么是这个顺序</h3>
+      <p><b>先确认“它是什么”，再谈“它有多快”。</b> N1X 不是一张插在 PCIe 槽里的显卡，而是 GB10 级别的 SoC：CPU、GPU、内存共封装，Windows 上还要经过固件预留与 WDDM 配额。如果不先确认档位，后面很容易把“统一内存”当成“独立显存”来读。</p>
+      <p><b>算力必须横向比，且要分口径。</b> 官方只给了一个 1 PFLOP FP4 的数字；Geekbench 给的是 GPGPU 综合分；PyTorch 给的是各精度 GEMM 实测；带宽微基准给的是另一个维度。四套数字不能互相替代。</p>
+      <p><b>内存是这台机器最容易被误读的部分。</b> 30.50、45.92、32.18 三个数字都成立，但回答的是不同问题。把这三个数字混成一个“可用显存”，后面的模型规划就会全错。</p>
+      <p><b>最后必须落到模型。</b> 带宽 252 GB/s、配额 45.92 GiB 这些中间量，只有变成 Qwen 的 36.6 / 30.2 / 19.3 tok/s、并发扩展与质量分，才能回答“买它值不值”。</p>
+    </div>
+    <div class="callout blue" style="margin-top:0">
+      <p><strong>本站的三种读法。</strong></p>
+      <p><b>只有 10 分钟：</b>本页 00 + 03 → <a href="memory-story.html">05 快读</a> → <a href="verdict.html">09 总评</a>。先拿到结论和边界。</p>
+      <p><b>要做工程选型：</b><a href="memory.html">04 内存全报告</a> → <a href="qwen.html">06 推理报告</a> → <a href="benchmark.html">03 GPU 基准</a>。重点看方法、重复次数与限制。</p>
+      <p><b>要复核证据：</b><a href="spec.html">01 参数报告</a> → <a href="nvidia-app.html">02 NVIDIA App</a> → <a href="evidence.html">08 证据墙</a>。关键数字都能回到日志、原始数据或截图。</p>
+      <p class="small" style="margin-bottom:0">每份报告顶部都有角色标签：基线 / 配置快照 / 横向定位 / 机制 / 快读 / 端到端 / 视频 / 证据 / 结论。看到标签就知道该用什么期待去读。</p>
+    </div>
+  </div>
+
+  <div class="path-grid">
+    <div class="path-card">
+      <div class="time">10 minutes · 快读</div>
+      <h3>先拿到结论</h3>
+      <p>适合第一次接触 N1X、只想知道“它能干什么”的读者。</p>
+      <ol>
+        <li><a href="#findings">本页核心结论</a></li>
+        <li><a href="memory-story.html">同一个 GB10，两种内存命运</a></li>
+        <li><a href="qwen.html#s-summary">Qwen 报告的摘要与适用场景</a></li>
+        <li><a href="verdict.html">总评：适合谁 / 哪些待补测</a></li>
+      </ol>
+      <div class="go"><a href="#findings">从本页核心结论开始 →</a></div>
+    </div>
+    <div class="path-card">
+      <div class="time">1 hour · 工程</div>
+      <h3>做选型与容量规划</h3>
+      <p>适合要在 Windows 上部署大模型、视频生成或显存密集任务的工程师。</p>
+      <ol>
+        <li><a href="memory.html">内存与带宽全报告</a></li>
+        <li><a href="qwen.html">Qwen3.8-27B 推理报告</a></li>
+        <li><a href="h3.html">MiniMax H3 视频生成报告</a></li>
+        <li><a href="benchmark.html">GPU 基准与精度算力</a></li>
+        <li><a href="verdict.html#budget">规划口径与选型表</a></li>
+      </ol>
+      <div class="go"><a href="memory.html">从内存全报告开始 →</a></div>
+    </div>
+    <div class="path-card">
+      <div class="time">Half day · 复核</div>
+      <h3>逐条核对证据</h3>
+      <p>适合要复现、要引用、或要挑战结论的读者。</p>
+      <ol>
+        <li><a href="spec.html">官方规格 × 本机 28 项</a></li>
+        <li><a href="nvidia-app.html">NVIDIA App 18 张截图</a></li>
+        <li><a href="evidence.html">nvidia-smi 与原始日志</a></li>
+        <li><a href="benchmark.html#s-limits">方法与局限</a></li>
+      </ol>
+      <div class="go"><a href="spec.html">从参数报告开始 →</a></div>
+    </div>
+  </div>
+</section>
+
+<section id="map">
+  <div class="kicker">02 / Report map</div>
+  <h2>九份报告，一条证据链</h2>
+  <p class="lead">每份报告解决一个独立问题，同时为下一份提供输入。点击卡片进入全文；页面底部有上一份 / 下一份导航。</p>
+
+  <div class="report-grid">
+    <a class="report-card" href="spec.html">
+      <div class="report-top"><span class="report-no">01</span><span class="badge ok">基线</span></div>
+      <h3>参数与能力报告</h3>
+      <p>官方三档并列，确认 ASUS GR1X 对应桌面 6144/20 档；28 项逐条核对 RTX、DLSS 5、NVENC / NVDEC 与平台能力。</p>
+      <div class="report-meta">官方规格 × 本机实测 · 约 10 分钟</div>
+      <div class="report-go">阅读全文 →</div>
+    </a>
+    <a class="report-card" href="nvidia-app.html">
+      <div class="report-top"><span class="report-no">02</span><span class="badge info">配置快照</span></div>
+      <h3>NVIDIA App 图文配置</h3>
+      <p>9 个应用页面（含子项共 18 张）：驱动、显存划分、显示链路、性能传感器与图形设置。GUI 侧的独立旁证。</p>
+      <div class="report-meta">2026-11-26 12:45–12:50 · 18 张截图</div>
+      <div class="report-go">阅读全文 →</div>
+    </a>
+    <a class="report-card" href="benchmark.html">
+      <div class="report-top"><span class="report-no">03</span><span class="badge info">横向定位</span></div>
+      <h3>GPU 性能基准调研</h3>
+      <p>Geekbench 7 同工具对比、各精度 GEMM、显存带宽，与 RTX 3090 / 4090 / 5090 放在同一张表里。</p>
+      <div class="report-meta">3× CUDA + 3× Vulkan · 榜单 1,247 条</div>
+      <div class="report-go">阅读全文 →</div>
+    </a>
+    <a class="report-card" href="memory.html">
+      <div class="report-top"><span class="report-no">04</span><span class="badge warn">机制 · 全面</span></div>
+      <h3>内存与带宽实测</h3>
+      <p>三个上限、6 会话跨边界扫描、页放置标定、36 GiB 超配持续负载、ComfyUI 真实生成。结论：常驻即可全速，驱逐才慢。</p>
+      <div class="report-meta">2026-11-25 · 5 脚本 + 6 会话 + 3 次生成</div>
+      <div class="report-go">阅读全文 →</div>
+    </a>
+    <a class="report-card" href="memory-story.html">
+      <div class="report-top"><span class="report-no">05</span><span class="badge warn">快读</span></div>
+      <h3>同一个 GB10，两种内存命运</h3>
+      <p>为什么 nvidia-smi 说 30.5 GiB，CUDA 却愿意给 45.9 GiB？一篇不需要驱动开发背景的解读。</p>
+      <div class="report-meta">10 分钟 · 8 节 · 3 张图</div>
+      <div class="report-go">阅读全文 →</div>
+    </a>
+    <a class="report-card" href="qwen.html">
+      <div class="report-top"><span class="report-no">06</span><span class="badge ok">端到端 · 实测</span></div>
+      <h3>Qwen3.8-27B IQ4_XS 本地推理</h3>
+      <p>同一台机器、同一份 IQ4_XS 权重、同一套 llama.cpp：短/长上下文、MTP、prompt cache、并发、热稳态与 40 题质量。</p>
+      <div class="report-meta">2026-11-25 · 每组 3–5 次重启复测</div>
+      <div class="report-go">阅读全文 →</div>
+    </a>
+    <a class="report-card" href="h3.html">
+      <div class="report-top"><span class="report-no">07</span><span class="badge ok">端到端 · 重型</span></div>
+      <h3>MiniMax H3 视频生成</h3>
+      <p>30.5 GiB 卡上跑 33B 全模态模型：5s / 10s、原生 ComfyUI 与 FreeVideo 两条管线，速度、显存、功耗与成片质量。</p>
+      <div class="report-meta">2026-11-25 · A/B/C 三组 + D 基线</div>
+      <div class="report-go">阅读全文 →</div>
+    </a>
+    <a class="report-card" href="evidence.html">
+      <div class="report-top"><span class="report-no">08</span><span class="badge gray">证据</span></div>
+      <h3>原始读数与证据墙</h3>
+      <p>nvidia-smi、官方规格长图、ffmpeg / Vulkan / DLSS 枚举、NVIDIA App 关键页，以及最容易混的六组口径。</p>
+      <div class="report-meta">截图 + 日志 + 数字字典</div>
+      <div class="report-go">阅读全文 →</div>
+    </a>
+    <a class="report-card" href="verdict.html">
+      <div class="report-top"><span class="report-no">09</span><span class="badge dark">结论</span></div>
+      <h3>总评与选型建议</h3>
+      <p>把前八份报告收成一张表：强项、边界、待补测的场景、内存预算、并发建议，以及仍未回答的问题。</p>
+      <div class="report-meta">跨报告综合 · 可执行口径</div>
+      <div class="report-go">阅读全文 →</div>
+    </a>
+  </div>
+</section>
+
+<section id="findings">
+  <div class="kicker">03 / Findings</div>
+  <h2>十一个结论，每个都带口径</h2>
+  <p class="lead">下表是整站最短的版本。右列的“证据”指向具体报告；需要看原始数字时，沿链接进去。</p>
+  <div class="table-wrap">
+    <table class="findings-table">
+      <thead><tr><th>维度</th><th>结论</th><th>关键数字</th><th>证据</th></tr></thead>
+      <tbody>
+        <tr><td class="dim">身份与档位</td><td>不是笔记本档，是桌面 6144/20 档；桌面档没有 NPU。</td><td class="num">48 SM · 6,144 CUDA · 20C/20T · NPU “-” · 140 W</td><td><a href="spec.html#identity">01 参数</a></td></tr>
+        <tr><td class="dim">官方能力</td><td>RTX / 光追 / DLSS 5 / 媒体引擎 / 平台 API 全部可在本机复现。</td><td class="num">28 项核对 · 编码 7/7 · 解码 6/7 · DX12 FL 12_2</td><td><a href="spec.html#compare">01 参数</a></td></tr>
+        <tr><td class="dim">GPGPU 天梯</td><td>介于 RTX 4060 与 4060 Ti 之间；相对 3090 明显落后，但不是同一形态。</td><td class="num">Vulkan 111,605 · CUDA 179,627 · 3090 的 58.4% / 67.9%</td><td><a href="benchmark.html#s-gb7">03 基准</a></td></tr>
+        <tr><td class="dim">精度算力</td><td>FP16 接近 59 TFLOPS；FP8 实测超过旧推算模型；FP4 只有推算。</td><td class="num">FP32 19.1 / 18.0 · FP16 58.9 · FP8 159–166 · FP4 473.8*</td><td><a href="benchmark.html#s-precision">03 基准</a></td></tr>
+        <tr><td class="dim">带宽</td><td>纯读接近理论峰值；写与拷贝是短板；不要用拷贝单向速率估算读密集任务。</td><td class="num">纯读 252 GB/s · 读+写 233 · 纯写 183 · 理论 273</td><td><a href="benchmark.html#s-bandwidth">03 基准</a></td></tr>
+        <tr><td class="dim">内存三口径</td><td>30.50 / 45.92 / 32.18 同时成立，回答不同问题。</td><td class="num">FB 30.50 GiB · CUDA 配额 45.92 GiB · 可见 32.18 GiB</td><td><a href="memory.html#limits">04 内存</a></td></tr>
+        <tr><td class="dim">超配行为</td><td>跨过 30.5 GiB 没有断崖；真正的代价是驻留与提交，不是链路。</td><td class="num">6 会话写 −0.4% / 读 +1.5% · 36 GiB×5 min 122 GB/s</td><td><a href="memory.html#scan">04 内存</a></td></tr>
+        <tr><td class="dim">本地 LLM</td><td>27B IQ4_XS 可稳定运行；短上下文快，长上下文受带宽与 KV 读取拖累。</td><td class="num">36.6 / 30.2 / 19.3 tok/s · MTP ×2.16 · cache ×169</td><td><a href="qwen.html#results">06 推理</a></td></tr>
+        <tr><td class="dim">并发与热</td><td>适合 1–2 个并发用户；10–13.5 分钟持续负载未见持续降频。</td><td class="num">8 路聚合 2.07× · 77–83 °C · 600 s FP32 105.9 W</td><td><a href="qwen.html#thermal">06 推理</a></td></tr>
+        <tr><td class="dim">视频生成</td><td>5s 原生可交付；10s @1344×768 需换 FreeVideo 管线；三组都贴着 30.5 GiB。</td><td class="num">15m59s / 14m15s / 9m37s · 30.33–30.38 GiB</td><td><a href="h3.html#s-summary">07 视频</a></td></tr>
+        <tr><td class="dim">未验证</td><td>游戏帧率、FP4 GEMM、&gt;40 GiB 长负载、30 分钟以上热漂移，都不能从现有数据外推。</td><td class="num">—</td><td><a href="verdict.html#open">09 总评</a></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small">* FP4 473.8 TFLOPS 为项目按 48 SM × 2.41 GHz 的推算值，不是实测；官方口径是 1 PFLOP（FP4，稀疏）。详见 <a href="benchmark.html#s-precision">03 精度算力</a>。</p>
+</section>
+
+
+<section id="caliber">
+  <div class="kicker">04 / Caliber</div>
+  <h2>六个最容易混的口径</h2>
+  <p class="lead">这一节不是术语表，而是“读本站时最容易把两个数字加在一起”的六处。先把它们分开，后面所有表格才读得顺。</p>
+  <div class="notes">
+    <div class="note-card"><span class="tag">容量</span><b>GiB 不是 GB</b><p>1 GiB = 2<sup>30</sup> B；1 GB = 10<sup>9</sup> B。31,232 MiB = 30.50 GiB = 32.75 GB；32.18 GiB = 34.56 GB。本站容量默认 GiB、带宽默认 GB/s，均会标注。</p></div>
+    <div class="note-card"><span class="tag">内存</span><b>三个数字不能相加</b><p>FB 30.50 GiB 是分区；CUDA 45.92 GiB 是配额；系统可见 32.18 GiB 是 OS 口径。45.92 − 30.50 = 15.42 GiB 是残差，不是额外物理内存。</p></div>
+    <div class="note-card"><span class="tag">带宽</span><b>读、写、拷贝是三件事</b><p>纯读 252 GB/s、纯写 183 GB/s、D2D 单向 116.5–117.5 GB/s（读+写总流量 233–235，视会话）。用 118 或 180 去估读密集任务，会明显低估。</p></div>
+    <div class="note-card"><span class="tag">算力</span><b>官方 / 实测 / 推算</b><p>1 PFLOP 是官方 FP4 稀疏口径；473.8 TFLOPS 是项目推算；FP8 159–166 是实测；FP32 19.1 是短时 GEMM。四者不能互相替代。</p></div>
+    <div class="note-card"><span class="tag">系统</span><b>1×Gen1 不是规格降级</b><p>nvidia-smi 当前显示 1×Gen1，设备/主机最大 Gen5；这是链路当前读数，不代表 GPU 只有 Gen1。C2C Mode Enabled。</p></div>
+    <div class="note-card"><span class="tag">显示</span><b>12_1 与 12_2 是两套报告</b><p>NVIDIA App 报 Direct3D 功能级别 12_1；Windows dxdiag 报 Feature Levels 12_2。引用时写明来源，不要混成一个数字。</p></div>
+  </div>
+  <p class="small" style="margin-top:14px"><b>术语：</b>FB = 帧缓冲分区；D2D = Device-to-Device；MTP = Multi-Token Prediction；IQ4_XS = GGUF 4-bit 量化（4.25 bpw）；C2C = CPU-GPU 一致性互连；WDDM = Windows 显示驱动模型；CUDA UMD = CUDA 用户态驱动。</p>
+  <div class="callout">
+    <p><strong>证据等级。</strong> 本站用四种标签：<span class="badge ok">实测通过</span> 表示多会话/多次重复且结果一致；<span class="badge info">实测读数</span> 表示本机读到但未必多次；<span class="badge warn">口径/推算</span> 表示依赖假设或现场回显；<span class="badge gray">未验证</span> 表示没有数据，不外推。</p>
+    <p class="small" style="margin-bottom:0">完整的原始文件、截图与日志索引在 <a href="evidence.html">08 证据墙</a>。</p>
+  </div>
+</section>
+
+<section id="raw">
+  <div class="kicker">05 / Raw readout</div>
+  <h2>回到那张 nvidia-smi</h2>
+  <p class="lead">首页的结论都可以回到这张原始读数。它只代表 2026-11-25 12:13:31 的一刻，但足以确认驱动、CUDA UMD、显存分区与空闲状态。</p>
+  <div class="grid-2">
+    <figure style="margin-top:0">
+      <img src="assets/img/nvidia-smi.webp" alt="nvidia-smi 原始输出截图" width="884" height="580" loading="lazy" decoding="async">
+      <figcaption>图 1　nvidia-smi：539 MiB / 31,232 MiB、3%、39 °C、P8、2 W；驱动 621.40、KMD 621.40、CUDA UMD 13.5。</figcaption>
+    </figure>
+    <div>
+      <div class="kv">
+        <div class="k">GPU / 驱动模型</div><div class="v">NVIDIA RTX Spark N1X · WDDM</div>
+        <div class="k">显存占用 / 分区</div><div class="v"><span class="num">539 MiB / 31,232 MiB</span>（30.50 GiB 专用 FB）</div>
+        <div class="k">利用率 / 温度</div><div class="v"><span class="num">3% · 39 °C · P8 · 2 W</span>（空闲状态）</div>
+        <div class="k">当前进程</div><div class="v">Hermes Agent.exe · msedgewebview2.exe（均为 C+G）</div>
+        <div class="k">它不回答什么</div><div class="v">CUDA 配额 45.92 GiB、系统可见 32.18 GiB、纯读带宽 252 GB/s</div>
+      </div>
+      <p class="small">这张图里的 31,232 MiB 是专用帧缓冲分区，不是 CUDA 可寻址配额。三个内存口径的关系见 <a href="memory-story.html">05 快读</a>；完整证据与原始日志见 <a href="evidence.html">08 证据墙</a>。</p>
+      <p class="small" style="margin-bottom:0"><a href="evidence.html">打开证据墙：nvidia-smi · 官方规格长图 · ffmpeg / Vulkan / DLSS 枚举 →</a></p>
+    </div>
+  </div>
+</section>
+
+<div class="page-nav">
+  <a href="spec.html"><span class="label">下一份 · 01</span><b>参数与能力报告 →</b></a>
+  <a class="next" href="nvidia-app.html"><span class="label">再下一份 · 02</span><b>NVIDIA App 图文配置 →</b></a>
+</div>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div>
+      <p><b>N1X 全景评测</b><br>ASUS ProArt GR1X · RTX Spark N1X · 2026-11-26</p>
+      <p>本站在同一台机器上汇总官方规格、驱动/应用读数、GPU 基准、内存实验与本地推理实测。官方规格可能随页面更新而变化；以归档文件与原始链接为准。所有商标归各自所有者。</p>
+      <p class="small">不构成 NVIDIA / ASUS 官方认证。测试结果仅代表本机在该时间点的状态。</p>
+      <div class="foot-links">
+        <a href="index.html">总览</a><a href="spec.html">参数</a><a href="benchmark.html">基准</a><a href="memory.html">内存</a><a href="qwen.html">推理</a><a href="h3.html">视频</a><a href="evidence.html">证据</a><a href="verdict.html">总评</a>
+      </div>
+      <p class="foot-note">Built as a static, offline-first report site. No trackers, no external fonts.</p>
+    </div>
+    <div class="src-list">
+      <p><b>相关页面与来源</b></p>
+      <p><a href="https://www.nvidia.cn/products/rtx-spark/specifications/">NVIDIA RTX Spark 规格页（中文）</a><br>
+      <a href="https://www.nvidia.com/en-us/products/rtx-spark/specifications/">NVIDIA RTX Spark Specifications（EN）</a><br>
+      <a href="https://developer.nvidia.com/video-encode-and-decode-gpu-support-matrix-new">NVIDIA Video Encode / Decode Support Matrix</a><br>
+      <a href="https://www.nvidia.com/en-us/products/rtx-spark/">NVIDIA RTX Spark 产品页</a><br>
+      <a href="https://www.asus.com.cn/displays-desktops/mini-pcs/proart-mini-pc-series/proart-gr1x-mini-pc/techspec/">ASUS ProArt GR1X 技术规格</a></p>
+    </div>
+  </div>
+</footer>
+<script src="assets/site.js"></script>
+</body>
+</html>
