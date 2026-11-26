@@ -72,6 +72,8 @@ n1x-site-2026-11-26/
 ├─ .github/workflows/pages.yml # Actions 白名单发布（不含 tools/）
 ├─ .gitignore
 ├─ NOTICE                     # 版权与第三方素材说明
+├─ LICENSE                    # 代码 MIT
+├─ LICENSE-CONTENT            # 原创文字/表格/图表 CC BY 4.0
 ├─ _headers                   # 静态托管缓存头（Cloudflare / Netlify）
 ├─ .nojekyll                  # Pages 不走 Jekyll
 └─ README.md
@@ -115,7 +117,7 @@ Settings → Pages → Build and deployment
 
 | 项目 | GitHub 限制 | 本站现状 |
 | --- | --- | --- |
-| 仓库可见性 | 公开仓库：源码、截图、PDF 全部可被查看与克隆 | 100 个文件 / 9.6 MB，无密钥、无 token、无原始日志 |
+| 仓库可见性 | 公开仓库：源码、截图、PDF 全部可被查看与克隆 | 102 个文件 / 9.6 MB，无密钥、无 token、无原始日志 |
 | 发布站点体积 | ≤ 1 GB | 9.6 MB，约占上限 1% |
 | 月流量 | 100 GB 软限制 | 纯静态页 + 本地图片，个人分享远达不到 |
 | 构建频率 | 10 次/小时软限制 | Actions 每次推送发布一次 |
@@ -166,7 +168,7 @@ server {
 python tools/offline_pack.py
 ```
 
-会在站点上一级生成 `N1X-RTX-Spark-评测网站-离线版-<日期>.zip`。打包采用显式白名单：只含 10 个根目录 HTML、`assets/` 整目录和 `NOTICE`，并注入 `使用说明.txt`；`README.md`、`_headers`、`.gitignore`、`.nojekyll`、`tools/`、`.github/`、任何 `*.zip` 与 `assets/logs/` 都不会进入压缩包。解压后双击 `index.html` 即可。
+会在站点上一级生成 `N1X-RTX-Spark-评测网站-离线版-<日期>.zip`。打包采用显式白名单：只含 10 个根目录 HTML、`assets/` 整目录和 `NOTICE` / `LICENSE` / `LICENSE-CONTENT`，并注入 `使用说明.txt`；`README.md`、`_headers`、`.gitignore`、`.nojekyll`、`tools/`、`.github/`、任何 `*.zip` 与 `assets/logs/` 都不会进入压缩包。解压后双击 `index.html` 即可。
 
 ## 维护
 
@@ -188,6 +190,12 @@ python tools/qa.py
 - 三个内存口径分开：NVML 专用 FB（30.5 GiB）、CUDA 可分配配额（45.92 GiB）、Windows 可见（32.18 GiB）。
 - 所有关键数字标注「官方 / 实测 / 推算」；`evidence.html` 有数字字典与证据等级。
 - 原始日志不随仓库发布，保留在作者本地；正文引用的读数可在 `evidence.html` 的证据截图与数字字典中核对。
+
+## 许可
+
+- 代码（HTML / CSS / JS 与 `tools/` 下的 Python 脚本）：MIT，见 `LICENSE`
+- 原创文字、表格与图表：CC BY 4.0，见 `LICENSE-CONTENT`；转载需注明出处并链接回本站
+- 第三方素材（NVIDIA 归档页 / PDF / 截图 / 商标）不在上述授权内，见 `NOTICE`
 
 ## 声明
 

@@ -30,7 +30,7 @@ PAGES = (
 )
 
 # Non-page root files that are deliberately part of the offline package.
-EXTRA_FILES = ("NOTICE",)
+EXTRA_FILES = ("NOTICE", "LICENSE", "LICENSE-CONTENT")
 
 # assets/ is walked as a whole; these paths are skipped defensively so that a
 # future purge/QA artifact can never slip back into a distributable archive.
