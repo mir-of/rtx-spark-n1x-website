@@ -2,7 +2,7 @@
 
 Usage: py314\\python.exe -I tools\\offline_pack.py
 
-Packaging is allowlist-only: the ten root HTML pages, the whole assets/ tree and
+Packaging is allowlist-only: the eleven root HTML pages, the whole assets/ tree and
 NOTICE. Nothing else is packed -- README.md, _headers, .gitignore, .nojekyll,
 tools/ (.github/ included), any *.zip and assets/logs/ are never included, even
 if they reappear in the working tree. A short 使用说明.txt is injected at the
@@ -12,7 +12,7 @@ import pathlib
 import zipfile
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-OUT = ROOT.parent / "N1X-RTX-Spark-评测网站-离线版-2026-11-26.zip"
+OUT = ROOT.parent / "N1X-RTX-Spark-评测网站-离线版-2026-11-27.zip"
 TOP = "N1X-RTX-Spark-评测网站"
 
 # Root pages, in reading order. Keep in sync with README.md.
@@ -25,6 +25,7 @@ PAGES = (
     "nvidia-app.html",
     "qwen.html",
     "h3.html",
+    "wukong.html",
     "evidence.html",
     "verdict.html",
 )
@@ -53,6 +54,7 @@ README = """N1X RTX Spark 全景评测 · 离线版
   nvidia-app.html     NVIDIA App 本机硬件与软件配置图文
   qwen.html           Qwen3.8-27B 本地推理性能与质量测试
   h3.html             MiniMax H3 5s / 10s 视频生成实测
+  wukong.html         《黑神话：悟空》ARM64 游戏实测
   evidence.html       证据墙与原始读数
   verdict.html        结论与选型
 

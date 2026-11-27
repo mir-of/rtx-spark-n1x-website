@@ -231,7 +231,7 @@ figure img{cursor:zoom-in}
 .path-card ol{margin:0;padding-left:18px;font-size:12.8px;color:#35443a}
 .path-card li{margin-bottom:5px}
 .path-card .go{margin-top:auto;padding-top:12px;font-size:12px;font-weight:800}
-.chain{display:grid;grid-template-columns:repeat(6,1fr);gap:0;margin:26px 0 8px;position:relative}
+.chain{display:grid;grid-template-columns:repeat(7,1fr);gap:0;margin:26px 0 8px;position:relative}
 .chain:before{content:"";position:absolute;left:6%;right:6%;top:26px;height:2px;background:linear-gradient(90deg,#cfe3b5,#76b900,#cfe3b5);z-index:0}
 .chain-step{position:relative;z-index:1;padding:0 10px;text-align:center}
 .chain-step .dot{width:54px;height:54px;border-radius:50%;margin:0 auto 10px;background:var(--card);border:2px solid #b9d994;display:grid;place-items:center;font-size:12px;font-weight:900;color:var(--green-dark);box-shadow:0 6px 18px rgba(13,23,16,.06)}

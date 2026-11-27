@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>08 原始读数与证据墙 · N1X 全景评测</title>
+<title>09 原始读数与证据墙 · N1X 全景评测</title>
 <meta name="description" content="nvidia-smi、官方规格页、ffmpeg / Vulkan / DLSS 枚举、NVIDIA App 截图与原始日志索引。">
 <link rel="stylesheet" href="assets/site.css">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
@@ -26,6 +26,7 @@
       <a href="memory-story.html">快读</a>
       <a href="qwen.html">推理</a>
       <a href="h3.html">视频</a>
+      <a href="wukong.html">游戏</a>
       <a href="evidence.html" class="active">证据</a>
       <a href="verdict.html">总评</a>
     </nav>
@@ -34,14 +35,14 @@
 
 <header class="hero compact">
   <div class="wrap">
-    <div class="crumbs"><a href="index.html">总览</a><span class="sep">/</span><span>08 证据墙</span></div>
-    <div class="eyebrow">08 / Evidence wall · 2026-11-26</div>
+    <div class="crumbs"><a href="index.html">总览</a><span class="sep">/</span><span>09 证据墙</span></div>
+    <div class="eyebrow">09 / Evidence wall · 2026-11-26 – 11-27</div>
     <h1>原始读数与<span>证据墙</span></h1>
-    <p class="sub">nvidia-smi · 官方规格页 · ffmpeg / Vulkan / DLSS 枚举 · NVIDIA App 截图</p>
+    <p class="sub">nvidia-smi · 官方规格页 · ffmpeg / Vulkan / DLSS 枚举 · NVIDIA App 截图 · 游戏实机截图</p>
     <p class="lede">所有结论都能回到一张图、一段命令或一个日志。这里放的是最直接的原始读数，以及读这些数字时最容易混的口径。需要复核时，从这里往下点。</p>
     <p class="page-q"><b>本页回答：</b>每个结论背后是哪张图、哪条命令、哪份日志，口径怎么区分。</p>
     <div class="meta">
-      <span>nvidia-smi 2026-11-25 12:13</span><span>官方规格 2026-11-26</span><span>NVIDIA App 18 张</span><span>ffmpeg 7 组</span>
+      <span>nvidia-smi 2026-11-25 12:13</span><span>官方规格 2026-11-26</span><span>NVIDIA App 18 张</span><span>ffmpeg 7 组</span><span>游戏 12 张 · 2026-11-27</span>
     </div>
     <div class="roles"><span class="role-pill">证据</span><span class="role-pill alt">可复核</span><span class="role-pill gray">截图 + 日志</span></div>
   </div>
@@ -226,6 +227,7 @@
       <thead><tr><th>文件</th><th>内容</th></tr></thead>
       <tbody>
         <tr><td><a href="assets/img/h3/fig-09.webp">img/h3/…</a> · <a href="h3.html#s-resources">07 视频报告</a></td><td>MiniMax H3 的 NVML / typeperf 遥测曲线与成片抽帧</td></tr>
+        <tr><td><a href="assets/img/wukong/05-main-menu.webp">img/wukong/…（12 张）</a> · <a href="wukong.html#s-quality">08 游戏报告</a></td><td>《黑神话：悟空》1080p 实机截图；崩溃转储与 <code>b1.log</code> 未随公开站点发布</td></tr>
         <tr><td><a href="assets/spec/nvidia-rtx-spark-specifications.zh.html">spec/…zh.html</a> · <a href="assets/spec/RTX-Spark-N1X-Specifications.zh.pdf">spec/…zh.pdf</a></td><td>官方规格页归档（中文）</td></tr>
         <tr><td><a href="assets/spec/nvidia-video-codec-matrix.html">spec/nvidia-video-codec-matrix.html</a></td><td>NVIDIA 官方编解码支持矩阵归档</td></tr>
         <tr><td><a href="assets/downloads/ASUS-GR1X-内存与带宽实测报告.pdf">ASUS GR1X 内存与带宽实测报告.pdf</a></td><td>内存全报告 PDF</td></tr>
@@ -235,12 +237,12 @@
         </tbody>
     </table>
   </div>
-  <p class="small">原始日志（system / cuda-props / nvidia-smi / dxdiag / vulkan、codec / nvenc / qwen / mem，共 101 个文件）未随公开站点发布，保留在作者本地；如需核查具体读数，可提供脱敏副本。</p>
+  <p class="small">原始日志（system / cuda-props / nvidia-smi / dxdiag / vulkan、codec / nvenc / qwen / mem，共 101 个文件）与游戏崩溃转储（<code>UEMinidump.dmp</code> / <code>CrashContext.runtime-xml</code> / <code>b1.log</code>）未随公开站点发布，保留在作者本地；如需核查具体读数，可提供脱敏副本。</p>
   </section>
 
 <section id="s-dict">
   <div class="kicker">06 / Dictionary</div>
-  <h2>数字字典：六组最容易混的口径</h2>
+  <h2>数字字典：七组最容易混的口径</h2>
   <div class="table-wrap">
     <table>
       <thead><tr><th>口径</th><th>本机值</th><th>含义 / 不要怎么用</th></tr></thead>
@@ -251,6 +253,7 @@
         <tr><td class="dim">纯读 / 纯写 / D2D</td><td class="num">252 / 183 GB/s；D2D 单向 116.5–117.5（总流量 233–235，视会话）</td><td>不要用 D2D 单向或 memset 写去估算读密集任务。三个口径不能相加或混用。</td></tr>
         <tr><td class="dim">官方 / 实测 / 推算</td><td class="num">1 PFLOP / 58.9 TFLOPS FP16 / 473.8 TFLOPS FP4</td><td>1 PFLOP 是官方 FP4 稀疏；58.9 是实测；473.8 是推算。不能互相替代。</td></tr>
         <tr><td class="dim">1×Gen1 / C2C / 32-bit</td><td class="num">当前 1×Gen1；C2C Enabled；SMBIOS 32-bit</td><td>都是链路 / 单器件读数，不是规格降级；官方 PCIe Gen5、SoC 256-bit。</td></tr>
+        <tr><td class="dim">游戏内 40–60 / 菜单 320.6</td><td class="num">40–60 FPS（观察） / 均值 180.5 · 中位 320.6（逐帧）</td><td>菜单不锁帧，320.6 是空载渲染能力；游戏内是观察区间，没有 1% low。两者不能互相替代。</td></tr>
       </tbody>
     </table>
   </div>
@@ -266,14 +269,14 @@
     <div class="note-card"><span class="badge warn">口径 / 推算</span><b>依赖假设或现场回显</b><p>例如 FP4 473.8、1.32 GiB 固件保留、2.41 GHz 推算峰值。不能当硬件实测上限。</p></div>
   </div>
   <div class="callout amber">
-    <p><strong>本站在这些地方明确“没有做”：</strong>没有跑 3DMark / Blender / 任何游戏；没有在支持 DLSS 的游戏中做帧生成帧率实测；没有跑 FP4 GEMM；没有做 &gt;40 GiB、&gt;10 min 的长时间超配；没有做 30 分钟以上的热漂移；没有做内存压力下的驱逐实测；没有在 Linux / DGX OS 上复测。</p>
+    <p><strong>本站在这些地方明确“没有做”：</strong>没有跑 3DMark / Blender；《黑神话：悟空》只做了 1080p 单次会话，没有游戏内逐帧统计、没有 4K / 光追 / DLSS 开关对照，也没有原生 x64 对照组；没有在支持 DLSS 的游戏中做帧生成帧率实测；没有跑 FP4 GEMM；没有做 &gt;40 GiB、&gt;10 min 的长时间超配；没有做 30 分钟以上的热漂移；没有做内存压力下的驱逐实测；没有在 Linux / DGX OS 上复测。</p>
     <p class="small" style="margin-bottom:0">这些不是“省略”，而是结论的边界。需要时应在同一台机器上补测，而不是从现有数据外推。</p>
   </div>
 </section>
 
 <div class="page-nav">
-  <a href="h3.html"><span class="label">上一份 · 07</span><b>← MiniMax H3 视频生成</b></a>
-  <a class="next" href="verdict.html"><span class="label">下一份 · 09</span><b>总评与选型建议 →</b></a>
+  <a href="wukong.html"><span class="label">上一份 · 08</span><b>← 《黑神话：悟空》ARM64 实测</b></a>
+  <a class="next" href="verdict.html"><span class="label">下一份 · 10</span><b>总评与选型建议 →</b></a>
 </div>
 
 </main>

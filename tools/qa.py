@@ -13,7 +13,8 @@ os.environ["TEMP"] = str(TMP)
 os.environ["TMP"] = str(TMP)
 EDGE = r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"
 PAGES = ["index.html", "spec.html", "nvidia-app.html", "benchmark.html",
-         "memory.html", "memory-story.html", "qwen.html", "h3.html", "evidence.html", "verdict.html"]
+         "memory.html", "memory-story.html", "qwen.html", "h3.html", "wukong.html",
+         "evidence.html", "verdict.html"]
 
 def scroll_all(page):
     page.evaluate("""async () => {
@@ -40,6 +41,8 @@ def run():
             for name in PAGES:
                 page.goto(f"http://127.0.0.1:8765/{name}", wait_until="load")
                 page.wait_for_timeout(250)
+                # Lazy images can report naturalWidth 0 if we only scroll fast; force eager first.
+                page.evaluate("document.querySelectorAll('img').forEach(i => i.loading = 'eager')")
                 scroll_all(page)
                 page.wait_for_timeout(500)
                 metrics = page.evaluate("""() => {
@@ -55,7 +58,7 @@ def run():
                     print(f"[{tag}] {name}: overflow={overflow} sw={metrics['scrollWidth']} iw={metrics['innerWidth']} broken={metrics['broken']}")
                 else:
                     print(f"[{tag}] {name}: ok")
-                if name in ("index.html", "memory.html", "qwen.html", "h3.html", "spec.html", "memory-story.html", "verdict.html", "evidence.html"):
+                if name in ("index.html", "memory.html", "qwen.html", "h3.html", "wukong.html", "spec.html", "memory-story.html", "verdict.html", "evidence.html"):
                     page.evaluate("window.scrollTo(0,0)")
                     page.wait_for_timeout(150)
                     page.screenshot(path=str(OUT / f"{tag}-{name.replace('.html','')}-top.png"), full_page=False)

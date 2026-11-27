@@ -26,6 +26,7 @@
       <a href="memory-story.html">快读</a>
       <a href="qwen.html">推理</a>
       <a href="h3.html">视频</a>
+      <a href="wukong.html">游戏</a>
       <a href="evidence.html">证据</a>
       <a href="verdict.html">总评</a>
     </nav>
@@ -71,7 +72,7 @@
       <li><span class="ck">✓</span><div><b>专用显存两处互证</b> 详情页“专用视频内存 31232 MB”与高级页“专用 GPU 显存 30.50 GB”完全一致（31,232 MiB ÷ 1024 = 30.50 GiB）。<span class="tiny">这是本站内存部分反复使用的 30.50 GiB 分区口径</span></div></li>
       <li><span class="ck">✓</span><div><b>图形内存是一组划分</b> 专用 31,232 MB + 共享 16,477 MB = 全部可用 47,709 MB。三者是划分关系，不可与整机 64.0 GB 相加。<span class="tiny">47,709 MB 也不是 47.7 GB 的物理内存</span></div></li>
       <li><span class="ck">✓</span><div><b>显示链路是 HDMI 电视型</b> TF2415 以 HDMI - HDTV 接入，1080p / 60 Hz / 8 bpc / 全范围；G-SYNC 与 Surround 均不可用。<span class="tiny">缩放预览里的 75 Hz 是下拉框选中项，不是实际输出</span></div></li>
-      <li><span class="ck">✓</span><div><b>图形设置全是默认</b> 17 项驱动设置全部为出厂默认或“使用 3D 应用程序设置”；程序列表 0/0，没有为任何游戏建立单独配置。<span class="tiny">这与“这台机器主要不是拿来打游戏”的定位一致</span></div></li>
+      <li><span class="ck">✓</span><div><b>图形设置全是默认</b> 17 项驱动设置全部为出厂默认或“使用 3D 应用程序设置”；程序列表 0/0，没有为任何游戏建立单独配置。<span class="tiny">当时未做逐程序调优；次日《黑神话：悟空》即按默认全局设置运行（08 游戏报告）</span></div></li>
     </ul>
   </div>
   <div class="callout amber">
@@ -428,7 +429,7 @@
     </figure>
     <div class="callout amber" style="margin-top:0">
       <p><strong>程序列表 0/0 说明什么。</strong>本机尚未在 NVIDIA App 中为任何游戏或应用建立单独的优化配置，所有程序都套用全局设置。</p>
-      <p>这并不等于“不能跑游戏”，只说明应用侧没有做过逐程序调优。本站也没有做游戏帧率测试，因此不对游戏性能下结论。</p>
+      <p>这并不等于“不能跑游戏”，只说明应用侧没有做过逐程序调优。本页不对游戏性能下结论；次日的 1080p 单次实测见 <a href="wukong.html">08 游戏报告</a>。</p>
       <p class="small" style="margin-bottom:0">如果要评测游戏，需要在支持 DLSS 的作品里做帧生成/超分对照，而不是看这一页。</p>
     </div>
   </div>
@@ -458,7 +459,7 @@
     <li><b>新增：</b>《神力科莎：拉力》的 DLSS 4.5 动态多帧生成更新；《战锤 40K：战争黎明 4》支持 DLSS 4.5 超分辨率；《燕云十六声》的 DLSS 5 3D 引导神经网络渲染。</li>
     <li><b>修复：</b>后台可能会对 nvlog.nvlgstg 文件产生过量写入的问题；特定场景下可能出现画面损坏的问题；Chaos Vantage 中 NVIDIA OptiX 降噪器在高分辨率下可能失效的问题；ASUS ProArt P16 上 Netflix 视频全屏播放数分钟后画面可能黑屏的问题。</li>
   </ul>
-  <p class="small">更新说明是驱动发布内容，不代表本机实际运行过这些游戏或功能。本站对 DLSS 的结论只到“运行时存在 + API 可用”，没有做游戏内帧率实测。</p>
+  <p class="small">更新说明是驱动发布内容，不代表本机实际运行过这些游戏或功能。本站对 DLSS 的结论只到“运行时存在 + API 可用”，没有做 DLSS 开关的游戏内帧率对照。</p>
 </section>
 
 <section id="s-settings">
@@ -611,8 +612,8 @@ HDCP: 支持</pre>
       <p><b>相关页面与来源</b></p>
       <p><a href="spec.html#identity">01 参数报告 · 身份判定</a><br>
       <a href="memory.html#limits">04 内存报告 · 三个上限</a><br>
-      <a href="evidence.html#s-smiapp">08 证据墙 · NVIDIA App 截图</a><br>
-      <a href="verdict.html">09 总评与选型建议</a></p>
+      <a href="evidence.html#s-smiapp">09 证据墙 · NVIDIA App 截图</a><br>
+      <a href="verdict.html">10 总评与选型建议</a></p>
     </div>
   </div>
   <p class="foot-note">除第三方素材外，文字、表格与图表以 <a href="LICENSE-CONTENT">CC BY 4.0</a> 授权，代码以 <a href="LICENSE">MIT</a> 授权；第三方素材见 <a href="NOTICE">NOTICE</a>。</p>

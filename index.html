@@ -5,7 +5,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>RTX Spark N1X 全景评测 · ASUS ProArt GR1X</title>
-<meta name="description" content="ASUS ProArt GR1X（NVIDIA RTX Spark N1X）的规格、算力、内存与本地推理完整评测。九份报告组成一条证据链：官方规格、NVIDIA App、GPU 基准、内存实测与快读、Qwen3.8-27B 推理、MiniMax H3 视频生成、证据墙与总评。">
+<meta name="description" content="ASUS ProArt GR1X（NVIDIA RTX Spark N1X）的规格、算力、内存、本地推理与游戏实测。十份报告组成一条证据链：官方规格、NVIDIA App、GPU 基准、内存实测与快读、Qwen3.8-27B 推理、MiniMax H3 视频生成、《黑神话：悟空》ARM64 游戏实测、证据墙与总评。">
 <link rel="stylesheet" href="assets/site.css">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 </head>
@@ -26,6 +26,7 @@
       <a href="memory-story.html">快读</a>
       <a href="qwen.html">推理</a>
       <a href="h3.html">视频</a>
+      <a href="wukong.html">游戏</a>
       <a href="evidence.html">证据</a>
       <a href="verdict.html">总评</a>
     </nav>
@@ -35,19 +36,19 @@
 <header class="hero">
   <div class="wrap hero-grid">
     <div>
-      <div class="eyebrow">Hardware dossier · 2026-11-26</div>
+      <div class="eyebrow">Hardware dossier · 2026-11-27</div>
       <h1>RTX Spark <span>N1X</span><br>全景评测</h1>
-      <p class="sub">ASUS ProArt GR1X · 规格、算力、内存与本地推理的完整测评</p>
-      <p class="lede">这不是九份报告的并列堆放。先用官方规格和 NVIDIA App 确认它是什么，再用 Geekbench 与精度实测把它放进桌面 GPU 天梯，接着拆开 64 GiB 统一内存（厂商标称 64 GB）的三个数字，然后用 Qwen3.8-27B 的真实 tok/s、长上下文、并发与质量，最后用 MiniMax H3 的 5s / 10s 视频生成，回答它能做什么、不能做什么。</p>
-    <p class="page-q"><b>本页回答：</b>这台机器是什么、九个维度上分别处在什么位置、后面的报告该怎么读。</p>
+      <p class="sub">ASUS ProArt GR1X · 规格、算力、内存、本地推理与游戏实测</p>
+      <p class="lede">这不是十份报告的并列堆放。先用官方规格和 NVIDIA App 确认它是什么，再用 Geekbench 与精度实测把它放进桌面 GPU 天梯，接着拆开 64 GiB 统一内存（厂商标称 64 GB）的三个数字，然后用 Qwen3.8-27B 的真实 tok/s、长上下文、并发与质量，用 MiniMax H3 的 5s / 10s 视频生成，最后用《黑神话：悟空》的 125 GB 实机安装与 1080p 游戏，回答它能做什么、不能做什么。</p>
+    <p class="page-q"><b>本页回答：</b>这台机器是什么、十个维度上分别处在什么位置、后面的报告该怎么读。</p>
       <div class="meta">
         <span>Windows 11 Pro 26H1 · ARM64</span>
         <span>Driver 621.40</span>
         <span>CUDA UMD 13.5</span>
-        <span>采集 2026-11-25 – 11-26（UTC+8）</span>
+        <span>采集 2026-11-25 – 11-27（UTC+8）</span>
       </div>
       <div class="hero-notes">
-        <span>9 份报告</span><span>28 项官方规格核对</span><span>6 会话内存扫描</span><span>3 + 3 次 Geekbench</span><span>40 题质量抽测</span>
+        <span>10 份报告</span><span>28 项官方规格核对</span><span>6 会话内存扫描</span><span>3 + 3 次 Geekbench</span><span>40 题质量抽测</span><span>125.65 GB 游戏下载</span>
       </div>
     </div>
     <div class="chip" aria-label="48 个 SM 示意图">
@@ -99,18 +100,19 @@
       <li><span class="ck">✓</span><div><b>内存是本站重点</b> 30.50 GiB 帧缓冲、45.92 GiB CUDA 配额、32.18 GiB 系统可见同时成立；最大单次分配 45.75 GiB；6 个独立会话跨过 30.5 GiB 边界未观察到断崖。<span class="tiny">真正的限制是驻留与提交，不是带宽</span></div></li>
       <li><span class="ck">✓</span><div><b>端到端可用</b> Qwen3.8-27B IQ4_XS：短上下文 36.6 tok/s、32K 30.2、89K 19.3；prompt cache 32K 命中 ×169；8 路并发聚合 2.07×；40 题质量 92.5（思考关）/ 95.0（思考开）。<span class="tiny">适合 1–2 个并发用户；长文档适合批处理</span></div></li>
       <li><span class="ck">✓</span><div><b>视频生成可用</b> MiniMax H3：5s @1344×768 原生 8 步 15m59s 可交付；10s @1344×768 需换 FreeVideo 管线，9m37s；三组峰值 30.33–30.38 GiB。<span class="tiny">07 视频报告 · A/B/C 三组 + D 基线</span></div></li>
+      <li><span class="ck">✓</span><div><b>游戏能跑，但不稳</b> ARM64 Windows 上 Steam x64 客户端可安装，125.65 GB 下载 60 分钟完成；Denuvo 校验通过，1080p 画质正常，游戏内约 40–60 FPS（观察值）；实际游玩约 5 分钟出现一次原因未定的崩溃。<span class="tiny">08 游戏报告 · 单次会话 · 崩溃未归因</span></div></li>
     </ul>
   </div>
   <div class="callout dark">
-    <p><strong>一句话定位。</strong> 它是一台 140 W、64 GiB 统一内存的 ARM64 小型工作站：本地 27B 级模型、长文档、视频生成、CUDA/ARM64 开发是主场；带宽敏感型 HPC 不是强项；4K 光追游戏与 FP64 密集型 HPC 尚待实测（后续补测）。</p>
+    <p><strong>一句话定位。</strong> 它是一台 140 W、64 GiB 统一内存的 ARM64 小型工作站：本地 27B 级模型、长文档、视频生成、CUDA/ARM64 开发是主场；1080p 游戏已实测可玩（约 40–60 FPS），但稳定性还差一次崩溃的归因；带宽敏感型 HPC 不是强项；4K 光追游戏与 FP64 密集型 HPC 尚待实测。</p>
     <p class="small" style="color:#9fb59a;margin-bottom:0">下面所有数字都标注口径。官方规格、本机实测、项目推算、单次现场回显不会混在一起。</p>
   </div>
 </section>
 
 <section id="logic">
   <div class="kicker">01 / How to read</div>
-  <h2>先看身份，再看算力，然后拆内存，最后落到模型</h2>
-  <p class="lead">主线是六步：身份与能力 → 横向算力 → 内存机制 → 端到端 LLM → 视频生成 → 结论；02 / 05 / 08 分别是配置旁证、快读与证据索引。跳过任何一步，后面的数字都会失去上下文。</p>
+  <h2>先看身份，再看算力，然后拆内存，最后落到模型与游戏</h2>
+  <p class="lead">主线是七步：身份与能力 → 横向算力 → 内存机制 → 端到端 LLM → 视频生成 → 游戏兼容 → 结论；02 / 05 / 09 分别是配置旁证、快读与证据索引。跳过任何一步，后面的数字都会失去上下文。</p>
 
   <div class="chain" aria-label="阅读逻辑链">
     <div class="chain-step"><div class="dot">01</div><div><b>身份与能力</b><span>官方规格 × 本机 28 项核对</span><a href="spec.html">参数报告 →</a></div></div>
@@ -118,7 +120,8 @@
     <div class="chain-step"><div class="dot">04</div><div><b>内存机制</b><span>三个数字与超配行为</span><a href="memory.html">内存实测 →</a></div></div>
     <div class="chain-step"><div class="dot">06</div><div><b>端到端</b><span>27B 模型真实 tok/s</span><a href="qwen.html">推理报告 →</a></div></div>
     <div class="chain-step"><div class="dot">07</div><div><b>视频生成</b><span>H3 5s / 10s 实测</span><a href="h3.html">视频报告 →</a></div></div>
-    <div class="chain-step"><div class="dot">09</div><div><b>结论</b><span>适合谁、怎么规划</span><a href="verdict.html">总评 →</a></div></div>
+    <div class="chain-step"><div class="dot">08</div><div><b>游戏兼容</b><span>ARM64 跑黑神话</span><a href="wukong.html">游戏实测 →</a></div></div>
+    <div class="chain-step"><div class="dot">10</div><div><b>结论</b><span>适合谁、怎么规划</span><a href="verdict.html">总评 →</a></div></div>
   </div>
 
   <div class="grid-2" style="margin-top:28px">
@@ -128,13 +131,14 @@
       <p><b>算力必须横向比，且要分口径。</b> 官方只给了一个 1 PFLOP FP4 的数字；Geekbench 给的是 GPGPU 综合分；PyTorch 给的是各精度 GEMM 实测；带宽微基准给的是另一个维度。四套数字不能互相替代。</p>
       <p><b>内存是这台机器最容易被误读的部分。</b> 30.50、45.92、32.18 三个数字都成立，但回答的是不同问题。把这三个数字混成一个“可用显存”，后面的模型规划就会全错。</p>
       <p><b>最后必须落到模型。</b> 带宽 252 GB/s、配额 45.92 GiB 这些中间量，只有变成 Qwen 的 36.6 / 30.2 / 19.3 tok/s、并发扩展与质量分，才能回答“买它值不值”。</p>
+      <p><b>游戏是另一条端到端验证，但不是跑分的附属品。</b> 官方支持 DLSS 5 不等于“游戏里能开”；1080p 能进场景、画质正常、40–60 FPS 与一次未归因崩溃，回答的是“这台 ARM64 机器能不能当游戏机”这个独立问题。</p>
     </div>
     <div class="callout blue" style="margin-top:0">
       <p><strong>本站的三种读法。</strong></p>
-      <p><b>只有 10 分钟：</b>本页 00 + 03 → <a href="memory-story.html">05 快读</a> → <a href="verdict.html">09 总评</a>。先拿到结论和边界。</p>
+      <p><b>只有 10 分钟：</b>本页 00 + 03 → <a href="memory-story.html">05 快读</a> → <a href="verdict.html">10 总评</a>。先拿到结论和边界。</p>
       <p><b>要做工程选型：</b><a href="memory.html">04 内存全报告</a> → <a href="qwen.html">06 推理报告</a> → <a href="benchmark.html">03 GPU 基准</a>。重点看方法、重复次数与限制。</p>
-      <p><b>要复核证据：</b><a href="spec.html">01 参数报告</a> → <a href="nvidia-app.html">02 NVIDIA App</a> → <a href="evidence.html">08 证据墙</a>。关键数字都能回到日志、原始数据或截图。</p>
-      <p class="small" style="margin-bottom:0">每份报告顶部都有角色标签：基线 / 配置快照 / 横向定位 / 机制 / 快读 / 端到端 / 视频 / 证据 / 结论。看到标签就知道该用什么期待去读。</p>
+      <p><b>要复核证据：</b><a href="spec.html">01 参数报告</a> → <a href="nvidia-app.html">02 NVIDIA App</a> → <a href="evidence.html">09 证据墙</a>。关键数字都能回到日志、原始数据或截图。</p>
+      <p class="small" style="margin-bottom:0">每份报告顶部都有角色标签：基线 / 配置快照 / 横向定位 / 机制 / 快读 / 端到端 / 视频 / 游戏 / 证据 / 结论。看到标签就知道该用什么期待去读。</p>
     </div>
   </div>
 
@@ -147,6 +151,7 @@
         <li><a href="#findings">本页核心结论</a></li>
         <li><a href="memory-story.html">同一个 GB10，两种内存命运</a></li>
         <li><a href="qwen.html#s-summary">Qwen 报告的摘要与适用场景</a></li>
+        <li><a href="wukong.html#s-summary">游戏实测：能玩，但 5 分钟崩了一次</a></li>
         <li><a href="verdict.html">总评：适合谁 / 哪些待补测</a></li>
       </ol>
       <div class="go"><a href="#findings">从本页核心结论开始 →</a></div>
@@ -159,6 +164,7 @@
         <li><a href="memory.html">内存与带宽全报告</a></li>
         <li><a href="qwen.html">Qwen3.8-27B 推理报告</a></li>
         <li><a href="h3.html">MiniMax H3 视频生成报告</a></li>
+        <li><a href="wukong.html">《黑神话：悟空》ARM64 游戏实测</a></li>
         <li><a href="benchmark.html">GPU 基准与精度算力</a></li>
         <li><a href="verdict.html#budget">规划口径与选型表</a></li>
       </ol>
@@ -181,7 +187,7 @@
 
 <section id="map">
   <div class="kicker">02 / Report map</div>
-  <h2>九份报告，一条证据链</h2>
+  <h2>十份报告，一条证据链</h2>
   <p class="lead">每份报告解决一个独立问题，同时为下一份提供输入。点击卡片进入全文；页面底部有上一份 / 下一份导航。</p>
 
   <div class="report-grid">
@@ -234,17 +240,24 @@
       <div class="report-meta">2026-11-25 · A/B/C 三组 + D 基线</div>
       <div class="report-go">阅读全文 →</div>
     </a>
+    <a class="report-card" href="wukong.html">
+      <div class="report-top"><span class="report-no">08</span><span class="badge warn">端到端 · 游戏</span></div>
+      <h3>《黑神话：悟空》ARM64 实测</h3>
+      <p>Steam x64 模拟、125.65 GB 下载、Denuvo 校验、9.5 分钟着色器编译、1080p 画质与 40–60 FPS，以及一次未归因的崩溃。</p>
+      <div class="report-meta">2026-11-27 · 单次会话 · 12 张实机截图</div>
+      <div class="report-go">阅读全文 →</div>
+    </a>
     <a class="report-card" href="evidence.html">
-      <div class="report-top"><span class="report-no">08</span><span class="badge gray">证据</span></div>
+      <div class="report-top"><span class="report-no">09</span><span class="badge gray">证据</span></div>
       <h3>原始读数与证据墙</h3>
-      <p>nvidia-smi、官方规格长图、ffmpeg / Vulkan / DLSS 枚举、NVIDIA App 关键页，以及最容易混的六组口径。</p>
+      <p>nvidia-smi、官方规格长图、ffmpeg / Vulkan / DLSS 枚举、NVIDIA App 关键页，以及最容易混的七组口径。</p>
       <div class="report-meta">截图 + 日志 + 数字字典</div>
       <div class="report-go">阅读全文 →</div>
     </a>
     <a class="report-card" href="verdict.html">
-      <div class="report-top"><span class="report-no">09</span><span class="badge dark">结论</span></div>
+      <div class="report-top"><span class="report-no">10</span><span class="badge dark">结论</span></div>
       <h3>总评与选型建议</h3>
-      <p>把前八份报告收成一张表：强项、边界、待补测的场景、内存预算、并发建议，以及仍未回答的问题。</p>
+      <p>把前九份报告收成一张表：强项、边界、待补测的场景、内存预算、并发建议，以及仍未回答的问题。</p>
       <div class="report-meta">跨报告综合 · 可执行口径</div>
       <div class="report-go">阅读全文 →</div>
     </a>
@@ -253,7 +266,7 @@
 
 <section id="findings">
   <div class="kicker">03 / Findings</div>
-  <h2>十一个结论，每个都带口径</h2>
+  <h2>十二个结论，每个都带口径</h2>
   <p class="lead">下表是整站最短的版本。右列的“证据”指向具体报告；需要看原始数字时，沿链接进去。</p>
   <div class="table-wrap">
     <table class="findings-table">
@@ -269,7 +282,8 @@
         <tr><td class="dim">本地 LLM</td><td>27B IQ4_XS 可稳定运行；短上下文快，长上下文受带宽与 KV 读取拖累。</td><td class="num">36.6 / 30.2 / 19.3 tok/s · MTP ×2.16 · cache ×169</td><td><a href="qwen.html#results">06 推理</a></td></tr>
         <tr><td class="dim">并发与热</td><td>适合 1–2 个并发用户；10–13.5 分钟持续负载未见持续降频。</td><td class="num">8 路聚合 2.07× · 77–83 °C · 600 s FP32 105.9 W</td><td><a href="qwen.html#thermal">06 推理</a></td></tr>
         <tr><td class="dim">视频生成</td><td>5s 原生可交付；10s @1344×768 需换 FreeVideo 管线；三组都贴着 30.5 GiB。</td><td class="num">15m59s / 14m15s / 9m37s · 30.33–30.38 GiB</td><td><a href="h3.html#s-summary">07 视频</a></td></tr>
-        <tr><td class="dim">未验证</td><td>游戏帧率、FP4 GEMM、&gt;40 GiB 长负载、30 分钟以上热漂移，都不能从现有数据外推。</td><td class="num">—</td><td><a href="verdict.html#open">09 总评</a></td></tr>
+        <tr><td class="dim">游戏兼容</td><td>Steam x64 可装、Denuvo 可过、1080p 画质正常；但游戏内只有 40–60 FPS，且 5 分钟崩了一次。</td><td class="num">125.65 GB / 60 min · 40–60 FPS（观察） · 5 分 15 秒后崩溃</td><td><a href="wukong.html#s-summary">08 游戏</a></td></tr>
+        <tr><td class="dim">未验证</td><td>游戏内逐帧统计与崩溃归因、4K 光追、DLSS 游戏内提升、FP4 GEMM、&gt;40 GiB 长负载、30 分钟以上热漂移，都不能从现有数据外推。</td><td class="num">—</td><td><a href="verdict.html#open">10 总评</a></td></tr>
       </tbody>
     </table>
   </div>
@@ -292,7 +306,7 @@
   <p class="small" style="margin-top:14px"><b>术语：</b>FB = 帧缓冲分区；D2D = Device-to-Device；MTP = Multi-Token Prediction；IQ4_XS = GGUF 4-bit 量化（4.25 bpw）；C2C = CPU-GPU 一致性互连；WDDM = Windows 显示驱动模型；CUDA UMD = CUDA 用户态驱动。</p>
   <div class="callout">
     <p><strong>证据等级。</strong> 本站用四种标签：<span class="badge ok">实测通过</span> 表示多会话/多次重复且结果一致；<span class="badge info">实测读数</span> 表示本机读到但未必多次；<span class="badge warn">口径/推算</span> 表示依赖假设或现场回显；<span class="badge gray">未验证</span> 表示没有数据，不外推。</p>
-    <p class="small" style="margin-bottom:0">完整的原始文件、截图与日志索引在 <a href="evidence.html">08 证据墙</a>。</p>
+    <p class="small" style="margin-bottom:0">完整的原始文件、截图与日志索引在 <a href="evidence.html">09 证据墙</a>。</p>
   </div>
 </section>
 
@@ -313,7 +327,7 @@
         <div class="k">当前进程</div><div class="v">Hermes Agent.exe · msedgewebview2.exe（均为 C+G）</div>
         <div class="k">它不回答什么</div><div class="v">CUDA 配额 45.92 GiB、系统可见 32.18 GiB、纯读带宽 252 GB/s</div>
       </div>
-      <p class="small">这张图里的 31,232 MiB 是专用帧缓冲分区，不是 CUDA 可寻址配额。三个内存口径的关系见 <a href="memory-story.html">05 快读</a>；完整证据与原始日志见 <a href="evidence.html">08 证据墙</a>。</p>
+      <p class="small">这张图里的 31,232 MiB 是专用帧缓冲分区，不是 CUDA 可寻址配额。三个内存口径的关系见 <a href="memory-story.html">05 快读</a>；完整证据与原始日志见 <a href="evidence.html">09 证据墙</a>。</p>
       <p class="small" style="margin-bottom:0"><a href="evidence.html">打开证据墙：nvidia-smi · 官方规格长图 · ffmpeg / Vulkan / DLSS 枚举 →</a></p>
     </div>
   </div>
@@ -329,11 +343,11 @@
 <footer>
   <div class="wrap">
     <div>
-      <p><b>N1X 全景评测</b><br>ASUS ProArt GR1X · RTX Spark N1X · 2026-11-26</p>
-      <p>本站在同一台机器上汇总官方规格、驱动/应用读数、GPU 基准、内存实验与本地推理实测。官方规格可能随页面更新而变化；以归档文件与原始链接为准。所有商标归各自所有者。</p>
+      <p><b>N1X 全景评测</b><br>ASUS ProArt GR1X · RTX Spark N1X · 2026-11-26 – 11-27</p>
+      <p>本站在同一台机器上汇总官方规格、驱动/应用读数、GPU 基准、内存实验、本地推理与游戏实测。官方规格可能随页面更新而变化；以归档文件与原始链接为准。所有商标归各自所有者。</p>
       <p class="small">不构成 NVIDIA / ASUS 官方认证。测试结果仅代表本机在该时间点的状态。</p>
       <div class="foot-links">
-        <a href="index.html">总览</a><a href="spec.html">参数</a><a href="benchmark.html">基准</a><a href="memory.html">内存</a><a href="qwen.html">推理</a><a href="h3.html">视频</a><a href="evidence.html">证据</a><a href="verdict.html">总评</a>
+        <a href="index.html">总览</a><a href="spec.html">参数</a><a href="benchmark.html">基准</a><a href="memory.html">内存</a><a href="qwen.html">推理</a><a href="h3.html">视频</a><a href="wukong.html">游戏</a><a href="evidence.html">证据</a><a href="verdict.html">总评</a>
       </div>
       <p class="foot-note">Built as a static, offline-first report site. No trackers, no external fonts.</p>
     </div>
@@ -343,6 +357,7 @@
       <a href="https://www.nvidia.com/en-us/products/rtx-spark/specifications/">NVIDIA RTX Spark Specifications（EN）</a><br>
       <a href="https://developer.nvidia.com/video-encode-and-decode-gpu-support-matrix-new">NVIDIA Video Encode / Decode Support Matrix</a><br>
       <a href="https://www.nvidia.com/en-us/products/rtx-spark/">NVIDIA RTX Spark 产品页</a><br>
+      <a href="https://store.steampowered.com/app/2358720/">Steam · Black Myth: Wukong</a><br>
       <a href="https://www.asus.com.cn/displays-desktops/mini-pcs/proart-mini-pc-series/proart-gr1x-mini-pc/techspec/">ASUS ProArt GR1X 技术规格</a></p>
     </div>
   </div>

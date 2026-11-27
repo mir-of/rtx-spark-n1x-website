@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>08 《黑神话：悟空》ARM64 实测 · N1X 全景评测</title>
+<meta name="description" content="在 Windows 11 ARM64 的 RTX Spark N1X 上实测《黑神话：悟空》：Steam x64 客户端、125.65 GB 下载、Denuvo 校验、9.5 分钟着色器编译、1080p 画质与 40–60 FPS 观察值，以及游戏内约 5 分钟的一次崩溃。">
+<link rel="stylesheet" href="assets/site.css">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+<a class="skip-link" href="#main">跳到正文</a>
+<div class="progress-bar" aria-hidden="true"></div>
+
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="index.html"><span class="mark">N1X</span><span>N1X 全景评测<small>ASUS ProArt GR1X · 2026</small></span></a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">目录</button>
+    <nav class="nav" id="site-nav" aria-label="站点导航">
+      <a href="index.html">总览</a>
+      <a href="spec.html">参数</a>
+      <a href="nvidia-app.html">配置</a>
+      <a href="benchmark.html">基准</a>
+      <a href="memory.html">内存</a>
+      <a href="memory-story.html">快读</a>
+      <a href="qwen.html">推理</a>
+      <a href="h3.html">视频</a>
+      <a href="wukong.html" class="active">游戏</a>
+      <a href="evidence.html">证据</a>
+      <a href="verdict.html">总评</a>
+    </nav>
+  </div>
+</header>
+
+<header class="hero compact">
+  <div class="wrap">
+    <div class="crumbs"><a href="index.html">总览</a><span class="sep">/</span><span>08 《黑神话：悟空》ARM64 实测</span></div>
+    <div class="eyebrow">08 / End-to-end game · 2026-11-27</div>
+    <h1>ARM64 跑<br><span>《黑神话：悟空》</span><br>能玩，但 5 分钟崩一次</h1>
+    <p class="sub">Steam x64 模拟 · Denuvo 通过 · 1080p 画质完整 · 游戏内 40–60 FPS</p>
+    <p class="lede">这是本站第一个真正的游戏实测。它回答的不是“跑分多少”，而是更实际的问题：一台 ARM64 Windows 机器，能不能装 Steam、下载 125 GB 的 3A、过 Denuvo、进到实际场景，以及玩起来稳不稳。</p>
+    <p class="page-q"><b>本页回答：</b>ARM64 上跑《黑神话：悟空》卡在哪、画质与帧率是什么水平、这次崩溃能说明什么、不能说明什么。</p>
+    <div class="meta">
+      <span>Windows 11 Pro ARM64</span><span>Steam 客户端 x64</span><span>《黑神话：悟空》1.0.21.23831</span><span>2026-11-27 · 单次会话</span>
+    </div>
+    <div class="roles"><span class="role-pill">端到端</span><span class="role-pill alt">游戏实测</span><span class="role-pill gray">单次会话 / 帧率为观察值</span></div>
+  </div>
+</header>
+
+<nav class="toc" aria-label="本页目录">
+  <div class="wrap">
+    <a href="#s-summary">00 摘要</a><a href="#s-premise">01 前提与机器</a><a href="#s-crash">02 崩溃</a>
+    <a href="#s-install">03 装 Steam</a><a href="#s-download">04 125 GB 下载</a><a href="#s-launch">05 启动确认</a>
+    <a href="#s-shader">06 着色器编译</a><a href="#s-quality">07 画质</a><a href="#s-fps">08 帧率</a>
+    <a href="#s-drm">09 DRM 与反作弊</a><a href="#s-repro">10 复现清单</a><a href="#s-limits">11 局限</a>
+  </div>
+</nav>
+
+<main class="wrap" id="main">
+
+<section id="s-summary">
+  <div class="kicker">00 / Executive summary</div>
+  <h2>兼容性比预期好得多，稳定性还差一口气</h2>
+  <div class="callout">
+    <p style="margin:0"><b>一句话：</b>能装、能登录、能下载、能进游戏，Denuvo 没拦，1080p 画质完全正常。但实际游玩约 5 分钟后出现一次 <code>EXCEPTION_ACCESS_VIOLATION</code> 崩溃；没有原生 x64 对照组，不能把原因归给 ARM64 模拟层，也不能归给游戏本身。</p>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>问题</th><th>实测答案</th><th>证据等级</th></tr></thead>
+      <tbody>
+        <tr><td class="dim">ARM64 上能装 Steam 吗</td><td>能。官方安装包直接装，首启更新 1,431 MB / 6,823 个文件正常完成。</td><td><span class="badge ok">实测</span></td></tr>
+        <tr><td class="dim">能登录、能下载游戏吗</td><td>能。125.65 GB 下载约 60 分钟完成，峰值 658 Mbps。</td><td><span class="badge ok">实测</span></td></tr>
+        <tr><td class="dim">带 Denuvo 的黑神话能启动吗</td><td>能。Denuvo 校验直接通过，全程没有 DRM 报错。</td><td><span class="badge ok">实测</span></td></tr>
+        <tr><td class="dim">能进到实际游戏场景吗</td><td>能。1080p 渲染正常，可交互、可移动、可战斗。</td><td><span class="badge ok">实测</span></td></tr>
+        <tr><td class="dim">画质有没有打折</td><td>没有。雾效、体积光、烟尘、材质、毛发都正常。</td><td><span class="badge info">截图检查</span></td></tr>
+        <tr><td class="dim">帧率如何</td><td><b>游戏内约 40–60 FPS</b>；主菜单 / 开场动画均值 180.5、中位 320.6 FPS（不锁帧）。</td><td><span class="badge warn">游戏内为观察值</span></td></tr>
+        <tr><td class="dim">稳定吗</td><td><b>不完美。</b>游戏内约 5 分钟崩了一次。</td><td><span class="badge warn">单次事件</span></td></tr>
+        <tr><td class="dim">值不值得这么折腾</td><td>想玩单机，现在就能玩；想做严肃评测，数据还不够。</td><td><span class="badge gray">判断</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="kpi-band" style="margin-top:18px">
+    <div class="kpi"><b>60 min</b><span>125.65 GB 下载 · 峰值 658 Mbps</span><a href="#s-download">04 下载 →</a></div>
+    <div class="kpi"><b>9.5 min</b><span>首次 PSO 着色器编译</span><a href="#s-shader">06 编译 →</a></div>
+    <div class="kpi"><b>40–60</b><span>游戏内 FPS · 观察区间</span><a href="#s-fps">08 帧率 →</a></div>
+    <div class="kpi"><b>5 min</b><span>实际游玩后的一次崩溃</span><a href="#s-crash">02 崩溃 →</a></div>
+  </div>
+  <figure>
+    <img src="assets/img/wukong/05-main-menu.webp" alt="《黑神话：悟空》主菜单，苍狼林·林外" width="1920" height="1080" loading="lazy" decoding="async">
+    <figcaption>《黑神话：悟空》主菜单（苍狼林 · 林外），版本 1.0.21.23831。字体、UI 与背景渲染均正常，这是 ARM64 + x64 模拟层下实际跑出来的画面。</figcaption>
+  </figure>
+</section>
+
+<section id="s-premise">
+  <div class="kicker">01 / Premise</div>
+  <h2>先看清一个前提：整个 Steam 都是 x64 模拟</h2>
+  <p class="lead">这不是“ARM64 原生游戏”。Steam 官方客户端目前没有 ARM64 原生版本，整个客户端（包括 Chromium 前端 <code>steamwebhelper</code>）都是 x64 二进制，靠 Windows 的 x64 模拟层执行。</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>项目</th><th>本机读数</th><th>说明</th></tr></thead>
+      <tbody>
+        <tr><td class="dim">CPU / SoC</td><td>NVIDIA RTX Spark N1X · 20 核 20 线程</td><td>48 SM / 6,144 CUDA，与 01 参数报告一致</td></tr>
+        <tr><td class="dim">系统</td><td>Windows 11 专业版 · <b>ARM64</b></td><td>Hypervisor 已启用，x64 模拟层可用</td></tr>
+        <tr><td class="dim">系统可见内存</td><td class="num">32,955 MiB = 32.18 GiB</td><td>物理 64 GiB 的统一内存；Windows 可见口径见 <a href="memory.html#limits">04 内存报告</a></td></tr>
+        <tr><td class="dim">GPU 显存分区</td><td class="num">31,232 MiB = 30.50 GiB</td><td>NVML 专用帧缓冲；不是 CUDA 可寻址配额 45.92 GiB</td></tr>
+        <tr><td class="dim">安装位置</td><td><code>C:\Program Files (x86)\Steam</code></td><td>官方安装包 2.38 MB，SHA256 与 winget 清单一致</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>顺手验证了一下“到底是不是模拟”这件事：</p>
+<pre><span class="c"># PE Machine 字段：0x8664 = x64，0xAA64 = ARM64</span>
+steamclient64.dll   PE Machine = 0x8664  → x64
+steam.exe           PE Machine = 0x8664  → x64
+steamwebhelper.exe  PE Machine = 0x8664  → x64
+（对照）notepad.exe  PE Machine = 0xAA64  → ARM64 原生</pre>
+  <p><b>结论：你在这台机器上看到的一切 Steam 界面，都是模拟跑出来的。</b>这也意味着后面所有性能数字，都包含 x64 模拟层的开销；它们不能直接与原生 x64 机器上的同款游戏帧率对比。</p>
+</section>
+
+<section id="s-crash">
+  <div class="kicker">02 / The crash</div>
+  <h2>最难看的部分先放前面：进游戏 5 分钟，崩了一次</h2>
+  <p class="lead">这才是决定“能不能当主力机”的关键，比菜单能跑 320 FPS 重要得多。</p>
+<pre>[10:54:20] Unhandled Exception: EXCEPTION_ACCESS_VIOLATION 0x00000000bf52df50
+[10:54:20] [Callstack] 0x00000000bf52df50 UnknownFunction
+[10:54:20] [Callstack] 0x000000014ca4aa8c b1-Win64-Shipping.exe!UnknownFunction
+[10:54:20] ...
+[10:54:20] Crash in runnable thread Foreground Worker #1</pre>
+  <div class="grid-2">
+    <div>
+      <p><b>时间线：</b>游戏内会话 10:49:05 启动，<b>10:54:20 崩溃</b>，实际游玩约 <b>5 分 15 秒</b>。崩溃前日志里正在跑大量植被 Niagara 特效（<code>NS_FoliagePP</code>）和关卡序列绑定对象（<code>LogGSAKB</code>）——说明当时是在实际场景里，不是停在菜单。</p>
+      <p><b>留下的崩溃材料：</b></p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>文件</th><th>大小</th></tr></thead>
+          <tbody>
+            <tr><td><code>UEMinidump.dmp</code></td><td class="num">5.78 MB</td></tr>
+            <tr><td><code>CrashContext.runtime-xml</code></td><td class="num">40 KB</td></tr>
+            <tr><td><code>b1.log</code>（崩溃现场）</td><td class="num">10.5 KB</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="small">路径：<code>%LOCALAPPDATA%\b1\Saved\Crashes\</code>。这些文件保留在作者本地，未随公开站点发布。</p>
+    </div>
+    <div class="callout amber" style="margin-top:0">
+      <p><strong>我不下结论。</strong>没有一台原生 x64 的机器做对照，就<b>没法判断这次崩溃是 ARM64 模拟层的问题，还是游戏本身的偶发崩溃</b>。网上很多“ARM 跑 3A 崩溃”的说法，缺的就是这个对照。</p>
+      <p style="margin-bottom:0">这次实测只能证明：<b>在本机、本次会话、这张地图的这个位置，游戏崩溃了。</b>它不能证明“ARM64 不能玩黑神话”，也不能证明“黑神话在 ARM64 上必崩”。</p>
+    </div>
+  </div>
+</section>
+
+<section id="s-install">
+  <div class="kicker">03 / Install</div>
+  <h2>装 Steam：比想象中简单，但有两个坎</h2>
+  <p class="lead">官方安装包只有 2.38 MB（<code>SteamSetup.exe</code>），落地在 <code>C:\Program Files (x86)\Steam</code>。真正的工作量不在安装器，而在第一次启动后的客户端更新。</p>
+  <div class="notes">
+    <div class="note-card"><span class="tag">坎 1</span><b>安装要过 UAC</b><p>静默参数 <code>/S</code> 只是不弹安装向导，提权那一步照样得确认。用 <code>-Verb RunAs</code> 启动安装器，手动点“是”。</p></div>
+    <div class="note-card"><span class="tag">坎 2</span><b>安装器只是引导包</b><p>装完那一刻目录里只有 200 多 MB，<code>steamclient64.dll</code>、<code>steamui\</code> 都还不存在。第一次启动才下载完整客户端：本次 <b>1,431 MB / 6,823 个文件</b>。</p></div>
+    <div class="note-card"><span class="tag">判断</span><b>看标记文件</b><p>首启更新期间看起来“没动静”，其实在下东西。判断装完没有，看 <code>package\steam_client_win64.installed</code> 是否出现。</p></div>
+  </div>
+  <p>首启更新完成后，登录、库、商店、下载页都能正常打开。Steam 覆盖层（<code>gameoverlayui64.exe</code>）也能随游戏启动，说明 x64 模拟层下的 Chromium 前端与图形覆盖层都工作正常。</p>
+</section>
+
+<section id="s-download">
+  <div class="kicker">04 / Download</div>
+  <h2>125 GB 下载：一小时的等待，外加两个坑</h2>
+  <p class="lead">《黑神话：悟空》下载量 125.65 GB（134,920,529,696 字节），实际落地 139.58 GB / 207 个文件。这个体量本身就是一次 I/O 与网络稳定性测试。</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>指标</th><th>实测</th></tr></thead>
+      <tbody>
+        <tr><td class="dim">开始 → 完成</td><td class="num">19:19:30 → 20:19:28，约 <b>60 分钟</b></td></tr>
+        <tr><td class="dim">速率</td><td class="num">起手 352.6 Mbps → 峰值 <b>658 Mbps</b></td></tr>
+        <tr><td class="dim">校验结果</td><td><code>StateFlags = 4</code>（FullyInstalled），<code>BytesDownloaded = BytesToDownload</code></td></tr>
+        <tr><td class="dim">落地体积</td><td class="num">139.58 GB · 207 个文件</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small">容量口径：Steam 界面用 “GB” 标签显示 GiB 数值。125.65 GB（界面）对应 134,920,529,696 B = 125.65 GiB = 134.92 GB（十进制）；139.58 GB（界面）同理约合 149.9 GB 十进制。正文沿用界面读数，换算关系见 <a href="evidence.html#s-dict">09 证据墙 · 数字字典</a>。</p>
+
+  <h3>坑 3：前置运行库是串行装的，看起来像卡死</h3>
+  <p>首次启动游戏前，Steam 会依次安装四个组件：VC++ 2022 x86 → VC++ 2022 x64 → DirectX Jun2010 → .NET Framework 4.7.2。每个 1–2 分钟，全程安安静静在后台跑。日志里能看到四条 <code>Exit Code (0)</code>：</p>
+<pre>10:07:52 [AppID 228980] Exit Code (0) : ...VC++ 2022 x86.cmd
+10:09:14 [AppID 228980] Exit Code (0) : ...VC++ 2022 x64.cmd
+10:10:37 [AppID 228980] Exit Code (0) : ...DXSETUP.exe /silent
+10:12:23 [AppID 228980] Exit Code (0) : ...Microsoft .NET Framework 4.7.2.cmd</pre>
+  <p>这四个组件都是 x86 / x64 安装包，在 ARM64 Windows 上通过模拟层安装；四条退出码全为 0，没有出现兼容性报错。</p>
+
+  <h3>坑 4：下载完成了，客户端还卡在“正在下载 33%”</h3>
+  <div class="grid-2">
+    <figure style="margin-top:0">
+      <img src="assets/img/wukong/04-ghost-download.webp" alt="Steam 下载完成后仍显示正在下载 33% 的界面" width="1280" height="800" loading="lazy" decoding="async">
+      <figcaption>下载完成后客户端仍显示“正在下载，已完成 33%”，Play 按钮变成“暂停”。</figcaption>
+    </figure>
+    <div>
+      <p><code>.acf</code> 写着 <code>StateFlags=4</code>、字节数 100%，<code>content_log.txt</code> 显示 20:19 就收尾了，但客户端界面一直显示“正在下载，已完成 33%”。</p>
+      <p>后果很迷惑：点了 Play <b>完全没反应</b>，日志里连一行游戏启动记录都没有——看起来像“启动失败”，其实客户端根本没去启动。</p>
+      <p><b>解法：重启 Steam 客户端。</b>重启后它按 <code>.acf</code> 重新同步，状态栏从“正在下载”变回“管理下载”，问题消失。怀疑跟夜里系统休眠、界面状态没同步回来有关。</p>
+    </div>
+  </div>
+</section>
+
+<section id="s-launch">
+  <div class="kicker">05 / First launch</div>
+  <h2>启动时会有两个确认框</h2>
+  <p class="lead">第一次启动这款游戏，Steam 会连着弹两个确认：选择启动选项（标准 / 兼容模式）与手柄推荐提示。两个都确认掉，游戏才开始真正加载。</p>
+  <div class="gallery">
+    <figure>
+      <img src="assets/img/wukong/02-launch-option.webp" alt="《黑神话：悟空》Steam 启动选项对话框" width="1280" height="800" loading="lazy" decoding="async">
+      <figcaption>选择启动选项——黑神话有两个启动配置（标准 / 兼容模式）。本次选择标准配置。</figcaption>
+    </figure>
+    <figure>
+      <img src="assets/img/wukong/03-controller-tip.webp" alt="Steam 手柄推荐提示" width="700" height="480" loading="lazy" decoding="async">
+      <figcaption>手柄推荐提示。键鼠同样可用；这个提示只影响输入方式说明，不阻止启动。</figcaption>
+    </figure>
+  </div>
+  <p>好在<b>选过一次之后，后面再启动就直接进了</b>，不用每次都点。确认完之后进程才真正起来：</p>
+<pre>10:20:03 Game process added : AppID 2358720 "...\BlackMythWukong\b1.exe", ProcID 7184
+10:20:23 Game process updated : ... ProcID 32020        <span class="c">← b1-Win64-Shipping.exe</span>
+10:21:33 GameOverlay: started 'gameoverlayui64.exe' (pid 16272) for game process 32020</pre>
+  <p><b>顺带一提：</b>主程序 <code>b1-Win64-Shipping.exe</code> 有 <b>694.7 MB</b>——典型 Denuvo 加壳后的体积（推测；未做壳段扫描），正常 UE5 shipping 包不会这么大。Denuvo 的校验代码与虚拟机就嵌在这个可执行文件里。</p>
+</section>
+
+<section id="s-shader">
+  <div class="kicker">06 / Shader compilation</div>
+  <h2>着色器编译：9.5 分钟，别当卡死</h2>
+  <div class="grid-2">
+    <figure style="margin-top:0">
+      <img src="assets/img/wukong/01-shader-compile.webp" alt="《黑神话：悟空》首次启动的着色器编译界面，进度 8.42%" width="1920" height="1080" loading="lazy" decoding="async">
+      <figcaption>首次启动的 UE5 PSO 着色器编译，画面左下角显示进度 8.42%。</figcaption>
+    </figure>
+    <div>
+      <p>进游戏后第一件事是 UE5 的首次 PSO 着色器编译，左下角显示「正在进行着色器编译 xx%」。这个过程长得离谱，但真的没卡死。</p>
+      <p>我隔 150 秒截了两次图对比：<b>11.23% → 43.37%</b>，按这个斜率推算总时长约 15 分钟；实测从 10:20:52 到约 10:30，<b>约 9.5 分钟</b>。实际比线性外推更快，说明后段编译速度并不恒定。</p>
+      <p><b>好消息：着色器缓存是一次性的。</b>第二次启动直接跳过，40 秒左右就能到主菜单。</p>
+    </div>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>“真在跑”的信号</th><th>观察值</th></tr></thead>
+      <tbody>
+        <tr><td class="dim">CPU 时间</td><td>150 秒内增长约 32%，线性推进</td></tr>
+        <tr><td class="dim">内存</td><td class="num">290 MB → 7.24 GB 峰值</td></tr>
+        <tr><td class="dim">线程数</td><td class="num">169–171</td></tr>
+        <tr><td class="dim">日志</td><td><code>%LOCALAPPDATA%\b1\Saved\Logs\b1.log</code> 持续写入</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout blue">
+    <p><strong>怎么看“卡死”还是“在编译”：</strong>别只看进度条。打开任务管理器看 CPU 时间是否持续增长，看 <code>b1.log</code> 是否还在写，看内存是否缓慢上升。三者只要有两个在动，就继续等。</p>
+  </div>
+</section>
+
+<section id="s-quality">
+  <div class="kicker">07 / Visual quality</div>
+  <h2>画质：完全没打折</h2>
+  <p class="lead">编译完是初始设置（文本语言 / 语音 / 字幕）→ 亮度校准 → 自动保存提示 → 主菜单，一路正常，中文字体没有任何缺字或错位。进游戏后的画面质量超出预期——雾效、体积光、烟尘粒子、皮革金属材质、毛发全都渲染正确，没有花屏、没有紫块、没有贴图丢失。</p>
+  <div class="gallery">
+    <figure class="shot">
+      <img src="assets/img/wukong/06-shrine-ui.webp" alt="土地庙交互界面，血条、法力与棍势" width="1920" height="1080" loading="lazy" decoding="async">
+      <figcaption>土地庙交互界面：血条 / 法力 / 棍势都在，UI 排版与字体正常。</figcaption>
+    </figure>
+    <figure class="shot">
+      <img src="assets/img/wukong/07-gameplay-teaching.webp" alt="魂幡教学页" width="1920" height="1080" loading="lazy" decoding="async">
+      <figcaption>魂幡教学页：中文排版、图标与提示文本完整。</figcaption>
+    </figure>
+    <figure class="shot">
+      <img src="assets/img/wukong/08-wukong-closeup.webp" alt="悟空角色特写，皮肤与毛发细节" width="1920" height="1080" loading="lazy" decoding="async">
+      <figcaption>角色特写：皮肤和毛发的细节完整，没有材质丢失或色带。</figcaption>
+    </figure>
+    <figure class="shot">
+      <img src="assets/img/wukong/09-action.webp" alt="战斗动作帧，动态模糊" width="1920" height="1080" loading="lazy" decoding="async">
+      <figcaption>战斗动作帧：动态模糊正常，粒子与刀光没有出现块状伪影。</figcaption>
+    </figure>
+    <figure class="shot">
+      <img src="assets/img/wukong/10-battlefield.webp" alt="雪原巨像远景" width="1920" height="1080" loading="lazy" decoding="async">
+      <figcaption>雪原巨像远景：体积雾、远景几何与光照层次正常。</figcaption>
+    </figure>
+    <figure class="shot">
+      <img src="assets/img/wukong/11-cavalry.webp" alt="铁骑阵列远景" width="1920" height="1080" loading="lazy" decoding="async">
+      <figcaption>铁骑阵列：远景密集几何体没有崩，阴影与雾效衔接正常。</figcaption>
+    </figure>
+  </div>
+  <figure>
+    <img src="assets/img/wukong/12-stone-lion.webp" alt="石狮特写，法线细节与苔藓材质" width="1920" height="1080" loading="lazy" decoding="async">
+    <figcaption>石狮特写：法线细节、苔藓材质与潮湿高光都在，没有 ARM64 下常见的着色器编译错误或贴图错位。</figcaption>
+  </figure>
+  <p>Denuvo 校验通过，Steam 云存档、成就、覆盖层全部正常。画面里没有出现“模拟层渲染错误”典型的紫块、黑块、闪烁或 UI 错位。</p>
+  <div class="callout">
+    <p><strong>画质结论的边界：</strong>以上是<b>截图检查</b>，不是逐帧画质分析。它能证明“渲染结果没有明显错误”，不能证明“与原生 x64 机器逐像素一致”。同一场景、同一设置下的 A/B 对比没有做。</p>
+  </div>
+</section>
+
+<section id="s-fps">
+  <div class="kicker">08 / Frame rate</div>
+  <h2>菜单能跑 180–320，游戏内只有 40–60</h2>
+  <p class="lead">这里必须把两套数字分开讲，混在一起就会误导人。菜单和开场动画不锁帧、场景又轻，GPU 基本在空转；实际场景则要同时扛 UE5 高画质、植被、粒子与 x64 模拟层的 CPU 开销。</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>场景</th><th>帧率</th><th>数据来源</th><th>证据等级</th></tr></thead>
+      <tbody>
+        <tr><td class="dim">主菜单 / 开场动画</td><td class="num">中位 <b>320.6 FPS</b>，均值 <b>180.5 FPS</b></td><td>PresentMon 2.6.0 逐帧采样，1,869 个有效帧</td><td><span class="badge info">实测读数</span></td></tr>
+        <tr><td class="dim">实际游戏内</td><td class="num"><b>约 40–60 FPS 波动</b></td><td>游戏内帧率显示的观察区间</td><td><span class="badge warn">观察值</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <h3>主菜单逐帧采样：这组数字只代表“空载渲染能力”</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>指标</th><th>数值</th></tr></thead>
+      <tbody>
+        <tr><td class="dim">平均 FPS</td><td class="num"><b>180.5</b></td></tr>
+        <tr><td class="dim">中位帧（p50）</td><td class="num"><b>320.6 FPS</b></td></tr>
+        <tr><td class="dim">1% low</td><td class="num"><b>163.9 FPS</b></td></tr>
+        <tr><td class="dim">0.1% low</td><td class="num"><b>61.0 FPS</b></td></tr>
+        <tr><td class="dim">最大单帧</td><td class="num">1,034 ms</td></tr>
+        <tr><td class="dim">有效帧数</td><td class="num">1,869</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small">中位 320.6 高于均值 180.5，是因为存在极长的单帧（最大 1,034 ms）把均值拉低；这组数据的长尾很重，不能只看中位。那个 1,034 ms 的尖峰大概率是一次资源加载。采集工具为 PresentMon 2.6.0，管理员权限运行。</p>
+  <div class="callout amber">
+    <p><strong>⚠️ 这张表只代表“空载渲染能力”，不代表游玩体验。</strong>主菜单和开场动画不锁帧，所以能冲到 300 以上；这部分只能说明“这台机器的 GPU 在 ARM 模拟层下能把 1080p 画面渲出来”，不能拿来回答“游戏好不好玩”。</p>
+  </div>
+  <h3>游戏内的 40–60：能玩，但谈不上流畅</h3>
+  <p>这是我在实际游玩时从游戏内帧率显示看到的区间，属于<b>观察值，不是逐帧统计</b>——所以没有 1% low、没有帧生成时间曲线。40–60 意味着什么？<b>能玩，但谈不上流畅</b>：这个区间在没有 VRR 的屏幕上会有可感知的顿挫，尤其战斗场景切镜头时。想要 60 以上稳定，目前这台机器上的办法只有降画质或降分辨率。</p>
+  <p>日志里能看到 DLSS 的 NGX 模块已经正常加载，理论上开 DLSS 或降一档画质还有往上抬的空间——不过我没有逐个画质档去测，这点留个坑，后面补。</p>
+</section>
+
+<section id="s-drm">
+  <div class="kicker">09 / DRM &amp; anti-cheat</div>
+  <h2>两个反常识的结论</h2>
+  <p class="lead">动手之前我的判断是：“带 Denuvo 这种保护的，大概率起不来。”实测下来，这个判断是错的。</p>
+  <div class="grid-2">
+    <div class="callout" style="margin-top:0">
+      <p><strong>“带 DRM 保护的跑不了”——不成立。</strong></p>
+      <p>Denuvo Anti-Tamper 是<b>用户态 VM 加壳</b>，不需要加载 x64 内核驱动，所以在 x64-on-ARM64 模拟层上可以正常完成校验并放行——这次全程没有任何 DRM 报错。</p>
+      <p style="margin-bottom:0">旁证：主程序 <code>b1-Win64-Shipping.exe</code> 达 694.7 MB，是典型加壳体积；游戏正常启动、存档、成就与覆盖层都工作。</p>
+    </div>
+    <div class="callout amber" style="margin-top:0">
+      <p><strong>“带内核反作弊的跑不了”——成立（结构性推断）。</strong></p>
+      <p>原因不是“模拟层不兼容”，而是<b>ARM64 Windows 根本不能加载 x64 内核驱动</b>——用户态有模拟层，内核态没有。EAC / BattlEye 内核模式 / Vanguard 这类游戏（CS2、Apex、瓦罗兰特等）<b>我没有实测</b>。</p>
+      <p style="margin-bottom:0">这是基于 Windows 架构的推断，不是本机实测结论；引用时要写明这一点。</p>
+    </div>
+  </div>
+  <div class="callout dark">
+    <p><strong>一句话区分：</strong></p>
+    <p>“带 DRM 保护的跑不了”——不成立。Denuvo 在用户态，模拟层能扛。</p>
+    <p style="margin-bottom:0">“带内核反作弊的跑不了”——成立。x64 内核驱动在 ARM64 Windows 上没有加载路径。</p>
+  </div>
+</section>
+
+<section id="s-repro">
+  <div class="kicker">10 / Reproduction</div>
+  <h2>想自己试的话，看这几个地方</h2>
+  <p class="lead">下面几条命令覆盖“装、等、校验、排障”四个最容易出问题的环节。在普通 PowerShell（必要时管理员）里执行。</p>
+<pre><span class="c"># 1. 装（记得过 UAC）</span>
+Start-Process "$env:TEMP\SteamSetup.exe" -ArgumentList "/S" -Verb RunAs -Wait
+
+<span class="c"># 2. 首启更新完没有：等这个文件出现</span>
+Test-Path "C:\Program Files (x86)\Steam\package\steam_client_win64.installed"
+
+<span class="c"># 3. 游戏是不是真装完了（StateFlags 必须含位 4）</span>
+(Select-String -Path "C:\Program Files (x86)\Steam\steamapps\appmanifest_2358720.acf" `
+  -Pattern '"StateFlags"').Line
+
+<span class="c"># 4. 客户端是不是卡在"幽灵下载"状态</span>
+Get-Content "C:\Program Files (x86)\Steam\logs\content_log.txt" -Tail 5</pre>
+  <p><b>按优先级排的清单：</b></p>
+  <ol>
+    <li>盯着 UAC 点“是”。静默安装不等于免提权。</li>
+    <li>首启更新别急着杀进程，等 <code>package\*.installed</code> 出现。</li>
+    <li>下载完成后如果 Play 变“暂停”，先重启 Steam 客户端，再判断是不是启动失败。</li>
+    <li>着色器编译至少给 10 分钟，看 CPU 时间、内存与 <code>b1.log</code> 有没有在动。</li>
+    <li>如果游戏崩溃，去 <code>%LOCALAPPDATA%\b1\Saved\Crashes\</code> 取 minidump 与 <code>b1.log</code>，不要只截一张报错图。</li>
+  </ol>
+</section>
+
+<section id="s-limits">
+  <div class="kicker">11 / Method &amp; limits</div>
+  <h2>诚实边界：这次实测没有回答什么</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>没做的部分</th><th>为什么重要</th><th>现在的结论能说到哪</th></tr></thead>
+      <tbody>
+        <tr><td class="dim">游戏内逐帧统计</td><td>只有观察区间（40–60 FPS），没有 1% low、没有帧生成时间曲线</td><td>能说“能玩但不流畅”，不能说“平均多少”</td></tr>
+        <tr><td class="dim">原生 x64 对照组</td><td>没有同款游戏在原生 x64 机器上的同场景数据</td><td>不能把崩溃归因于 ARM64 模拟层</td></tr>
+        <tr><td class="dim">反作弊类网游</td><td>EAC / BattlEye / Vanguard 均未实测</td><td>只能说“结构性推断不能加载”，不是实测</td></tr>
+        <tr><td class="dim">长时间稳定性</td><td>没有跑满 1 小时；单次会话 5 分钟就崩了</td><td>不能判断崩溃频率，也不能判断是否热相关</td></tr>
+        <tr><td class="dim">画质档位阶梯</td><td>没有逐档测低 / 中 / 高 / 影视级与 DLSS 开关</td><td>不知道降一档能换回多少帧</td></tr>
+        <tr><td class="dim">4K / 光追</td><td>只测了 1080p 默认画质</td><td>4K 与光追性能完全没有数据</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout">
+    <p><strong>怎么引用这次实测：</strong>说“ARM64 Windows 能装 Steam、能过 Denuvo、能跑黑神话 1080p，画质正常，游戏内约 40–60 FPS，但出现过一次原因未定的崩溃”。不要省略最后半句，也不要把 40–60 写成精确的平均帧。</p>
+  </div>
+  <p class="small">测试环境：Windows 11 Pro ARM64、RTX Spark N1X（20C/20T，48 SM / 6,144 CUDA）、驱动 621.40、Steam 客户端 x64（模拟）、游戏版本 1.0.21.23831。帧率采集用 PresentMon 2.6.0；其余读数来自 Steam 日志、游戏日志与系统工具。</p>
+</section>
+
+<div class="page-nav">
+  <a href="h3.html"><span class="label">上一份 · 07</span><b>← MiniMax H3 视频生成</b></a>
+  <a class="next" href="evidence.html"><span class="label">下一份 · 09</span><b>原始读数与证据墙 →</b></a>
+</div>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div>
+      <p><b>N1X 全景评测</b><br>08 《黑神话：悟空》ARM64 实测</p>
+      <p>单次会话、单张地图；游戏内帧率为观察区间，不是逐帧统计。崩溃原因未定，不能归因于 ARM64 模拟层。所有截图来自本机实际运行。</p>
+      <p class="small">不构成游戏科学 / Valve / NVIDIA 官方认证。结果仅代表本机在 2026-11-27 的配置与软件栈。</p>
+      <div class="foot-links"><a href="index.html">总览</a><a href="h3.html">视频</a><a href="memory.html">内存</a><a href="verdict.html">总评</a></div>
+    </div>
+    <div class="src-list">
+      <p><b>相关页面与来源</b></p>
+      <p><a href="memory.html#limits">04 内存报告 · 三个容量口径</a><br>
+      <a href="h3.html#s-summary">07 视频报告 · 另一种重型端到端负载</a><br>
+      <a href="evidence.html">09 证据墙 · 原始读数</a><br>
+      <a href="verdict.html#budget">10 总评 · 规划口径</a></p>
+    </div>
+  </div>
+  <p class="foot-note">除第三方素材外，文字、表格与图表以 <a href="LICENSE-CONTENT">CC BY 4.0</a> 授权，代码以 <a href="LICENSE">MIT</a> 授权；游戏画面版权归游戏科学，见 <a href="NOTICE">NOTICE</a>。</p>
+</footer>
+<script src="assets/site.js"></script>
+</body>
+</html>

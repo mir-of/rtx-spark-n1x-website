@@ -1,6 +1,6 @@
 # N1X RTX Spark 全景评测站
 
-ASUS ProArt GR1X（NVIDIA RTX Spark N1X）的静态评测站：9 份报告 + 1 个总览页，纯 HTML / CSS / JS；10 个手写页面无外部字体、CDN 或追踪脚本，官方规格归档页已禁用脚本，支持 `file://` 直接打开和离线打包。
+ASUS ProArt GR1X（NVIDIA RTX Spark N1X）的静态评测站：10 份报告 + 1 个总览页，纯 HTML / CSS / JS；11 个手写页面无外部字体、CDN 或追踪脚本，官方规格归档页已禁用脚本，支持 `file://` 直接打开和离线打包。
 
 ![网站首页：RTX Spark N1X 全景评测总览](assets/img/readme/home.webp)
 
@@ -16,10 +16,11 @@ ASUS ProArt GR1X（NVIDIA RTX Spark N1X）的静态评测站：9 份报告 + 1 �
 | 05 | `memory-story.html` | 快读长文《同一个 GB10，两种内存命运》 |
 | 06 | `qwen.html` | Qwen3.8-27B IQ4_XS 本地推理：短/长上下文、MTP、并发、质量 |
 | 07 | `h3.html` | MiniMax H3 视频生成：5s / 10s、原生 ComfyUI vs FreeVideo |
-| 08 | `evidence.html` | 证据墙：nvidia-smi、官方规格归档、原始日志与数字字典 |
-| 09 | `verdict.html` | 总评与选型：适合谁、哪些待补测、内存与并发规划 |
+| 08 | `wukong.html` | 《黑神话：悟空》ARM64 游戏实测：Steam x64、Denuvo、1080p 画质与 40–60 FPS |
+| 09 | `evidence.html` | 证据墙：nvidia-smi、官方规格归档、原始日志与数字字典 |
+| 10 | `verdict.html` | 总评与选型：适合谁、哪些待补测、内存与并发规划 |
 
-阅读顺序不是线性的：主线是「身份 → 算力 → 内存 → LLM → 视频 → 结论」，02 / 05 / 08 分别是配置旁证、快读与证据索引。首页提供 10 分钟 / 1 小时 / 半天三条路径。
+阅读顺序不是线性的：主线是「身份 → 算力 → 内存 → LLM → 视频 → 游戏 → 结论」，02 / 05 / 09 分别是配置旁证、快读与证据索引。首页提供 10 分钟 / 1 小时 / 半天三条路径。
 
 ## 设计
 
@@ -30,10 +31,10 @@ ASUS ProArt GR1X（NVIDIA RTX Spark N1X）的静态评测站：9 份报告 + 1 �
 - `<img>` 均带 `width` / `height` 预留版面，首屏外 `loading="lazy"`，打印前由脚本转 eager
 - 双列缩略图用 `srcset` 提供 2× 版本（1058px），灯箱通过 `data-full` 仍打开原图
 - `spec.html` 不内嵌 base64，5 张截图外链到 `assets/img/spec/`，与证据页共享缓存
-- 首访字节：10 页合计约 0.8 MB（优化前 15.1 MB）；`h3` 单页约 137 KB（原 7.15 MB）
+- 首访字节：11 页合计约 0.85 MB（优化前 15.1 MB）；`h3` 单页约 137 KB（原 7.15 MB）
 - `_headers`：Cloudflare Pages / Netlify 的缓存策略（HTML no-cache、assets 30 天），GitHub Pages 忽略
 - 灯箱在桌面与移动端均可拖动查看
-- 10 个手写页内置最小 CSP：`script-src 'self'`，禁止外部连接、框架、表单与对象
+- 11 个手写页内置最小 CSP：`script-src 'self'`，禁止外部连接、框架、表单与对象
 - `assets/spec/*.html` 归档页内置 `script-src 'none'`：不执行 NVIDIA / 供应商脚本、不写 Cookie，样式从简
 - 原始日志（101 个文件）与含本机标识的 JSON 不随仓库发布
 
@@ -49,8 +50,9 @@ n1x-site-2026-11-26/
 ├─ memory-story.html          # 05 快读
 ├─ qwen.html                  # 06 Qwen 推理
 ├─ h3.html                    # 07 MiniMax H3 视频
-├─ evidence.html              # 08 证据墙
-├─ verdict.html               # 09 总评
+├─ wukong.html                # 08 《黑神话：悟空》ARM64 实测
+├─ evidence.html              # 09 证据墙
+├─ verdict.html               # 10 总评
 ├─ assets/
 │  ├─ site.css / site.js / frame.css / favicon.svg
 │  ├─ img/
@@ -61,13 +63,14 @@ n1x-site-2026-11-26/
 │  │  ├─ nvapp/               # NVIDIA App 18 张截图
 │  │  ├─ qwen/                # Qwen 解码 / 缓存 / 并发 / 热稳态图
 │  │  ├─ readme/              # README 用的首页截图
+│  │  ├─ wukong/              # 游戏实测 12 张截图
 │  │  └─ spec/                # 参数报告的编解码与规格截图
 │  ├─ downloads/              # 4 份 PDF 报告（按需下载）
 │  └─ spec/                   # NVIDIA 官方规格页 / 编解码矩阵归档
 ├─ tools/
 │  ├─ check_links.py          # 本地链接与锚点全量校验
 │  ├─ qa.py                   # Playwright 三视口验收
-│  ├─ offline_pack.py         # 生成离线 ZIP（白名单：10 页 + assets/ + NOTICE）
+│  ├─ offline_pack.py         # 生成离线 ZIP（白名单：11 页 + assets/ + NOTICE）
 │  └─ build_spec.py           # 参数报告外壳（已加防覆盖保护）
 ├─ .github/workflows/pages.yml # Actions 白名单发布（不含 tools/）
 ├─ .gitignore
@@ -100,7 +103,7 @@ python -m http.server 8000 --bind 127.0.0.1
 
 ### GitHub Pages（推荐：Actions 白名单）
 
-仓库提供 `.github/workflows/pages.yml`：推送 `main` 后只发布 10 个 HTML、`assets/`、`_headers`、`.nojekyll` 和三个许可文件；`tools/`、`README.md`、`.github/` 留在仓库但不出现在网站 URL 下。先确认该文件已提交到 `main`。
+仓库提供 `.github/workflows/pages.yml`：推送 `main` 后只发布 11 个 HTML、`assets/`、`_headers`、`.nojekyll` 和三个许可文件；`tools/`、`README.md`、`.github/` 留在仓库但不出现在网站 URL 下。先确认该文件已提交到 `main`。
 
 ```text
 Settings → Pages → Build and deployment
@@ -117,8 +120,8 @@ Settings → Pages → Build and deployment
 
 | 项目 | GitHub 限制 | 本站现状 |
 | --- | --- | --- |
-| 仓库可见性 | 公开仓库：源码、截图、PDF 全部可被查看与克隆 | 103 个文件 / 9.6 MB，无密钥、无 token、无原始日志 |
-| 发布站点体积 | ≤ 1 GB | 9.6 MB，约占上限 1% |
+| 仓库可见性 | 公开仓库：源码、截图、PDF 全部可被查看与克隆 | 116 个文件 / 11.0 MB，无密钥、无 token、无原始日志 |
+| 发布站点体积 | ≤ 1 GB | 11.0 MB，约占上限 1% |
 | 月流量 | 100 GB 软限制 | 纯静态页 + 本地图片，个人分享远达不到 |
 | 构建频率 | 10 次/小时软限制 | Actions 每次推送发布一次 |
 | 服务端能力 | 仅静态文件，不支持后端 / SSR | 不需要 |
@@ -168,7 +171,7 @@ server {
 python tools/offline_pack.py
 ```
 
-会在站点上一级生成 `N1X-RTX-Spark-评测网站-离线版-<日期>.zip`。打包采用显式白名单：只含 10 个根目录 HTML、`assets/` 整目录和 `NOTICE` / `LICENSE` / `LICENSE-CONTENT`，并注入 `使用说明.txt`；`README.md`、`_headers`、`.gitignore`、`.nojekyll`、`tools/`、`.github/`、任何 `*.zip` 与 `assets/logs/` 都不会进入压缩包。解压后双击 `index.html` 即可。
+会在站点上一级生成 `N1X-RTX-Spark-评测网站-离线版-<日期>.zip`。打包采用显式白名单：只含 11 个根目录 HTML、`assets/` 整目录和 `NOTICE` / `LICENSE` / `LICENSE-CONTENT`，并注入 `使用说明.txt`；`README.md`、`_headers`、`.gitignore`、`.nojekyll`、`tools/`、`.github/`、任何 `*.zip` 与 `assets/logs/` 都不会进入压缩包。解压后双击 `index.html` 即可。
 
 ## 维护
 
@@ -182,7 +185,7 @@ python tools/qa.py
 ```
 
 - `spec.html` 由 `tools/build_spec.py` 生成过一次，之后包含手工修订（口径、64 GiB、role-pill 等）。脚本现在默认**拒绝覆盖**；确需重建时用 `--force`，然后必须重新应用这些修订。
-- 新增报告时不只是加一个 HTML：还要同步 10 个页面的 topbar / 页脚、首页报告地图与阅读链、`page-nav` 的上一份/下一份、以及正文里的「0X 报告」引用。编号顺延后跑一遍 `check_links.py` 与 `qa.py`。
+- 新增报告时不只是加一个 HTML：还要同步 11 个页面的 topbar / 页脚、首页报告地图与阅读链、`page-nav` 的上一份/下一份、以及正文里的「0X 报告」引用。编号顺延后跑一遍 `check_links.py` 与 `qa.py`。
 
 ## 数据与口径
 
