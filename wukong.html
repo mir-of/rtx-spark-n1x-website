@@ -53,7 +53,7 @@
     <a href="#s-summary">00 摘要</a><a href="#s-premise">01 前提与机器</a><a href="#s-crash">02 崩溃</a>
     <a href="#s-install">03 装 Steam</a><a href="#s-download">04 125 GB 下载</a><a href="#s-launch">05 启动确认</a>
     <a href="#s-shader">06 着色器编译</a><a href="#s-quality">07 画质</a><a href="#s-fps">08 帧率</a>
-    <a href="#s-drm">09 DRM 与反作弊</a><a href="#s-repro">10 复现清单</a><a href="#s-limits">11 局限</a>
+    <a href="#s-drm">09 DRM 与反作弊</a><a href="#s-repro">10 复现清单</a><a href="#s-limits">11 局限</a><a href="#s-close">12 结语</a>
   </div>
 </nav>
 
@@ -396,6 +396,15 @@ Get-Content "C:\Program Files (x86)\Steam\logs\content_log.txt" -Tail 5</pre>
     <p><strong>怎么引用这次实测：</strong>说“ARM64 Windows 能装 Steam、能过 Denuvo、能跑黑神话 1080p，画质正常，游戏内约 40–60 FPS，但出现过一次原因未定的崩溃”。不要省略最后半句，也不要把 40–60 写成精确的平均帧。</p>
   </div>
   <p class="small">测试环境：Windows 11 Pro ARM64、RTX Spark N1X（20C/20T，48 SM / 6,144 CUDA）、驱动 621.40、Steam 客户端 x64（模拟）、游戏版本 1.0.21.23831。帧率采集用 PresentMon 2.6.0；其余读数来自 Steam 日志、游戏日志与系统工具。</p>
+</section>
+
+<section id="s-close">
+  <div class="kicker">12 / Closing</div>
+  <h2>能不能当游戏机用？兼容性够好，稳定性差一口气</h2>
+  <div class="callout dark">
+    <p><strong>ARM64 的 Windows 现在能不能当游戏机用？</strong>从这次实测看：<b>兼容性比预期好得多，短板在稳定性。</b>Denuvo 拦不住、UE5 跑得动、1080p 画质不打折——这些都是好消息。真正的短板是三点：游戏内只有 40–60 FPS、实际游玩中出现了一次不明原因的崩溃、以及一些 Steam 侧的坑会让人误判成“跑不了”。</p>
+    <p style="margin-bottom:0">如果你只是想在这台机器上把单机游戏玩下去，<b>现在就可以</b>。如果你要拿它做严肃的性能评测，<b>先把游戏内的帧率采集和崩溃复现补上</b>再说。</p>
+  </div>
 </section>
 
 <div class="page-nav">
